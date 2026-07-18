@@ -1,68 +1,7 @@
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { validateContent } from "./validate";
-
-const VALID_PROFILE = `
-name: Test Person
-positioning: Test positioning statement.
-summary: Test summary.
-links:
-  linkedin: https://linkedin.com/in/test
-contact:
-  email: test@example.com
-  scheduling: https://cal.com/test
-`;
-
-const VALID_EXPERIENCE = `
-role: Engineer
-dates:
-  start: "2020-01"
-  end: "2021-06"
-context: Test context.
-responsibilities:
-  - Did a thing
-projects:
-  - title: Test project
-    outcome: Test outcome
-    metrics:
-      - "100% improvement"
-leadership:
-  - Led a thing
-technologies:
-  - TypeScript
-lessons: Test lesson.
-`;
-
-const VALID_PROJECT = `---
-title: Test Project
-company: acme
-skills:
-  - testing
-metrics:
-  - "100% improvement"
----
-
-Problem. Approach. Outcome.
-`;
-
-const VALID_SKILLS = `
-- name: Testing
-  evidence:
-    - acme
-    - proj
-`;
-
-function makeFixtureRoot(): string {
-  const root = mkdtempSync(join(tmpdir(), "content-validation-"));
-  mkdirSync(join(root, "experience"));
-  mkdirSync(join(root, "projects"));
-  writeFileSync(join(root, "profile.yaml"), VALID_PROFILE);
-  writeFileSync(join(root, "experience", "acme.yaml"), VALID_EXPERIENCE);
-  writeFileSync(join(root, "projects", "proj.md"), VALID_PROJECT);
-  writeFileSync(join(root, "skills.yaml"), VALID_SKILLS);
-  return root;
-}
+import { VALID_EXPERIENCE, makeFixtureRoot } from "./test-fixtures";
 
 describe("validateContent: real content tree", () => {
   it("reports valid with no errors against the real /content directory", () => {

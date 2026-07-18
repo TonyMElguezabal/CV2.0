@@ -1,0 +1,70 @@
+company: Oracle Corporation
+role: Senior Software Development Manager
+mission: Own delivery and stakeholder alignment for Oracle's internal SCM platform while leading the local Database Engineering workforce.
+dates:
+  start: "2021-11"
+  end: "2026-01"
+context: >
+  Oracle's Database Engineering organization relied on multiple internal
+  applications to manage the software development lifecycle, centered on
+  a proprietary source control management (SCM) platform similar in
+  purpose to Git. Developers had to move between disconnected systems to
+  track assignments, requirements, workflow status, and dependencies,
+  creating fragmentation and operational overhead. The goal was to give
+  developers a single web-based hub consolidating the most important
+  information from these systems into one operational dashboard.
+responsibilities:
+  - Served as the primary point of contact for Oracle's proprietary SCM platform during U.S. business hours, owning incidents, feature requests, and escalations across engineering teams, product stakeholders, and internal customers
+  - Clarified requirements with product owners, architects, and developers, translating ambiguous business needs into actionable, documented development work
+  - Managed features through their full lifecycle — from request and prioritization through planning, development, testing, release, and post-implementation validation
+  - Coordinated platform rollouts and integrations, including implementation planning, dependency tracking, release coordination, and post-deployment support
+  - Guided development teams through planning and execution, removing blockers and coordinating cross-functional dependencies to meet functional and quality expectations
+  - Built and maintained relationships with internal customer teams, collecting feedback and representing their priorities in the product roadmap
+projects:
+  - title: ADEHub — unified developer experience platform
+    outcome: Led the platform from initial concept through General Availability, consolidating SCM workflows, requirements, and activities from multiple disconnected systems into a single developer hub
+    metrics:
+      - "Reached General Availability (GA), moving from concept to a production release used across Database Engineering"
+      - "Consolidated SCM-related workflows, requirements, and priorities into one unified view, reducing tool-switching for developers"
+  - title: RAG-based support chatbot for ADEHub
+    outcome: Managed the integration of a retrieval-augmented generation chatbot into ADEHub, giving SCM users a conversational way to find platform, process, and troubleshooting information
+    metrics:
+      - "Reduced reliance on manual searches across multiple Confluence pages for common SCM questions"
+      - "Drove restructuring of SCM documentation (clearer headings, consistent terminology) to improve retrieval accuracy, surfacing the operating principle that AI answer quality depends on source documentation quality"
+  - title: ADE-SCM platform enhancements — read-only access and reporting
+    outcome: Delivered a read-only access capability for the SCM platform and a new reporting section, expanding oversight and auditing use cases while reducing unnecessary modification-permission risk
+    metrics:
+      - "Delivered read-only access controls supporting audit, oversight, and troubleshooting use cases without granting modification rights"
+      - "Added a dedicated SCM reporting section, expanding access to operational and management information"
+  - title: SCM support queue management (U.S. time zone)
+    outcome: Owned triage and routing for the SCM support queue during U.S. business hours, converting recurring issues into documentation and product improvements
+    metrics:
+      - "Centralized triage, severity assessment, and routing for all U.S.-hours SCM incidents and requests"
+      - "Converted recurring support issues into documentation updates and backlog items, creating a continuous feedback loop between support and product"
+leadership:
+  - >
+    Served as the primary local point of contact for Oracle's Database
+    Engineering and Tools organization at the Guadalajara office,
+    supporting approximately 54 employees whose managers were often
+    located remotely. When manager-employee relationships became
+    strained, acted as a neutral local facilitator — listening to each
+    side separately, separating observable facts from assumptions, and
+    helping both parties agree on clearer expectations and follow-up
+    actions, escalating to HR when a matter required a formal process.
+    This reduced delays in resolving employee concerns and gave remote
+    managers visibility into circumstances they couldn't observe directly.
+technologies:
+  - Oracle Cloud Infrastructure (OCI)
+  - OCI AI/LLM Services
+  - Oracle APEX
+  - JavaScript
+  - Shell Scripting
+  - Perl
+  - Python
+lessons: >
+  Taking ADEHub from concept to General Availability required aligning
+  stakeholders, architecture, security, budget, and delivery teams around
+  a shared vision — sequencing and alignment mattered as much as
+  execution. Integrating the RAG chatbot reinforced that an AI solution's
+  effectiveness depends less on the model and more on the quality,
+  structure, and accuracy of the documentation it retrieves from.

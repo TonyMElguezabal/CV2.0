@@ -23,12 +23,16 @@ component (PRD §6):
 ```
 
 **ID convention:** an experience or project file's ID is its filename
-without extension (e.g., `experience/acme-corp.yaml` has chapter ID
-`acme-corp`). `skills.yaml` evidence entries reference these IDs directly.
+without extension (e.g., `experience/oracle.yaml` has chapter ID
+`oracle`). `skills.yaml` evidence entries reference these IDs directly.
+
+Writing a new career chapter? See
+[docs/content-authoring-guide.md](docs/content-authoring-guide.md) for the
+template and a worked example.
 
 The typed contract for this content — TypeScript interfaces and the tests
-that prove each example file matches its shape — lives in `/lib/content`,
-not alongside the data itself, keeping `/content` pure data.
+that prove the shape is valid — lives in `/lib/content`, not alongside the
+data itself, keeping `/content` pure data.
 
 ## Development
 
