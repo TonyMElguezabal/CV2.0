@@ -1,52 +1,23 @@
-export interface ProfileLinks {
-  linkedin: string;
-  github?: string;
-  website?: string;
-}
+import type { z } from "zod";
+import type {
+  ProfileLinksSchema,
+  ProfileContactSchema,
+  ProfileSchema,
+  ExperienceDatesSchema,
+  ExperienceProjectSchema,
+  ExperienceSchema,
+  ProjectSchema,
+  SkillSchema,
+} from "./schemas";
 
-export interface ProfileContact {
-  email: string;
-  scheduling: string;
-}
+export type ProfileLinks = z.infer<typeof ProfileLinksSchema>;
+export type ProfileContact = z.infer<typeof ProfileContactSchema>;
+export type Profile = z.infer<typeof ProfileSchema>;
 
-export interface Profile {
-  name: string;
-  positioning: string;
-  summary: string;
-  links: ProfileLinks;
-  contact: ProfileContact;
-}
+export type ExperienceDates = z.infer<typeof ExperienceDatesSchema>;
+export type ExperienceProject = z.infer<typeof ExperienceProjectSchema>;
+export type Experience = z.infer<typeof ExperienceSchema>;
 
-export interface ExperienceDates {
-  start: string;
-  end?: string;
-}
+export type Project = z.infer<typeof ProjectSchema>;
 
-export interface ExperienceProject {
-  title: string;
-  outcome: string;
-  metrics: string[];
-}
-
-export interface Experience {
-  role: string;
-  dates: ExperienceDates;
-  context: string;
-  responsibilities: string[];
-  projects: ExperienceProject[];
-  leadership: string[];
-  technologies: string[];
-  lessons: string;
-}
-
-export interface Project {
-  title: string;
-  company: string;
-  skills: string[];
-  metrics: string[];
-}
-
-export interface Skill {
-  name: string;
-  evidence: string[];
-}
+export type Skill = z.infer<typeof SkillSchema>;

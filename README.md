@@ -34,6 +34,13 @@ not alongside the data itself, keeping `/content` pure data.
 
 ```bash
 npm install
-npm test        # runs the Vitest suite
-npx tsc --noEmit # strict-mode type check
+npm test               # runs the Vitest suite
+npx tsc --noEmit       # strict-mode type check
+npm run validate:content # build-time gate: fails non-zero on missing fields,
+                          # dangling skill evidence references, or malformed dates
 ```
+
+Content validation lives in `lib/content/validate.ts` (`validateContent()`), with a
+thin CLI wrapper in `lib/content/cli.ts`. It scans every file under `/content`
+against the Zod schemas in `lib/content/schemas.ts` — not just examples — so
+broken or unevidenced content fails the build rather than shipping silently.
