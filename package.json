@@ -2,13 +2,16 @@
   "name": "careerdna",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "description": "CareerDNA — interactive professional profile. See docs/PRD.md.",
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "validate:content": "node lib/content/cli.ts"
   },
   "dependencies": {
     "gray-matter": "4.0.3",
-    "yaml": "2.9.0"
+    "yaml": "2.9.0",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@types/node": "26.1.1",
