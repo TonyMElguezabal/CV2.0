@@ -1,0 +1,32 @@
+role: Technical Delivery Manager
+dates:
+  start: "2021-03"
+  end: "2024-06"
+context: >
+  Acme Corp's platform team was migrating a monolithic order-processing
+  system to microservices while sustaining feature delivery for three
+  product lines, with no dedicated delivery function in place.
+responsibilities:
+  - Owned the end-to-end delivery plan for the microservices migration across four engineering teams
+  - Established sprint and release cadences that balanced migration work with ongoing feature commitments
+  - Acted as the primary technical liaison between engineering and the executive stakeholders funding the migration
+projects:
+  - title: Order-processing microservices migration
+    outcome: Migrated the monolith to eight independently deployable services without a customer-facing outage
+    metrics:
+      - "Deployment frequency increased from biweekly to daily"
+      - "P95 checkout latency dropped 38%"
+  - title: Cross-team release cadence redesign
+    outcome: Replaced ad hoc releases with a predictable weekly train adopted by all four teams
+    metrics:
+      - "Release-related incidents dropped 60% quarter over quarter"
+leadership:
+  - Rebuilt trust with a team that had missed its prior two migration deadlines by pairing a smaller, verifiable milestone plan with weekly stakeholder demos, restoring on-time delivery within one quarter
+technologies:
+  - Kubernetes
+  - PostgreSQL
+  - Kafka
+lessons: >
+  Migrations succeed or fail on sequencing, not effort — the teams that
+  struggled were the ones trying to decompose and rewrite simultaneously
+  instead of strangling the monolith one bounded context at a time.

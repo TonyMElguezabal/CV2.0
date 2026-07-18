@@ -1,0 +1,18 @@
+{
+  "name": "careerdna",
+  "version": "0.0.0",
+  "private": true,
+  "description": "CareerDNA — interactive professional profile. See docs/PRD.md.",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "gray-matter": "4.0.3",
+    "yaml": "2.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.1",
+    "typescript": "7.0.2",
+    "vitest": "4.1.10"
+  }
+}
