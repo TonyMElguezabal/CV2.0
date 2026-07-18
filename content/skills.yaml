@@ -1,0 +1,7 @@
+- name: Cloud Migrations
+  evidence:
+    - acme-corp
+    - dashboard-revamp
+- name: Technical Leadership
+  evidence:
+    - acme-corp
