@@ -55,7 +55,9 @@ export const ExperienceProjectSchema = z.object({
 });
 
 export const ExperienceSchema = z.object({
+  company: z.string(),
   role: z.string(),
+  mission: z.string(),
   dates: ExperienceDatesSchema,
   context: z.string(),
   responsibilities: z.array(z.string()),
