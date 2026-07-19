@@ -5,17 +5,31 @@
   "type": "module",
   "description": "CareerDNA — interactive professional profile. See docs/PRD.md.",
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
     "test": "vitest run",
     "validate:content": "node lib/content/cli.ts"
   },
   "dependencies": {
+    "framer-motion": "12.42.2",
     "gray-matter": "4.0.3",
+    "next": "16.2.10",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "yaml": "2.9.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
     "@types/node": "26.1.1",
-    "typescript": "7.0.2",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.2.10",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
     "vitest": "4.1.10"
   }
 }
