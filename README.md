@@ -40,7 +40,10 @@ them sorted by start date (most recent first). `components/CareerChapters.tsx`
 renders the result as progressively-disclosed chapters using native
 `<details>`/`<summary>` — chosen over a custom button + conditional render
 for free keyboard operability, visible focus, and (as a side benefit) no-JS
-readability, without hand-rolled ARIA state management.
+readability, without hand-rolled ARIA state management. The collapsed
+chapter's expand/collapse chevron is styled with Tailwind's `group-open:`
+variant (see `components/CareerChaptersStyles.ts`) — pure CSS reacting to
+the native `[open]` attribute, no JavaScript involved.
 
 ## Stack
 
