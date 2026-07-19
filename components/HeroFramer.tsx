@@ -2,19 +2,23 @@
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import type { Profile } from "@/lib/content/types.ts";
+import { HeroCtas } from "./HeroCtas";
 import {
   heroWrapperClass,
   heroNameClass,
   heroPositioningClass,
+  heroAnimatedTextClass,
   spacerSectionClass,
 } from "./HeroShellStyles";
 
 export interface HeroProps {
   name: string;
   positioning: string;
+  profile: Pick<Profile, "contact">;
 }
 
-export function HeroFramer({ name, positioning }: HeroProps) {
+export function HeroFramer({ name, positioning, profile }: HeroProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: wrapperRef,
@@ -25,13 +29,21 @@ export function HeroFramer({ name, positioning }: HeroProps) {
 
   return (
     <>
+      {/* Framer Motion's `initial` props render as inline opacity:0 in the
+          SSR HTML; without JS, that state never animates away. This
+          <noscript> override guarantees the hero text stays readable when
+          JavaScript is disabled — see design.md decision 1 in
+          openspec/changes/hero-content-and-ctas. */}
+      <noscript>
+        <style>{`.${heroAnimatedTextClass} { opacity: 1 !important; transform: none !important; }`}</style>
+      </noscript>
       <motion.div
         ref={wrapperRef}
         className={heroWrapperClass}
         style={{ opacity, y }}
       >
         <motion.h1
-          className={heroNameClass}
+          className={`${heroNameClass} ${heroAnimatedTextClass}`}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -39,16 +51,17 @@ export function HeroFramer({ name, positioning }: HeroProps) {
           {name}
         </motion.h1>
         <motion.p
-          className={heroPositioningClass}
+          className={`${heroPositioningClass} ${heroAnimatedTextClass}`}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
         >
           {positioning}
         </motion.p>
+        <HeroCtas profile={profile} />
       </motion.div>
-      <div className={spacerSectionClass}>
-        Scroll to explore (Framer Motion candidate)
+      <div id="hero-next" className={spacerSectionClass}>
+        More below
       </div>
     </>
   );
