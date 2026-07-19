@@ -34,17 +34,30 @@ The typed contract for this content — TypeScript interfaces and the tests
 that prove the shape is valid — lives in `/lib/content`, not alongside the
 data itself, keeping `/content` pure data.
 
+## Stack
+
+Next.js (App Router) + Tailwind CSS + [Framer Motion](https://motion.dev)
+for scroll/entrance animation — selected over GSAP ScrollTrigger via a
+comparative spike (see `openspec/changes/motion-library-spike/reports/`).
+
 ## Development
 
 ```bash
 npm install
-npm test               # runs the Vitest suite
-npx tsc --noEmit       # strict-mode type check
-npm run validate:content # build-time gate: fails non-zero on missing fields,
-                          # dangling skill evidence references, or malformed dates
+npm run dev             # starts the Next.js dev server
+npm run build            # production build
+npm run start             # serves the production build
+npm test                   # runs the Vitest suite
+npx tsc --noEmit           # strict-mode type check
+npm run validate:content   # build-time gate: fails non-zero on missing fields,
+                            # dangling skill evidence references, or malformed dates
 ```
 
 Content validation lives in `lib/content/validate.ts` (`validateContent()`), with a
 thin CLI wrapper in `lib/content/cli.ts`. It scans every file under `/content`
 against the Zod schemas in `lib/content/schemas.ts` — not just examples — so
 broken or unevidenced content fails the build rather than shipping silently.
+
+**Note**: this project pins `typescript@5.9.3` — Next.js 16.2.10's build
+tooling is not yet compatible with TypeScript 7. See the motion-library-spike
+change's design notes if considering an upgrade.
