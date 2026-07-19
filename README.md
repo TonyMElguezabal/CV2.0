@@ -43,7 +43,11 @@ for free keyboard operability, visible focus, and (as a side benefit) no-JS
 readability, without hand-rolled ARIA state management. The collapsed
 chapter's expand/collapse chevron is styled with Tailwind's `group-open:`
 variant (see `components/CareerChaptersStyles.ts`) — pure CSS reacting to
-the native `[open]` attribute, no JavaScript involved.
+the native `[open]` attribute, no JavaScript involved. Each chapter's
+Technologies list links to that same chapter's Projects section
+(`#{chapterId}-projects`) — the content model has no per-project technology
+data, so this links to the chapter's evidence as a whole rather than a
+fabricated per-technology mapping.
 
 ## Stack
 

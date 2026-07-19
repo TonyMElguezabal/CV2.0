@@ -24,6 +24,9 @@ export const chapterListClass = "mt-2 flex flex-col gap-2 text-zinc-300";
 
 export const chapterParagraphClass = "mt-2 text-zinc-300";
 
+export const chapterTechLinkClass =
+  "underline decoration-zinc-600 underline-offset-2 hover:text-white hover:decoration-white";
+
 export const chapterProjectClass = "flex flex-col gap-1";
 
 export const chapterProjectTitleClass = "font-medium text-zinc-200";
