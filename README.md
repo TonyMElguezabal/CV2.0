@@ -34,6 +34,14 @@ The typed contract for this content — TypeScript interfaces and the tests
 that prove the shape is valid — lives in `/lib/content`, not alongside the
 data itself, keeping `/content` pure data.
 
+`lib/content/read.ts`'s `getExperiences()` reads every file under
+`content/experience/`, parses each through `ExperienceSchema`, and returns
+them sorted by start date (most recent first). `components/CareerChapters.tsx`
+renders the result as progressively-disclosed chapters using native
+`<details>`/`<summary>` — chosen over a custom button + conditional render
+for free keyboard operability, visible focus, and (as a side benefit) no-JS
+readability, without hand-rolled ARIA state management.
+
 ## Stack
 
 Next.js (App Router) + Tailwind CSS + [Framer Motion](https://motion.dev)
