@@ -6,7 +6,11 @@ export default function Home() {
 
   return (
     <main>
-      <HeroFramer name={profile.name} positioning={profile.positioning} />
+      <HeroFramer
+        name={profile.name}
+        positioning={profile.positioning}
+        profile={profile}
+      />
     </main>
   );
 }

@@ -58,6 +58,17 @@ thin CLI wrapper in `lib/content/cli.ts`. It scans every file under `/content`
 against the Zod schemas in `lib/content/schemas.ts` — not just examples — so
 broken or unevidenced content fails the build rather than shipping silently.
 
+Component tests use `@testing-library/react` against a `jsdom` environment,
+opted in per test file via a `// @vitest-environment jsdom` pragma (Vitest
+4's `environmentMatchGlobs` config option is not available in the pinned
+version) — content-model tests stay on Vitest's default `node` environment.
+
 **Note**: this project pins `typescript@5.9.3` — Next.js 16.2.10's build
 tooling is not yet compatible with TypeScript 7. See the motion-library-spike
 change's design notes if considering an upgrade.
+
+## Static assets
+
+`public/resume.pdf` is the downloadable résumé served from the hero's
+"Download résumé" CTA, via Next.js's static-file convention (no route or
+build step needed).
