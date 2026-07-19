@@ -12,6 +12,7 @@ import {
   chapterParagraphClass,
   chapterProjectClass,
   chapterProjectTitleClass,
+  chapterChevronClass,
 } from "./CareerChaptersStyles";
 
 const MONTH_NAMES = [
@@ -49,6 +50,9 @@ export function CareerChapter({ experience }: CareerChapterProps) {
     <details className={chapterDetailsClass}>
       <summary className={chapterSummaryClass}>
         <h3 className={chapterHeadingClass}>
+          <span aria-hidden="true" className={chapterChevronClass}>
+            ▸
+          </span>{" "}
           {experience.role} at {experience.company}
         </h3>
         <p className={chapterMissionClass}>{experience.mission}</p>

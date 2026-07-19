@@ -4,7 +4,10 @@ export const chapterDetailsClass =
   "group border-b border-zinc-800 py-8 first:pt-0 last:border-b-0";
 
 export const chapterSummaryClass =
-  "cursor-pointer list-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-200";
+  "cursor-pointer list-none [&::-webkit-details-marker]:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-200";
+
+export const chapterChevronClass =
+  "inline-block transition-transform duration-150 group-open:rotate-90";
 
 export const chapterHeadingClass = "text-2xl font-semibold tracking-tight";
 

@@ -72,7 +72,7 @@ describe("CareerChapters", () => {
     const headings = within(details).getAllByRole("heading");
     const headingTexts = headings.map((h) => h.textContent);
     expect(headingTexts).toEqual([
-      "Engineer at Acme",
+      "▸ Engineer at Acme",
       "Business context",
       "Actions",
       "Projects",
