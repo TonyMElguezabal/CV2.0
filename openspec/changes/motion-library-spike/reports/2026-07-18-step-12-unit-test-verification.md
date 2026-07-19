@@ -37,8 +37,10 @@ This story introduces no HTTP API endpoints — a rendered hero page and the exi
 
 Performed in tasks.md §7: HTTP 200 + rendered-HTML inspection confirmed both candidates rendered real content correctly with zero server errors. **Genuine gap, documented rather than hidden**: the Claude in Chrome browser extension was not connected in this environment, so true visual confirmation that the animations run smoothly, and console-level verification, were not possible. This should be re-verified with real browser automation before Story 2.3 (signature animation) is considered final, though it does not block this spike's own completion criteria (a working prototype + a recorded, evidence-based decision).
 
+**Update (2026-07-18, post-commit): gap resolved.** The Claude in Chrome extension connected in a later session. Against `next dev` on the merged `HeroFramer` (the selected candidate — GSAP's `HeroGsap` was never committed and is no longer available to re-run), live browser verification confirmed: the entrance animation (name + positioning fade/slide in) settles correctly with real `profile.yaml` content, and the scroll-driven exit (opacity/`y` tied to `scrollYProgress`) fades and drifts the hero upward as the page scrolls, matching the design in `design.md`. No re-verification of GSAP was performed — the library decision was driven by DX/error-proneness (declarative vs. imperative cleanup), not a visual difference, and both candidates implemented the identical sequence, so a side-by-side rebuild was judged unnecessary.
+
 ## Outcome
 
 - Step 12 status: PASS
 - Blocking issues: none
-- Non-blocking gap carried forward: visual/console browser verification (see above)
+- Non-blocking gap carried forward: none — visual/console browser verification completed 2026-07-18 (see update above)
