@@ -13,6 +13,7 @@ import {
   chapterProjectClass,
   chapterProjectTitleClass,
   chapterChevronClass,
+  chapterTechLinkClass,
 } from "./CareerChaptersStyles";
 
 const MONTH_NAMES = [
@@ -73,7 +74,7 @@ export function CareerChapter({ experience }: CareerChapterProps) {
             ))}
           </ul>
         </section>
-        <section>
+        <section id={`${experience.id}-projects`}>
           <h4 className={chapterSubheadingClass}>Projects</h4>
           <div className={chapterListClass}>
             {experience.projects.map((project) => (
@@ -101,7 +102,15 @@ export function CareerChapter({ experience }: CareerChapterProps) {
           <h4 className={chapterSubheadingClass}>Technologies</h4>
           <ul className={chapterListClass}>
             {experience.technologies.map((tech) => (
-              <li key={tech}>{tech}</li>
+              <li key={tech}>
+                <a
+                  href={`#${experience.id}-projects`}
+                  className={chapterTechLinkClass}
+                >
+                  {tech}
+                  <span className="sr-only"> — jump to Projects</span>
+                </a>
+              </li>
             ))}
           </ul>
         </section>
