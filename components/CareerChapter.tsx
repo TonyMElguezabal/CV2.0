@@ -60,6 +60,14 @@ export function CareerChapter({ experience }: CareerChapterProps) {
                     <li key={metric}>{metric}</li>
                   ))}
                 </ul>
+                {project.projectId && (
+                  <a
+                    href={`#${project.projectId}`}
+                    className={chapterTechLinkClass}
+                  >
+                    View full project
+                  </a>
+                )}
               </div>
             ))}
           </div>

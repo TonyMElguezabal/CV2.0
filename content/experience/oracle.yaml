@@ -26,6 +26,7 @@ projects:
     metrics:
       - "Reached General Availability (GA), moving from concept to a production release used across Database Engineering"
       - "Consolidated SCM-related workflows, requirements, and priorities into one unified view, reducing tool-switching for developers"
+    projectId: adehub
   - title: RAG-based support chatbot for ADEHub
     outcome: Managed the integration of a retrieval-augmented generation chatbot into ADEHub, giving SCM users a conversational way to find platform, process, and troubleshooting information
     metrics:

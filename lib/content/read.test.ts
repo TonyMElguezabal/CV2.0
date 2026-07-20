@@ -1,7 +1,7 @@
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { getExperiences, getSkills } from "./read.ts";
+import { getExperiences, getSkills, getProjects } from "./read.ts";
 
 const OLDER_EXPERIENCE = `
 company: Acme
@@ -18,6 +18,7 @@ projects:
     outcome: Older outcome
     metrics:
       - "50% improvement"
+    projectId: older-project
 leadership:
   - Led an older thing
 technologies:
@@ -85,6 +86,20 @@ describe("getExperiences", () => {
     expect(beta?.role).toBe("Senior Engineer");
     expect(beta?.dates.end).toBeUndefined();
   });
+
+  it("round-trips an embedded project's optional projectId", () => {
+    const root = makeExperienceFixtureRoot();
+    const experiences = getExperiences(root);
+    const acme = experiences.find((experience) => experience.id === "acme");
+    expect(acme?.projects[0]?.projectId).toBe("older-project");
+  });
+
+  it("leaves projectId undefined when an embedded project doesn't set it", () => {
+    const root = makeExperienceFixtureRoot();
+    const experiences = getExperiences(root);
+    const beta = experiences.find((experience) => experience.id === "beta");
+    expect(beta?.projects[0]?.projectId).toBeUndefined();
+  });
 });
 
 const SKILLS_FIXTURE = `
@@ -122,5 +137,91 @@ describe("getSkills", () => {
     const skills = getSkills(root);
     const testing = skills.find((skill) => skill.name === "Testing");
     expect(testing?.evidence).toEqual(["acme", "beta"]);
+  });
+});
+
+const ORDERED_PROJECT = `---
+title: Ordered Project
+company: Acme
+skills:
+  - Testing
+metrics:
+  - "100% improvement"
+---
+
+## Problem
+
+This is the problem section.
+
+## Approach
+
+This is the approach section.
+
+## Outcome
+
+This is the outcome section.
+`;
+
+const REORDERED_PROJECT = `---
+title: Reordered Project
+company: Beta
+skills:
+  - Testing
+metrics:
+  - "50% improvement"
+---
+
+## Outcome
+
+Reordered outcome text.
+
+## Problem
+
+Reordered problem text.
+
+## Approach
+
+Reordered approach text.
+`;
+
+function makeProjectsFixtureRoot(): string {
+  const root = mkdtempSync(join(tmpdir(), "read-projects-fixture-"));
+  mkdirSync(join(root, "projects"));
+  writeFileSync(join(root, "projects", "ordered.md"), ORDERED_PROJECT);
+  writeFileSync(join(root, "projects", "reordered.md"), REORDERED_PROJECT);
+  return root;
+}
+
+describe("getProjects", () => {
+  it("returns one entry per file under content/projects/", () => {
+    const root = makeProjectsFixtureRoot();
+    const projects = getProjects(root);
+    expect(projects).toHaveLength(2);
+  });
+
+  it("computes each entry's id from its filename without extension", () => {
+    const root = makeProjectsFixtureRoot();
+    const projects = getProjects(root);
+    const ids = projects.map((project) => project.id).sort();
+    expect(ids).toEqual(["ordered", "reordered"]);
+  });
+
+  it("parses frontmatter through ProjectSchema, exposing its real fields", () => {
+    const root = makeProjectsFixtureRoot();
+    const projects = getProjects(root);
+    const ordered = projects.find((project) => project.id === "ordered");
+    expect(ordered?.title).toBe("Ordered Project");
+    expect(ordered?.company).toBe("Acme");
+    expect(ordered?.skills).toEqual(["Testing"]);
+    expect(ordered?.metrics).toEqual(["100% improvement"]);
+  });
+
+  it("splits the body into problem/approach/outcome by ## heading, regardless of source order", () => {
+    const root = makeProjectsFixtureRoot();
+    const projects = getProjects(root);
+    const reordered = projects.find((project) => project.id === "reordered");
+    expect(reordered?.problem).toContain("Reordered problem text.");
+    expect(reordered?.approach).toContain("Reordered approach text.");
+    expect(reordered?.outcome).toContain("Reordered outcome text.");
   });
 });

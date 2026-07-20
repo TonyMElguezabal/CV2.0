@@ -25,6 +25,7 @@ projects:
     metrics:
       - "Part of a content-editing tool suite — alongside the image and video croppers — that grew overall platform adoption by approximately 6%, adding nearly 10,000 users"
       - "Replaced a manual background-removal editing step with a fully automated one"
+    projectId: ai-background-removal
   - title: Image and video cropping tools
     outcome: Led the conception and delivery of native image and video cropping tools, letting users resize, rescale, and trim visual content directly on Placeit instead of relying on external editors
     metrics:
