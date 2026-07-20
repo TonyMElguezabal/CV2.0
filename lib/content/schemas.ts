@@ -52,6 +52,7 @@ export const ExperienceProjectSchema = z.object({
   title: z.string(),
   outcome: z.string(),
   metrics: z.array(z.string()),
+  projectId: z.string().optional(),
 });
 
 export const ExperienceSchema = z.object({
