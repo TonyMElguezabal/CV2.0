@@ -1,0 +1,63 @@
+company: Envato (Placeit.net)
+role: Project Delivery Manager
+mission: Own feature delivery and cross-functional coordination for Placeit.net, translating product and customer needs into adopted platform capabilities.
+dates:
+  start: "2019-03"
+  end: "2021-11"
+context: >
+  Placeit.net is a web-based design platform serving content creators,
+  marketers, entrepreneurs, and small businesses. Growing the platform
+  meant continuously expanding its editing and content-creation
+  capabilities while making sure new capabilities were actually adopted,
+  not just shipped. That required close coordination across product,
+  design, and engineering to turn business and user needs into delivery
+  plans that improved the customer experience and supported Placeit's
+  strategic objectives within Envato.
+responsibilities:
+  - Coordinated the delivery of new Placeit.net features across product, design, and engineering, translating business and user needs into concrete delivery plans
+  - Owned prioritization and sequencing of platform enhancements, balancing customer-facing capability growth against delivery risk and technical dependencies
+  - Partnered with engineering across a JavaScript/Node.js and Ruby on Rails stack to coordinate cross-team dependencies and keep delivery on track
+  - Drove adoption of newly shipped capabilities, using usage and behavioral analytics to validate impact and inform the next round of priorities
+  - Mentored engineers into more senior technical and leadership roles, building delivery capacity within the team
+projects:
+  - title: AI-powered background removal tool
+    outcome: Led the delivery of an AI-powered background removal tool, coordinating the training and integration of a machine-learning image-segmentation model for automatic, precise subject extraction
+    metrics:
+      - "Part of a content-editing tool suite — alongside the image and video croppers — that grew overall platform adoption by approximately 6%, adding nearly 10,000 users"
+      - "Replaced a manual background-removal editing step with a fully automated one"
+  - title: Image and video cropping tools
+    outcome: Led the conception and delivery of native image and video cropping tools, letting users resize, rescale, and trim visual content directly on Placeit instead of relying on external editors
+    metrics:
+      - "Contributed to the same ~6% adoption increase (~10,000 additional users) driven by the new tool suite"
+      - "Extended core editing capability from images to video content"
+  - title: Usage and adoption analytics dashboards
+    outcome: Built analytics dashboards to monitor usage, adoption, and customer behavior across the new tools, turning tool usage data into a feedback loop for product prioritization
+    metrics:
+      - "Enabled data-driven prioritization of future product investment based on real usage and adoption patterns"
+      - "Surfaced which new capabilities were most valuable to customers, directly informing the product roadmap"
+leadership:
+  - >
+    Actively mentored team members to grow the team's technical and
+    leadership capacity. Personally coached two junior backend developers
+    over roughly two years, helping them strengthen their technical
+    skills, take on greater ownership, and progress into more senior-level
+    roles. Separately mentored a senior developer who wanted to move into
+    leadership, coaching him on project planning, team coordination,
+    stakeholder communication, and delivery management — support that
+    helped him transition into a Project Manager role and later advance
+    to Engineering Manager.
+technologies:
+  - JavaScript
+  - Node.js
+  - Ruby on Rails
+  - Datadog
+  - New Relic
+  - Google BigQuery
+  - Google Analytics
+lessons: >
+  Product teams shouldn't assume they know what customers want —
+  understanding real needs means analyzing application logs, usage data,
+  and behavioral patterns to see how customers actually use the product.
+  Combining those quantitative insights with direct customer feedback is
+  what let us validate assumptions, prioritize the right features, and
+  drive sustainable adoption growth.
