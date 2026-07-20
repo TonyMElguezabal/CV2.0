@@ -1,5 +1,4 @@
 import type { ExperienceWithId } from "@/lib/content/read.ts";
-import type { ExperienceDates } from "@/lib/content/types.ts";
 import {
   chapterDetailsClass,
   chapterSummaryClass,
@@ -15,32 +14,7 @@ import {
   chapterChevronClass,
   chapterTechLinkClass,
 } from "./CareerChaptersStyles";
-
-const MONTH_NAMES = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-function formatMonthYear(dateStr: string): string {
-  const [year, month] = dateStr.split("-");
-  return `${MONTH_NAMES[Number(month) - 1]} ${year}`;
-}
-
-function formatChapterDateRange(dates: ExperienceDates): string {
-  const start = formatMonthYear(dates.start);
-  const end = dates.end ? formatMonthYear(dates.end) : "Present";
-  return `${start} – ${end}`;
-}
+import { formatChapterDateRange } from "./formatChapterDate";
 
 export interface CareerChapterProps {
   experience: ExperienceWithId;
@@ -48,7 +22,7 @@ export interface CareerChapterProps {
 
 export function CareerChapter({ experience }: CareerChapterProps) {
   return (
-    <details className={chapterDetailsClass}>
+    <details id={experience.id} className={chapterDetailsClass}>
       <summary className={chapterSummaryClass}>
         <h3 className={chapterHeadingClass}>
           <span aria-hidden="true" className={chapterChevronClass}>
