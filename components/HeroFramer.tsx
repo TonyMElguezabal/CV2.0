@@ -1,7 +1,12 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+} from "framer-motion";
 import type { Profile } from "@/lib/content/types.ts";
 import { HeroCtas } from "./HeroCtas";
 import {
@@ -26,6 +31,19 @@ export function HeroFramer({ name, positioning, profile }: HeroProps) {
   });
   const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
   const y = useTransform(scrollYProgress, [0, 1], [0, -40]);
+  // `null` (SSR / not-yet-resolved) is treated as "not reduced" so the
+  // default sequence's SSR-rendered values are unaffected — see design.md
+  // decision 3 in openspec/changes/hero-reduced-motion-alternative.
+  const prefersReducedMotion = useReducedMotion() === true;
+
+  const nameInitial = prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 24 };
+  const nameAnimate = prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 };
+  const positioningInitial = prefersReducedMotion
+    ? { opacity: 0 }
+    : { opacity: 0, y: 16 };
+  const positioningAnimate = prefersReducedMotion
+    ? { opacity: 1 }
+    : { opacity: 1, y: 0 };
 
   return (
     <>
@@ -40,20 +58,22 @@ export function HeroFramer({ name, positioning, profile }: HeroProps) {
       <motion.div
         ref={wrapperRef}
         className={heroWrapperClass}
-        style={{ opacity, y }}
+        style={
+          prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity, y }
+        }
       >
         <motion.h1
           className={`${heroNameClass} ${heroAnimatedTextClass}`}
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={nameInitial}
+          animate={nameAnimate}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           {name}
         </motion.h1>
         <motion.p
           className={`${heroPositioningClass} ${heroAnimatedTextClass}`}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={positioningInitial}
+          animate={positioningAnimate}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
         >
           {positioning}
