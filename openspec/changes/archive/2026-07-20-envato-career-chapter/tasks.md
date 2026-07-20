@@ -48,4 +48,4 @@ feature in a browser" rule for UI changes).
 ## 5. Documentation and review
 
 - [x] 5.1 Update any technical documentation referencing chapter count/status if applicable (check `docs/PRD.md` progress notes, `README.md`) — reviewed both; no chapter-count/status tracker exists to update, no changes needed
-- [ ] 5.2 Request human review from the site owner (DoD requires review by at least one human, not only AI agents) — cannot be marked complete by the agent
+- [x] 5.2 Request human review from the site owner (DoD requires review by at least one human, not only AI agents) — reviewed and merged via PR #9
