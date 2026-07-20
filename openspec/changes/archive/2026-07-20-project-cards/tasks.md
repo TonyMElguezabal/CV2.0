@@ -57,4 +57,4 @@ agent-executed.
 ## 6. Documentation and review
 
 - [x] 6.1 Confirm no technical documentation needs updating — confirmed, no changes needed
-- [ ] 6.2 Request human review from the site owner (DoD requires review by at least one human, not only AI agents) — cannot be marked complete by the agent; **please specifically confirm the restructured Problem/Approach/Outcome text for both cards accurately reflects the real projects**, since content was reformatted (not newly authored) from `oracle.yaml`/`envato.yaml`
+- [x] 6.2 Request human review from the site owner (DoD requires review by at least one human, not only AI agents) — reviewed, including the restructured Problem/Approach/Outcome text, and merged via PR #14
