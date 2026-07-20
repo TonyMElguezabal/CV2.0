@@ -49,4 +49,4 @@ claude-in-chrome tools, all agent-executed.
 ## 5. Documentation and review
 
 - [x] 5.1 Confirm no technical documentation needs updating — confirmed, no changes needed
-- [ ] 5.2 Request human review from the site owner (DoD requires review by at least one human, not only AI agents) — cannot be marked complete by the agent; **please verify mid-scroll indicator movement manually** (e.g., scroll slowly through both chapters in a normal, focused browser tab) since the agent could not observe `IntersectionObserver`-driven updates live in its automation environment
+- [x] 5.2 Request human review from the site owner (DoD requires review by at least one human, not only AI agents) — reviewed, including manual mid-scroll indicator verification, and merged via PR #12
