@@ -1,7 +1,7 @@
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { getExperiences } from "./read.ts";
+import { getExperiences, getSkills } from "./read.ts";
 
 const OLDER_EXPERIENCE = `
 company: Acme
@@ -84,5 +84,43 @@ describe("getExperiences", () => {
     expect(beta?.company).toBe("Beta");
     expect(beta?.role).toBe("Senior Engineer");
     expect(beta?.dates.end).toBeUndefined();
+  });
+});
+
+const SKILLS_FIXTURE = `
+- name: Testing
+  evidence:
+    - acme
+    - beta
+- name: Leadership
+  evidence:
+    - beta
+`;
+
+function makeSkillsFixtureRoot(): string {
+  const root = mkdtempSync(join(tmpdir(), "read-skills-fixture-"));
+  writeFileSync(join(root, "skills.yaml"), SKILLS_FIXTURE);
+  return root;
+}
+
+describe("getSkills", () => {
+  it("returns one entry per skill in content/skills.yaml", () => {
+    const root = makeSkillsFixtureRoot();
+    const skills = getSkills(root);
+    expect(skills).toHaveLength(2);
+  });
+
+  it("parses each entry through SkillSchema, exposing its real fields", () => {
+    const root = makeSkillsFixtureRoot();
+    const skills = getSkills(root);
+    const leadership = skills.find((skill) => skill.name === "Leadership");
+    expect(leadership?.evidence).toEqual(["beta"]);
+  });
+
+  it("preserves multiple evidence ids for a single skill", () => {
+    const root = makeSkillsFixtureRoot();
+    const skills = getSkills(root);
+    const testing = skills.find((skill) => skill.name === "Testing");
+    expect(testing?.evidence).toEqual(["acme", "beta"]);
   });
 });

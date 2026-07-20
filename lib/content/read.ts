@@ -1,8 +1,8 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { basename, extname, join } from "node:path";
 import { parse as parseYaml } from "yaml";
-import { ExperienceSchema, ProfileSchema } from "./schemas.ts";
-import type { Experience, Profile } from "./types.ts";
+import { ExperienceSchema, ProfileSchema, SkillSchema } from "./schemas.ts";
+import type { Experience, Profile, Skill } from "./types.ts";
 
 // process.cwd(), not import.meta.dirname: this module is imported into
 // Next.js's bundle (unlike validate.ts/cli.ts, which only run via raw
@@ -31,4 +31,9 @@ export function getExperiences(
   });
 
   return experiences.sort((a, b) => b.dates.start.localeCompare(a.dates.start));
+}
+
+export function getSkills(contentRoot: string = defaultContentRoot): Skill[] {
+  const raw = readFileSync(join(contentRoot, "skills.yaml"), "utf-8");
+  return SkillSchema.array().parse(parseYaml(raw));
 }
