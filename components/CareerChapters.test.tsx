@@ -61,6 +61,13 @@ describe("CareerChapters", () => {
     expect((details as HTMLDetailsElement).open).toBe(false);
   });
 
+  it("gives each chapter's <details> element an id matching its experience id, so it is a valid navigation target", () => {
+    render(<CareerChapters experiences={[OLDER, NEWER]} />);
+    const [olderDetails, newerDetails] = screen.getAllByRole("group");
+    expect(olderDetails).toHaveAttribute("id", "acme");
+    expect(newerDetails).toHaveAttribute("id", "beta");
+  });
+
   it("expands to render all seven §F3 elements in order when the summary is activated", () => {
     render(<CareerChapters experiences={[OLDER]} />);
     const details = screen.getByRole("group");
