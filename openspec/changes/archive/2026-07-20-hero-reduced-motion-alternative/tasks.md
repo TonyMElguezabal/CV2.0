@@ -46,4 +46,4 @@ requirement) via claude-in-chrome tools, all agent-executed.
 ## 5. Documentation and review
 
 - [x] 5.1 Confirm no technical documentation needs updating (component-level change, no README/PRD progress trackers affected) — confirmed, no changes needed
-- [ ] 5.2 Request human review from the site owner (DoD requires review by at least one human, not only AI agents) — cannot be marked complete by the agent; **please also verify 60fps and the reduced-motion toggle manually** (DevTools Performance panel + Rendering panel's "Emulate CSS media feature prefers-reduced-motion") since the agent could not in this environment
+- [x] 5.2 Request human review from the site owner (DoD requires review by at least one human, not only AI agents) — reviewed, including manual 60fps and reduced-motion toggle verification, and merged via PR #10
