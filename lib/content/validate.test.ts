@@ -72,6 +72,34 @@ describe("validateContent: dangling skill evidence references", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it("reports an error, distinct from a dangling reference, when a skill's evidence array is empty", () => {
+    const root = makeFixtureRoot();
+    try {
+      const emptyEvidenceSkills = `
+- name: Testing
+  evidence: []
+`;
+      writeFileSync(join(root, "skills.yaml"), emptyEvidenceSkills);
+
+      const result = validateContent(root);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({
+          file: "skills.yaml",
+          field: "0.evidence",
+        }),
+      );
+      expect(
+        result.errors.some((e) =>
+          e.message.toLowerCase().includes("dangling"),
+        ),
+      ).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("validateContent: malformed dates", () => {
