@@ -22,6 +22,17 @@ export interface GenerateGroundedAnswerDeps {
   k?: number;
 }
 
+export interface Citation {
+  source: IndexedChunk["source"];
+  chapterId: IndexedChunk["chapterId"];
+  anchor: string;
+}
+
+export interface StreamGroundedAnswerResult {
+  retrievedChunks: IndexedChunk[];
+  tokens: AsyncIterable<string>;
+}
+
 async function embedQuery(
   client: Pick<OpenAI, "embeddings">,
   text: string,
@@ -37,17 +48,24 @@ async function embedQuery(
   return embedding;
 }
 
+async function retrieveContext(
+  question: string,
+  deps: GenerateGroundedAnswerDeps,
+): Promise<{ retrievedChunks: IndexedChunk[]; context: string }> {
+  const { embeddingClient, index, k = 5 } = deps;
+  const queryEmbedding = await embedQuery(embeddingClient, question);
+  const retrievedChunks = retrieveTopK(queryEmbedding, index, k);
+  const context = retrievedChunks.map((chunk) => chunk.text).join("\n\n---\n\n");
+  return { retrievedChunks, context };
+}
+
 export async function generateGroundedAnswer(
   question: string,
   deps: GenerateGroundedAnswerDeps,
 ): Promise<GroundedAnswer> {
-  const { embeddingClient, provider, index, k = 5 } = deps;
+  const { retrievedChunks, context } = await retrieveContext(question, deps);
 
-  const queryEmbedding = await embedQuery(embeddingClient, question);
-  const retrievedChunks = retrieveTopK(queryEmbedding, index, k);
-  const context = retrievedChunks.map((chunk) => chunk.text).join("\n\n---\n\n");
-
-  const response = await provider.generate({
+  const response = await deps.provider.generate({
     systemPrompt: SYSTEM_PROMPT,
     context,
     question,
@@ -59,4 +77,33 @@ export async function generateGroundedAnswer(
     inputTokens: response.inputTokens,
     outputTokens: response.outputTokens,
   };
+}
+
+export async function streamGroundedAnswer(
+  question: string,
+  deps: GenerateGroundedAnswerDeps,
+): Promise<StreamGroundedAnswerResult> {
+  const { retrievedChunks, context } = await retrieveContext(question, deps);
+
+  const tokens = deps.provider.generateStream({
+    systemPrompt: SYSTEM_PROMPT,
+    context,
+    question,
+  });
+
+  return { retrievedChunks, tokens };
+}
+
+export function dedupeCitations(chunks: IndexedChunk[]): Citation[] {
+  const seen = new Map<string, Citation>();
+  for (const chunk of chunks) {
+    if (!seen.has(chunk.anchor)) {
+      seen.set(chunk.anchor, {
+        source: chunk.source,
+        chapterId: chunk.chapterId,
+        anchor: chunk.anchor,
+      });
+    }
+  }
+  return [...seen.values()];
 }

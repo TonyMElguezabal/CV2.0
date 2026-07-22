@@ -1,4 +1,9 @@
-import { generateGroundedAnswer, SYSTEM_PROMPT } from "./generate.ts";
+import {
+  generateGroundedAnswer,
+  streamGroundedAnswer,
+  dedupeCitations,
+  SYSTEM_PROMPT,
+} from "./generate.ts";
 import type { IndexedChunk } from "./embed.ts";
 import type { GenerateRequest, LlmProvider } from "./adapter.ts";
 
@@ -34,6 +39,7 @@ describe("generateGroundedAnswer", () => {
         capturedRequest = request;
         return { answer: "Jose led the effort.", inputTokens: 10, outputTokens: 20 };
       },
+      generateStream: async function* () {},
     };
 
     const result = await generateGroundedAnswer("Who led Envato?", {
@@ -71,6 +77,7 @@ describe("generateGroundedAnswer", () => {
         capturedContext = request.context;
         return { answer: "", inputTokens: 0, outputTokens: 0 };
       },
+      generateStream: async function* () {},
     };
 
     await generateGroundedAnswer("question", {
@@ -103,11 +110,114 @@ describe("generateGroundedAnswer", () => {
         generateCalls += 1;
         return { answer: "answer", inputTokens: 1, outputTokens: 1 };
       },
+      generateStream: async function* () {},
     };
 
     await generateGroundedAnswer("question", { embeddingClient, provider, index });
 
     expect(embedCalls).toBe(1);
     expect(generateCalls).toBe(1);
+  });
+});
+
+describe("dedupeCitations", () => {
+  it("dedupes chunks sharing the same anchor, keeping one entry per anchor", () => {
+    const chunks = [
+      makeChunk({ id: "a", anchor: "#envato", chapterId: "envato" }),
+      makeChunk({ id: "b", anchor: "#envato", chapterId: "envato" }),
+      makeChunk({
+        id: "c",
+        anchor: "#skill-typescript",
+        source: "skill",
+        chapterId: undefined,
+      }),
+    ];
+
+    const citations = dedupeCitations(chunks);
+
+    expect(citations).toEqual([
+      { source: "experience", chapterId: "envato", anchor: "#envato" },
+      { source: "skill", chapterId: undefined, anchor: "#skill-typescript" },
+    ]);
+  });
+
+  it("returns an empty array for no chunks", () => {
+    expect(dedupeCitations([])).toEqual([]);
+  });
+});
+
+describe("streamGroundedAnswer", () => {
+  async function* fakeTokenStream(chunks: string[]): AsyncGenerator<string> {
+    for (const chunk of chunks) {
+      yield chunk;
+    }
+  }
+
+  it("returns retrieved chunks immediately and a token generator yielding the provider's chunks", async () => {
+    const index = [makeChunk({ id: "a", embedding: [1, 0, 0] })];
+    const embeddingClient = {
+      embeddings: {
+        create: async () => ({ data: [{ embedding: [1, 0, 0] }] }),
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+    let generateStreamCalled = false;
+    const provider: LlmProvider = {
+      name: "fake",
+      model: "fake-model",
+      generate: async () => ({ answer: "", inputTokens: 0, outputTokens: 0 }),
+      generateStream: (request: GenerateRequest) => {
+        generateStreamCalled = true;
+        expect(request.systemPrompt).toBe(SYSTEM_PROMPT);
+        return fakeTokenStream(["Hello", ", ", "world."]);
+      },
+    };
+
+    const result = await streamGroundedAnswer("question", {
+      embeddingClient,
+      provider,
+      index,
+    });
+
+    expect(result.retrievedChunks).toEqual([index[0]]);
+    expect(generateStreamCalled).toBe(true);
+
+    const received: string[] = [];
+    for await (const token of result.tokens) {
+      received.push(token);
+    }
+    expect(received).toEqual(["Hello", ", ", "world."]);
+  });
+
+  it("makes no real network calls — only the injected fakes are invoked", async () => {
+    const index = [makeChunk()];
+    let embedCalls = 0;
+    const embeddingClient = {
+      embeddings: {
+        create: async () => {
+          embedCalls += 1;
+          return { data: [{ embedding: [1, 0, 0] }] };
+        },
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+    const provider: LlmProvider = {
+      name: "fake",
+      model: "fake-model",
+      generate: async () => ({ answer: "", inputTokens: 0, outputTokens: 0 }),
+      generateStream: () => fakeTokenStream(["ok"]),
+    };
+
+    const result = await streamGroundedAnswer("question", {
+      embeddingClient,
+      provider,
+      index,
+    });
+    // Drain the generator to exercise the full path.
+    for await (const _token of result.tokens) {
+      // no-op
+    }
+
+    expect(embedCalls).toBe(1);
   });
 });
