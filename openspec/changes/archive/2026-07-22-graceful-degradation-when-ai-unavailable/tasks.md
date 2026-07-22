@@ -61,4 +61,4 @@ via claude-in-chrome, all agent-executed.
 
 ## 7. OpenSpec sync
 
-- [ ] 7.1 After merge, sync `specs/streamed-chat-answers/spec.md` (new `error` event requirement) and the `chat-widget-entry-point` delta (unavailable-message scenario, non-modal-during-outage scenario, new recovery-without-reload requirement) into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 7.1 After merge, sync `specs/streamed-chat-answers/spec.md` (new `error` event requirement) and the `chat-widget-entry-point` delta (unavailable-message scenario, non-modal-during-outage scenario, new recovery-without-reload requirement) into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`) — synced, all 18 specs validate clean; archiving now
