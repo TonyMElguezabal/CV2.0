@@ -78,3 +78,77 @@ Required order:
 
 Do not apply direct code-only fixes in this window without updating OpenSpec artifacts.
 
+## 8. Development Commands
+
+```bash
+npm install
+npm run dev              # Next.js dev server
+npm run build             # production build
+npm run start              # serve the production build
+npm run lint                 # ESLint
+npm test                      # Vitest suite (run once, no watch)
+npx vitest                     # Vitest in watch mode
+npx vitest run path/to/file.test.ts        # single file
+npx vitest run -t "test name substring"       # single test by name
+npx tsc --noEmit                                # strict-mode type check
+npm run validate:content                         # content-schema gate (see below)
+```
+
+There is no `test:watch` or `test:coverage` script — use the `npx vitest` forms above.
+
+## 9. Architecture
+
+This is **CareerDNA**: Jose Muñoz's interactive professional profile, built as
+a static-first Next.js (App Router) site. Full product spec: `docs/PRD.md`.
+Repo layout notes: `README.md`.
+
+**Content-first design.** `/content` (YAML + Markdown) is the single source
+of truth for profile data — career chapters, projects, skills, FAQ — kept
+strictly separate from `/components`. This same content is meant to back a
+planned RAG chatbot (PRD §5/§7), so content shape and evidence-linking
+integrity matter beyond rendering.
+
+- `lib/content/schemas.ts` — Zod schemas defining the content contract.
+- `lib/content/read.ts` — reads/parses `/content` at request/build time via
+  `process.cwd()` (not `import.meta.dirname` — this module is bundled into
+  Next.js, unlike `validate.ts`/`cli.ts` which only run via raw `node`).
+- `lib/content/validate.ts` (+ `lib/content/cli.ts`) — build-time gate
+  (`npm run validate:content`) that fails non-zero on missing fields,
+  dangling skill→evidence references, or malformed dates. Run this after any
+  `/content` edit.
+- `components/` — presentational layer consuming the typed content (e.g.
+  `CareerChapters.tsx` renders `getExperiences()` output as native
+  `<details>`/`<summary>` chapters — chosen for free keyboard operability and
+  no-JS readability over a custom button + ARIA state approach).
+
+**Stack choices worth knowing before changing them:**
+- Framer Motion was selected over GSAP ScrollTrigger via a comparative spike
+  documented in `openspec/changes/archive/2026-07-19-motion-library-spike/`.
+- `typescript` is pinned at `5.9.3` because Next.js 16.2.10's build tooling
+  is not yet compatible with TypeScript 7 — don't bump it without re-checking.
+- Tests use Vitest. Component tests opt into a `jsdom` environment per file
+  via a `// @vitest-environment jsdom` pragma (Vitest 4's
+  `environmentMatchGlobs` isn't available in the pinned version); content/lib
+  tests stay on Vitest's default `node` environment.
+
+**Not yet built (see PRD for design intent):** the RAG chatbot API route,
+analytics event store, and admin insights dashboard. There is currently no
+backend/database in this repo — everything ships as static content plus
+React components.
+
+**Stale docs — do not trust for this repo's actual stack:**
+`docs/backend-standards.md`, `docs/frontend-standards.md`, and
+`docs/development_guide.md` describe a different, unrelated project's stack
+(Express/Prisma/PostgreSQL backend, Bootstrap/Cypress/React Router frontend).
+They predate CareerDNA and have not been reconciled with it. Prefer
+`docs/base-standards.md`, `docs/PRD.md`, `docs/data-model.md`, and this file
+for anything specific to this repo; treat the other two `*-standards.md`
+files as generic-practice reference only, not a description of this codebase.
+
+## 10. OpenSpec
+
+Spec-driven workflow lives in `openspec/` (`openspec/specs/` = current
+accepted specs, `openspec/changes/` = in-flight or archived change
+proposals). Use the `opsx:*` skills/commands for propose/explore/apply/sync/
+archive rather than editing these by hand.
+
