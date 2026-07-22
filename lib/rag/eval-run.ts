@@ -4,7 +4,8 @@ import OpenAI from "openai";
 import { loadIndex } from "./retrieve.ts";
 import { generateGroundedAnswer } from "./generate.ts";
 import { createActiveProvider } from "./active-provider.ts";
-import { EVAL_SAMPLE, type EvalQuestion } from "./eval-sample.ts";
+import { EVAL_SET, type EvalQuestion } from "./eval-set.ts";
+import { summarizeGrades } from "./eval-grade.ts";
 
 export interface EvalRunResult {
   questionId: string;
@@ -15,14 +16,12 @@ export interface EvalRunResult {
   inputTokens: number;
   outputTokens: number;
   wordCount: number;
-  expectedSubstring?: string;
-  containsExpectedSubstring?: boolean;
 }
 
 export async function runEval(
   embeddingClient: OpenAI,
   provider: ReturnType<typeof createActiveProvider>,
-  questions: EvalQuestion[] = EVAL_SAMPLE,
+  questions: EvalQuestion[] = EVAL_SET,
 ): Promise<EvalRunResult[]> {
   const index = loadIndex();
   const results: EvalRunResult[] = [];
@@ -44,10 +43,6 @@ export async function runEval(
       inputTokens,
       outputTokens,
       wordCount: answer.trim().split(/\s+/).filter(Boolean).length,
-      expectedSubstring: evalQuestion.expectedSubstring,
-      containsExpectedSubstring: evalQuestion.expectedSubstring
-        ? answer.includes(evalQuestion.expectedSubstring)
-        : undefined,
     });
 
     console.log(`Done: ${evalQuestion.id}`);
@@ -56,10 +51,29 @@ export async function runEval(
   return results;
 }
 
+function printSummary(summary: ReturnType<typeof summarizeGrades>): void {
+  console.log("\n--- Eval summary ---");
+  for (const [category, counts] of Object.entries(summary.byCategory)) {
+    console.log(
+      `${category}: ${counts.pass} pass, ${counts.fail} fail, ${counts.manual} manual`,
+    );
+  }
+  if (summary.failures.length > 0) {
+    console.log("\nFailures:");
+    for (const failure of summary.failures) {
+      console.log(`  ${failure.questionId}: ${failure.reason}`);
+    }
+  }
+  console.log(`\nShip ready: ${summary.shipReady ? "YES" : "NO"}`);
+  console.log(
+    "(core/uncovered results are manual-review, not part of shipReady — read their answers separately)",
+  );
+}
+
 async function main(): Promise<void> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    console.error("OPENAI_API_KEY is required to run the eval sample.");
+    console.error("OPENAI_API_KEY is required to run the eval set.");
     process.exit(1);
   }
 
@@ -67,10 +81,16 @@ async function main(): Promise<void> {
   const provider = createActiveProvider(apiKey);
 
   const results = await runEval(embeddingClient, provider);
+  const summary = summarizeGrades(results, EVAL_SET);
+  printSummary(summary);
 
-  const outputPath = join(process.cwd(), "lib", "rag", "eval-results.json");
-  writeFileSync(outputPath, JSON.stringify(results, null, 2));
-  console.log(`Wrote ${results.length} results to ${outputPath}`);
+  const resultsPath = join(process.cwd(), "lib", "rag", "eval-results.json");
+  writeFileSync(resultsPath, JSON.stringify(results, null, 2));
+  console.log(`\nWrote ${results.length} results to ${resultsPath}`);
+
+  const reportPath = join(process.cwd(), "lib", "rag", "eval-report.json");
+  writeFileSync(reportPath, JSON.stringify(summary, null, 2));
+  console.log(`Wrote graded summary to ${reportPath}`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

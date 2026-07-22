@@ -100,6 +100,17 @@ that are **not** application code and have no automated test:
    of defense against runaway cost and must be configured directly in the
    provider's billing settings; there is no code path for it.
 
+**Eval set / ship gate** (PRD §7 quality bar): run `npm run eval:chat`
+against the live model before merging any prompt or content change. It
+runs the ~32-question set in `lib/rag/eval-set.ts` (5 core questions, a
+factual per career chapter and project, off-topic traps, injection
+attempts, plausible-but-uncovered questions), grades the factual/trap/
+injection results automatically (`lib/rag/eval-grade.ts`), and prints a
+`shipReady` verdict plus a per-category summary. Core and uncovered
+results are flagged for manual review instead — read those answers by
+hand. This makes real API calls (cost + `OPENAI_API_KEY`), so it's a
+manual, owner-executed gate, not part of `npm test`/CI.
+
 ## Static assets
 
 `public/resume.pdf` is the downloadable résumé served from the hero's

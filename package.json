@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "validate:content": "node lib/content/cli.ts"
+    "validate:content": "node lib/content/cli.ts",
+    "eval:chat": "node --env-file-if-exists=.env.local lib/rag/eval-run.ts"
   },
   "dependencies": {
     "@upstash/ratelimit": "^2.0.8",
