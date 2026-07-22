@@ -55,4 +55,4 @@ type) but not "1 functional test per AC scenario" in the feature sense.
 ## 7. Documentation and review
 
 - [x] 7.1 Confirm no other technical documentation needs updating
-- [ ] 7.2 Request human review from the site owner (DoD requires review by at least one human, not only AI agents) — cannot be marked complete by the agent; **please confirm you're comfortable with the provider decision, the cost projection's traffic assumption, and that no unexpectedly large API spend occurred during the comparative run**
+- [x] 7.2 Request human review from the site owner (DoD requires review by at least one human, not only AI agents) — PR #16 reviewed and merged by the site owner
