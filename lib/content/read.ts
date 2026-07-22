@@ -86,3 +86,20 @@ export function getProjects(
     };
   });
 }
+
+export interface FaqEntry {
+  question: string;
+  answer: string;
+}
+
+export function getFaq(contentRoot: string = defaultContentRoot): FaqEntry[] {
+  const raw = readFileSync(join(contentRoot, "faq.md"), "utf-8");
+  const parts = raw.split(/^###\s+(.+)$/m);
+  const entries: FaqEntry[] = [];
+  for (let i = 1; i < parts.length; i += 2) {
+    const question = (parts[i] ?? "").trim();
+    const answer = (parts[i + 1] ?? "").trim();
+    entries.push({ question, answer });
+  }
+  return entries;
+}
