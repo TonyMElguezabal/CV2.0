@@ -18,4 +18,5 @@ export interface LlmProvider {
   readonly name: string;
   readonly model: string;
   generate(request: GenerateRequest): Promise<GenerateResponse>;
+  generateStream(request: GenerateRequest): AsyncIterable<string>;
 }

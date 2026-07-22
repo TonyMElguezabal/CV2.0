@@ -42,4 +42,30 @@ export class OpenAiProvider implements LlmProvider {
       outputTokens: response.usage?.completion_tokens ?? 0,
     };
   }
+
+  async *generateStream({
+    systemPrompt,
+    context,
+    question,
+  }: GenerateRequest): AsyncGenerator<string> {
+    const stream = await this.client.chat.completions.create({
+      model: MODEL,
+      max_completion_tokens: 400,
+      stream: true,
+      messages: [
+        { role: "system", content: systemPrompt },
+        {
+          role: "user",
+          content: `Context:\n${context}\n\nQuestion: ${question}`,
+        },
+      ],
+    });
+
+    for await (const chunk of stream) {
+      const delta = chunk.choices[0]?.delta?.content;
+      if (delta) {
+        yield delta;
+      }
+    }
+  }
 }
