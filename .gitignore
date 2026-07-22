@@ -17,3 +17,4 @@ next-env.d.ts
 
 # Generated RAG embedding index (build artifact derived from /content, regenerate via lib/rag/embed.ts)
 lib/rag/index.json
+lib/rag/eval-results.json
