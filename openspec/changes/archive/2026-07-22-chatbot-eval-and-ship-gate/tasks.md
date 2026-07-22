@@ -66,4 +66,4 @@ reviewed and recorded honestly, same discipline as JOS-65's live run.
 
 ## 7. OpenSpec sync
 
-- [ ] 7.1 After merge, sync `specs/chatbot-eval-and-ship-gate/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 7.1 After merge, sync `specs/chatbot-eval-and-ship-gate/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`) — synced, all 19 specs validate clean; archiving now
