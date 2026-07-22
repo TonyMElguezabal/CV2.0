@@ -61,4 +61,4 @@ claude-in-chrome tools, all agent-executed.
 
 ## 8. OpenSpec sync
 
-- [ ] 8.1 After merge, sync `specs/chat-widget-entry-point/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 8.1 After merge, sync `specs/chat-widget-entry-point/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`) — spec was synced (later re-synced with chat-guardrails-and-cost-controls's MODIFIED delta applied on top); archiving now

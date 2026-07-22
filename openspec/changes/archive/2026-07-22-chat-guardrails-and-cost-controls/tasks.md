@@ -70,4 +70,4 @@ all agent-executed.
 
 ## 9. OpenSpec sync
 
-- [ ] 9.1 After merge, sync `specs/chat-guardrails-and-cost-controls/spec.md` and the `chat-widget-entry-point` delta into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 9.1 After merge, sync `specs/chat-guardrails-and-cost-controls/spec.md` and the `chat-widget-entry-point` delta into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
