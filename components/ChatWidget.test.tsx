@@ -163,10 +163,10 @@ describe("ChatWidget", () => {
     ).toHaveAttribute("href", TEST_CONTACT.scheduling);
   });
 
-  it("still shows the generic message (not the rate-limit fallback) for a non-429 ChatRequestError", async () => {
+  it("still shows the generic message (not the rate-limit or unavailable fallback) for a ChatRequestError with an unrelated status", async () => {
     mockStreamChat.mockReturnValue(
       (async function* () {
-        throw new ChatRequestError(503);
+        throw new ChatRequestError(500);
       })(),
     );
     renderWidget();
@@ -178,6 +178,67 @@ describe("ChatWidget", () => {
       await screen.findByText(/something went wrong/i),
     ).toBeInTheDocument();
     expect(screen.queryByText(/usage limit/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/temporarily unavailable/i)).not.toBeInTheDocument();
+  });
+
+  it("shows a specific unavailable message with contact links when streamChat rejects with a 503 ChatRequestError", async () => {
+    mockStreamChat.mockReturnValue(
+      (async function* () {
+        throw new ChatRequestError(503);
+      })(),
+    );
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    fireEvent.click(screen.getByRole("button", { name: FIRST_STARTER_QUESTION }));
+
+    expect(await screen.findByText(/temporarily unavailable/i)).toBeInTheDocument();
+    expect(screen.queryByText(/something went wrong/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/usage limit/i)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /email/i }),
+    ).toHaveAttribute("href", `mailto:${TEST_CONTACT.email}`);
+    expect(
+      screen.getByRole("link", { name: /schedul/i }),
+    ).toHaveAttribute("href", TEST_CONTACT.scheduling);
+  });
+
+  it("recovers without a reload: a successful send after a 503 failure works normally", async () => {
+    mockStreamChat.mockReturnValueOnce(
+      (async function* () {
+        throw new ChatRequestError(503);
+      })(),
+    );
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+    fireEvent.click(screen.getByRole("button", { name: FIRST_STARTER_QUESTION }));
+    expect(await screen.findByText(/temporarily unavailable/i)).toBeInTheDocument();
+
+    mockStreamChat.mockReturnValue(
+      eventsOf([{ type: "token", value: "Recovered answer." }, { type: "done" }]),
+    );
+    const input = screen.getByRole("textbox", { name: /ask a question/i });
+    fireEvent.change(input, { target: { value: "Try again?" } });
+    fireEvent.submit(input.closest("form")!);
+
+    expect(await screen.findByText("Recovered answer.")).toBeInTheDocument();
+  });
+
+  it("keeps a sibling control usable while chat is failing", async () => {
+    mockStreamChat.mockReturnValue(
+      (async function* () {
+        throw new ChatRequestError(503);
+      })(),
+    );
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+    fireEvent.click(screen.getByRole("button", { name: FIRST_STARTER_QUESTION }));
+    await screen.findByText(/temporarily unavailable/i);
+
+    const link = screen.getByRole("link", { name: "Background link" });
+    expect(link).toBeInTheDocument();
+    link.focus();
+    expect(link).toHaveFocus();
   });
 
   it("closes via the close button while a sibling control stays focusable and clickable", async () => {

@@ -65,17 +65,29 @@ vi.mock("openai", () => ({
 
 vi.mock("../../../lib/rag/retrieve.ts", () => ({
   loadIndex: () => [],
-  retrieveTopK: () => [],
+  retrieveTopK: () => [
+    {
+      id: "a",
+      text: "Fixture content.",
+      source: "experience",
+      chapterId: "envato",
+      anchor: "#envato",
+      embedding: [1, 0, 0],
+    },
+  ],
+  // Above generate.ts's RELEVANCE_THRESHOLD so the off-topic guard (5.4)
+  // never short-circuits these route-level tests.
+  cosineSimilarity: () => 1,
 }));
+
+let fakeGenerateStream: () => AsyncGenerator<string>;
 
 vi.mock("../../../lib/rag/active-provider.ts", () => ({
   createActiveProvider: () => ({
     name: "fake",
     model: "fake-model",
     generate: async () => ({ answer: "ok", inputTokens: 1, outputTokens: 1 }),
-    async *generateStream() {
-      yield "ok";
-    },
+    generateStream: () => fakeGenerateStream(),
   }),
 }));
 
@@ -108,6 +120,9 @@ describe("POST /api/chat rate limiting", () => {
     embeddingsCreateMock.mockReset();
     embeddingsCreateMock.mockResolvedValue({ data: [{ embedding: [1, 0, 0] }] });
     fakeStore = { check: vi.fn().mockResolvedValue({ allowed: true }) };
+    fakeGenerateStream = async function* () {
+      yield "ok";
+    };
   });
 
   afterEach(() => {
@@ -173,5 +188,54 @@ describe("POST /api/chat rate limiting", () => {
     );
 
     expect(response.status).toBe(429);
+  });
+});
+
+describe("POST /api/chat unavailable", () => {
+  beforeEach(() => {
+    vi.stubEnv("OPENAI_API_KEY", "fake-key");
+    embeddingsCreateMock.mockReset();
+    embeddingsCreateMock.mockResolvedValue({ data: [{ embedding: [1, 0, 0] }] });
+    fakeStore = { check: vi.fn().mockResolvedValue({ allowed: true }) };
+    fakeGenerateStream = async function* () {
+      yield "ok";
+    };
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("returns a clean 503 with a contactable fallback when the pre-stream embedding call fails", async () => {
+    embeddingsCreateMock.mockRejectedValue(new Error("upstream provider down"));
+
+    const response = await POST(
+      makeChatRequest({ question: "Who is Jose?" }, { "x-forwarded-for": "1.2.3.4" }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(body).toMatchObject({
+      error: "unavailable",
+      contact: { email: expect.any(String), scheduling: expect.any(String) },
+    });
+  });
+
+  it("sends an error SSE event, with no citations or done event, when the provider stream fails mid-generation", async () => {
+    fakeGenerateStream = async function* () {
+      yield "partial answer";
+      throw new Error("stream dropped");
+    };
+
+    const response = await POST(
+      makeChatRequest({ question: "Who is Jose?" }, { "x-forwarded-for": "1.2.3.4" }),
+    );
+    const text = await response.text();
+
+    expect(text).toContain("event: token");
+    expect(text).toContain("event: error");
+    const errorIndex = text.indexOf("event: error");
+    expect(text.slice(errorIndex)).not.toContain("event: citations");
+    expect(text.slice(errorIndex)).not.toContain("event: done");
   });
 });

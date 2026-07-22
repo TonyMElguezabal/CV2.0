@@ -39,6 +39,8 @@ interface DisplayMessage {
 const MAX_QUESTION_LENGTH = 500;
 const RATE_LIMIT_MESSAGE =
   "You've reached the usage limit for this chat. Please try again shortly, or reach out directly.";
+const UNAVAILABLE_MESSAGE =
+  "The AI assistant is temporarily unavailable. Please try again shortly, or reach out directly.";
 const GENERIC_ERROR_MESSAGE = "Something went wrong — try again.";
 
 let messageIdCounter = 0;
@@ -128,6 +130,16 @@ export function ChatWidget({ starterQuestions, contact }: ChatWidgetProps) {
             id: nextMessageId(),
             role: "system",
             text: RATE_LIMIT_MESSAGE,
+            contact,
+          },
+        ]);
+      } else if (error instanceof ChatRequestError && error.status === 503) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: nextMessageId(),
+            role: "system",
+            text: UNAVAILABLE_MESSAGE,
             contact,
           },
         ]);
