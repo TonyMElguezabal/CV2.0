@@ -34,6 +34,19 @@ function rateLimitedResponse(): Response {
   );
 }
 
+function unavailableResponse(): Response {
+  const { contact } = getProfile();
+  return new Response(
+    JSON.stringify({
+      error: "unavailable",
+      message:
+        "The AI assistant is temporarily unavailable. Please try again shortly, or reach out directly.",
+      contact,
+    }),
+    { status: 503, headers: { "Content-Type": "application/json" } },
+  );
+}
+
 export async function POST(request: Request): Promise<Response> {
   let body: unknown;
   try {
@@ -91,17 +104,34 @@ export async function POST(request: Request): Promise<Response> {
   const provider = createActiveProvider(apiKey);
   const index = loadIndex();
 
-  const { retrievedChunks, tokens } = await streamGroundedAnswer(
-    parsed.data.question,
-    { embeddingClient, provider, index },
-  );
+  let retrievedChunks;
+  let tokens;
+  try {
+    ({ retrievedChunks, tokens } = await streamGroundedAnswer(
+      parsed.data.question,
+      { embeddingClient, provider, index },
+    ));
+  } catch {
+    return unavailableResponse();
+  }
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const token of tokens) {
-          controller.enqueue(encoder.encode(formatSseEvent("token", token)));
+        try {
+          for await (const token of tokens) {
+            controller.enqueue(encoder.encode(formatSseEvent("token", token)));
+          }
+        } catch {
+          controller.enqueue(
+            encoder.encode(
+              formatSseEvent("error", {
+                message: "The AI assistant is temporarily unavailable.",
+              }),
+            ),
+          );
+          return;
         }
         const citations = dedupeCitations(retrievedChunks);
         controller.enqueue(encoder.encode(formatSseEvent("citations", citations)));

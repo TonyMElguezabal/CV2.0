@@ -109,6 +109,25 @@ describe("streamChat", () => {
     });
   });
 
+  it("throws a ChatRequestError with a synthetic 503 status on a mid-stream error event, after yielding preceding tokens", async () => {
+    mockFetchOk([
+      'event: token\ndata: "partial"\n\n' + 'event: error\ndata: {"message":"boom"}\n\n',
+    ]);
+
+    const iterator = streamChat("Who is Jose?");
+    const first = await iterator.next();
+    expect(first.value).toEqual({ type: "token", value: "partial" });
+
+    let caught: unknown;
+    try {
+      await iterator.next();
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(ChatRequestError);
+    expect((caught as ChatRequestError).status).toBe(503);
+  });
+
   it("sends a stable session id header across calls", async () => {
     mockFetchOk(["event: done\ndata: {}\n\n"]);
     await collect(streamChat("Who is Jose?"));

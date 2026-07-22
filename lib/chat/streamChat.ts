@@ -34,6 +34,12 @@ function parseSseFrame(frame: string): ChatStreamEvent | null {
       return { type: "citations", value: data as Citation[] };
     case "done":
       return { type: "done" };
+    case "error":
+      // A mid-stream failure has no real HTTP status — headers were already
+      // sent as 200 — so 503 here is a synthetic marker meaning "service
+      // unavailable", reused so ChatWidget only needs one unavailable-
+      // message branch regardless of when the failure happened.
+      throw new ChatRequestError(503);
     default:
       return null;
   }
