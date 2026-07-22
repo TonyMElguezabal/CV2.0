@@ -6,6 +6,7 @@
   "description": "CareerDNA — interactive professional profile. See docs/PRD.md.",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node --env-file-if-exists=.env.local lib/rag/embed.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
