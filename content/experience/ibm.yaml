@@ -1,0 +1,57 @@
+company: IBM (Bluehorizon)
+role: L2 Support / DB2 Analyst
+mission: Diagnose and resolve complex data and application issues for IBM's Bluehorizon e-commerce platform, growing from individual-contributor analyst into an informal team-lead role.
+dates:
+  start: "2006-07"
+  end: "2008-08"
+context: >
+  IBM's Bluehorizon team developed and maintained the web platform used
+  to sell IBM products such as laptops, servers, and related solutions —
+  supporting critical e-commerce operations including product catalog
+  management, pricing, order processing, and customer interactions. The
+  main challenge was ensuring the reliability and accuracy of data and
+  application behavior across multiple environments while supporting a
+  high volume of users and transactions, since issues in data integrity
+  or application logic could directly impact sales, customer experience,
+  and operational efficiency. This role focused on diagnosing and
+  resolving bugs and data-related issues that Level 1 support couldn't
+  handle, requiring deep analysis of database structures, data flows,
+  and system interactions to find root causes.
+responsibilities:
+  - Investigated and resolved production and pre-production issues escalated from Level 1 support
+  - Analyzed DB2 databases to identify data anomalies and inconsistencies
+  - Wrote and optimized SQL and PL/SQL queries for diagnostics and fixes
+  - Collaborated with development and QA teams to reproduce and resolve defects
+  - Supported multiple environments — development, sandbox, staging, UAT, and production — ensuring data integrity and consistency across all of them
+  - Documented issues, root causes, and resolutions
+projects:
+  - title: Bluehorizon data-issue diagnosis and resolution
+    outcome: Diagnosed and resolved bugs and data-related issues escalated from Level 1 support for IBM's Bluehorizon e-commerce platform, analyzing DB2 data flows and system interactions across development, sandbox, staging, UAT, and production environments to find root causes
+    metrics:
+      - "Improved issue-resolution accuracy by approximately 10%"
+      - "Reduced time to first response by approximately 50%"
+  - title: Team-lead transition and team performance support
+    outcome: Became a key resource for diagnosing the team's most complex issues as data-structure expertise deepened, leading to an informal team-lead role supporting the manager
+    metrics:
+      - "Took on team-lead responsibilities — tracking team performance metrics, monitoring response times and resolution quality, and coordinating workload and priorities"
+      - "Contributed to measurable, team-wide improvements in accuracy and response time by improving how issues were analyzed and resolved"
+leadership:
+  - >
+    As data-structure and system-flow expertise deepened, became a key
+    resource within the team for diagnosing its most complex issues —
+    leading to increased responsibility and an informal team-lead role.
+    Supported the manager by tracking team performance metrics,
+    monitoring response times and resolution quality, and helping
+    coordinate workload and priorities across the team, applying
+    technical knowledge to improve how issues were analyzed and resolved
+    team-wide rather than only individually.
+technologies:
+  - IBM DB2
+  - SQL
+  - PL/SQL
+lessons: >
+  Understanding data flows across multiple environments is critical —
+  issues in one layer can impact the entire system. This experience
+  strengthened the ability to diagnose complex problems and reinforced
+  the importance of structured environments such as development,
+  staging, UAT, and production.

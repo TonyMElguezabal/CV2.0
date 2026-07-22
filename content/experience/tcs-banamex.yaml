@@ -1,0 +1,66 @@
+company: Tata Consultancy Services (Citibanamex account)
+role: Business Relationship Manager
+mission: Serve as the bridge between Citibanamex stakeholders and TCS delivery teams, transforming incident management and rebuilding client trust in a business-critical banking engagement.
+dates:
+  start: "2014-08"
+  end: "2015-12"
+context: >
+  Citibanamex, one of Mexico's largest financial institutions, operated
+  a large portfolio of business-critical banking systems built on
+  legacy architectures, mainframe processes, and long-established
+  support teams — systems that supported high-volume banking
+  transactions and could not be interrupted while TCS pursued
+  modernization. The challenge was not simply replacing old technology:
+  TCS needed to assume responsibility for existing processes without
+  disrupting daily banking operations, retain critical institutional
+  knowledge, improve service-management performance, and establish a
+  controlled roadmap toward newer architectures.
+responsibilities:
+  - Built relationships with Citibanamex technology and business leaders, acting as the bridge between client stakeholders, TCS delivery teams, and senior account leadership
+  - Collected and escalated client concerns to the appropriate TCS decision-makers, ensuring visible follow-through
+  - Coordinated service-performance reviews, SLA compliance monitoring, and corrective actions for high-priority incidents
+  - Supported the transition of experienced Citibanamex personnel into TCS, ensuring business knowledge was captured through runbooks, playbooks, and process maps
+  - Improved communication between operational teams and executive stakeholders across a highly regulated, business-critical environment
+projects:
+  - title: Banking operations and process takeover
+    outcome: Coordinated the controlled takeover of Citibanamex technology processes and operational responsibilities by TCS, prioritizing service continuity and institutional-knowledge retention over a disruptive replacement of existing teams or systems
+    metrics:
+      - "Preserved critical institutional knowledge by integrating specialists with 12+ years of mainframe banking experience into TCS rather than replacing the existing team"
+      - "Reduced dependency on individual subject-matter experts by documenting operating procedures, runbooks, and playbooks for critical banking processes"
+  - title: Critical-incident SLA transformation
+    outcome: Helped transform Priority 1 incident management for the TCS–Citibanamex engagement through clearer ownership, improved escalation matrices, war-room coordination, and greater executive visibility
+    metrics:
+      - "Reduced average P1 incident resolution time from approximately 12 days to eight hours — a ~97% improvement"
+      - "Cut initial incident acknowledgement time from approximately 10 days to one hour — a >99% improvement"
+  - title: Service governance and client communication
+    outcome: Replaced ad hoc updates with a structured governance model — regular service reviews, executive status reporting, account-health tracking, and escalation logs — prioritizing transparency over presenting only positive updates
+    metrics:
+      - "Rebuilt stakeholder confidence to the point of being recognized by multiple Citibanamex directors as the engagement's top-performing relationship manager"
+      - "Replaced undocumented status updates with action registers carrying named owners and due dates for every open risk or issue"
+leadership:
+  - >
+    Recognized by multiple Citibanamex directors as the strongest-
+    performing relationship manager on the TCS account team, because the
+    client felt communication had fundamentally improved. Built that
+    trust deliberately — listening carefully, documenting concerns
+    accurately, identifying the right decision-makers, and following
+    every issue through to resolution, with updates even when there was
+    no immediate answer. Translated between technical and executive
+    audiences: engineers needed specifics on system impact and
+    corrective actions, while executives needed clear business risk,
+    accountability, and recovery timelines — operating effectively
+    across both levels was what earned the client's trust.
+technologies:
+  - IBM Mainframe
+  - IBM Cognos
+  - Informatica
+  - Java EE
+  - Microsoft Power BI
+  - Microsoft Excel
+lessons: >
+  A small, well-trained team can outperform a much larger organization
+  when its members understand the business, know the exact objective,
+  and have clear ownership of every critical step. Strong client
+  relationships are built through transparency, consistent
+  follow-through, and measurable operational improvement — not through
+  status reports alone.

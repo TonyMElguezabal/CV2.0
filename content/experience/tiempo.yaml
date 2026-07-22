@@ -1,0 +1,66 @@
+company: Tiempo Development (now 3Pillar Global)
+role: Director of Software Delivery
+mission: Lead delivery for Tiempo's client engagement teams, translating customer objectives into predictable, high-quality software releases across healthcare, transportation, and media accounts.
+dates:
+  start: "2016-07"
+  end: "2018-10"
+context: >
+  Tiempo Development, now part of 3Pillar Global, was a Phoenix-based
+  software consulting and product engineering company that provided
+  specialized technology teams to clients across healthcare,
+  transportation, utilities and professional services, and media and
+  entertainment. These clients commonly faced limited internal
+  engineering capacity, legacy-system constraints, growing customer
+  expectations, and the need to release new digital products faster
+  without sacrificing quality, security, or operational stability.
+  Tiempo addressed this by assembling dedicated, cross-functional
+  delivery teams of architects, developers, QA engineers, automation
+  specialists, Scrum Masters, and project managers.
+responsibilities:
+  - Combined Scrum Master, delivery/program manager, and client relationship manager responsibilities across multiple concurrent client accounts, translating customer objectives into actionable delivery plans
+  - Facilitated Agile ceremonies — sprint planning, reviews, retrospectives, backlog refinement — and coordinated engineering capacity across cross-functional teams
+  - Managed delivery risk, scope, and dependencies through RAID tracking, milestone tracking, and change control
+  - Maintained alignment between client stakeholders and technical teams through status reporting, escalation management, and release planning
+  - Supported contract-renewal and account-expansion discussions by presenting delivery results, team performance, and client feedback
+projects:
+  - title: EliteUB — municipal utilities management platform
+    outcome: Led delivery of a Java-based platform helping municipalities manage water, gas, utility accounts, billing, and payments, from initial requirements through client acceptance, serving as Scrum Master and primary client relationship manager for a six-person cross-functional team
+    metrics:
+      - "Maintained a perfect or near-perfect client Net Promoter Score throughout an engagement spanning more than a year"
+      - "Recognized internally as an Excellent Project for delivery performance, product quality, and customer satisfaction"
+  - title: Total Transit Rides — accessible transportation platform
+    outcome: Managed delivery and ongoing enhancement of a .NET-based ride-booking platform built for accessible and assisted transportation, coordinating product, engineering, QA, and transportation-operations stakeholders
+    metrics:
+      - "Contributed to a 24% increase in customers and market visibility compared with competing applications"
+      - "Maintained Great and Excellent client NPS ratings for two consecutive years"
+  - title: TEN (The Enthusiast Network) — account retention and growth
+    outcome: Managed delivery coordination and the client relationship for TEN in a competitive multi-vendor environment, using delivery performance and customer feedback to support contract renewal against larger consulting competitors
+    metrics:
+      - "Secured an additional 5% discretionary budget during contract renegotiation, dedicated to team recognition"
+      - "Helped protect and grow Tiempo's delivery scope against competing vendors through the renewal"
+leadership:
+  - >
+    Balanced client advocacy, commercial awareness, and team engagement
+    during the TEN contract-renewal process. Rather than treating the
+    renewal as only a staffing or rate discussion, used delivery
+    performance and customer satisfaction to demonstrate the value
+    Tiempo's engineers provided, securing an additional 5% discretionary
+    budget dedicated to team recognition. Used the funding to organize
+    team lunches, dinners, and celebrations acknowledging the engineers'
+    effort — reinforcing morale and shared ownership in a demanding,
+    multi-vendor environment where the team was competing against larger
+    consulting organizations for additional responsibilities.
+technologies:
+  - Java
+  - .NET
+  - PHP
+  - JavaScript
+  - AWS
+  - Selenium
+  - SQL
+lessons: >
+  Focused, cross-functional teams with strong Agile discipline,
+  automated quality controls, and direct customer collaboration can
+  outperform much larger vendors. Consistent delivery, measurable
+  business outcomes, and trusted client relationships — not team size —
+  were what let Tiempo retain and expand its client engagements.
