@@ -83,7 +83,7 @@ Do not apply direct code-only fixes in this window without updating OpenSpec art
 ```bash
 npm install
 npm run dev              # Next.js dev server
-npm run build             # production build
+npm run build             # production build — requires OPENAI_API_KEY (see below)
 npm run start              # serve the production build
 npm run lint                 # ESLint
 npm test                      # Vitest suite (run once, no watch)
@@ -95,6 +95,15 @@ npm run validate:content                         # content-schema gate (see belo
 ```
 
 There is no `test:watch` or `test:coverage` script — use the `npx vitest` forms above.
+
+`npm run build` runs a `prebuild` step (`lib/rag/embed.ts`) that regenerates the
+chatbot's static retrieval index (`lib/rag/index.json`, gitignored) from current
+`/content` on every build — see `openspec/changes/archive/*-build-time-content-indexing-pipeline/`.
+It requires `OPENAI_API_KEY`: locally via `.env.local` (loaded automatically with
+`--env-file-if-exists`, gitignored, never commit it), and in the Vercel project's
+build environment for production deploys. Without it, `npm run build` fails fast
+with a clear error before `next build` runs — `npm run dev`, `npm test`,
+`npx tsc --noEmit`, and `npm run validate:content` are all unaffected.
 
 ## 9. Architecture
 
