@@ -3,6 +3,8 @@ import {
   streamGroundedAnswer,
   dedupeCitations,
   SYSTEM_PROMPT,
+  RELEVANCE_THRESHOLD,
+  OFF_TOPIC_REFUSAL,
 } from "./generate.ts";
 import type { IndexedChunk } from "./embed.ts";
 import type { GenerateRequest, LlmProvider } from "./adapter.ts";
@@ -117,6 +119,145 @@ describe("generateGroundedAnswer", () => {
 
     expect(embedCalls).toBe(1);
     expect(generateCalls).toBe(1);
+  });
+});
+
+describe("generateGroundedAnswer — off-topic relevance guard", () => {
+  it("returns the canonical off-topic refusal without calling the provider when the top chunk is below RELEVANCE_THRESHOLD", async () => {
+    const index = [makeChunk({ id: "a", embedding: [1, 0, 0] })];
+    const embeddingClient = {
+      embeddings: {
+        // Orthogonal to the chunk's embedding: cosine similarity is 0.
+        create: async () => ({ data: [{ embedding: [0, 1, 0] }] }),
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+    let generateCalled = false;
+    const provider: LlmProvider = {
+      name: "fake",
+      model: "fake-model",
+      generate: async () => {
+        generateCalled = true;
+        return { answer: "should not be called", inputTokens: 0, outputTokens: 0 };
+      },
+      generateStream: async function* () {},
+    };
+
+    const result = await generateGroundedAnswer("What's the weather like?", {
+      embeddingClient,
+      provider,
+      index,
+    });
+
+    expect(result.answer).toBe(OFF_TOPIC_REFUSAL);
+    expect(result.retrievedChunks).toEqual([]);
+    expect(generateCalled).toBe(false);
+  });
+
+  it("proceeds normally when the top chunk meets RELEVANCE_THRESHOLD", async () => {
+    const index = [makeChunk({ id: "a", embedding: [1, 0, 0] })];
+    const embeddingClient = {
+      embeddings: {
+        // Identical to the chunk's embedding: cosine similarity is 1.
+        create: async () => ({ data: [{ embedding: [1, 0, 0] }] }),
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+    const provider: LlmProvider = {
+      name: "fake",
+      model: "fake-model",
+      generate: async () => ({
+        answer: "Jose led the effort.",
+        inputTokens: 10,
+        outputTokens: 20,
+      }),
+      generateStream: async function* () {},
+    };
+
+    const result = await generateGroundedAnswer("Who is Jose?", {
+      embeddingClient,
+      provider,
+      index,
+    });
+
+    expect(result.answer).toBe("Jose led the effort.");
+    expect(result.retrievedChunks).toEqual([index[0]]);
+  });
+});
+
+describe("streamGroundedAnswer — off-topic relevance guard", () => {
+  it("yields exactly the canonical off-topic refusal, without calling generateStream, when below RELEVANCE_THRESHOLD", async () => {
+    const index = [makeChunk({ id: "a", embedding: [1, 0, 0] })];
+    const embeddingClient = {
+      embeddings: {
+        create: async () => ({ data: [{ embedding: [0, 1, 0] }] }),
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+    let generateStreamCalled = false;
+    const provider: LlmProvider = {
+      name: "fake",
+      model: "fake-model",
+      generate: async () => ({ answer: "", inputTokens: 0, outputTokens: 0 }),
+      generateStream: () => {
+        generateStreamCalled = true;
+        return (async function* () {})();
+      },
+    };
+
+    const result = await streamGroundedAnswer("What's the weather like?", {
+      embeddingClient,
+      provider,
+      index,
+    });
+
+    expect(result.retrievedChunks).toEqual([]);
+    const received: string[] = [];
+    for await (const token of result.tokens) {
+      received.push(token);
+    }
+    expect(received).toEqual([OFF_TOPIC_REFUSAL]);
+    expect(generateStreamCalled).toBe(false);
+  });
+
+  it("calls generateStream normally when the top chunk meets RELEVANCE_THRESHOLD", async () => {
+    const index = [makeChunk({ id: "a", embedding: [1, 0, 0] })];
+    const embeddingClient = {
+      embeddings: {
+        create: async () => ({ data: [{ embedding: [1, 0, 0] }] }),
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+    let generateStreamCalled = false;
+    const provider: LlmProvider = {
+      name: "fake",
+      model: "fake-model",
+      generate: async () => ({ answer: "", inputTokens: 0, outputTokens: 0 }),
+      generateStream: () => {
+        generateStreamCalled = true;
+        return (async function* () {
+          yield "Hello";
+        })();
+      },
+    };
+
+    const result = await streamGroundedAnswer("Who is Jose?", {
+      embeddingClient,
+      provider,
+      index,
+    });
+
+    const received: string[] = [];
+    for await (const token of result.tokens) {
+      received.push(token);
+    }
+    expect(received).toEqual(["Hello"]);
+    expect(generateStreamCalled).toBe(true);
+    expect(result.retrievedChunks).toEqual([index[0]]);
+  });
+
+  it("exposes RELEVANCE_THRESHOLD as a positive number", () => {
+    expect(RELEVANCE_THRESHOLD).toBeGreaterThan(0);
   });
 });
 
