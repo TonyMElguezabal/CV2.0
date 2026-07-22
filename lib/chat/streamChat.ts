@@ -1,9 +1,20 @@
 import type { Citation } from "../rag/generate.ts";
+import { getSessionId } from "./session.ts";
 
 export type ChatStreamEvent =
   | { type: "token"; value: string }
   | { type: "citations"; value: Citation[] }
   | { type: "done" };
+
+export class ChatRequestError extends Error {
+  readonly status: number;
+
+  constructor(status: number) {
+    super(`Chat request failed with status ${status}`);
+    this.name = "ChatRequestError";
+    this.status = status;
+  }
+}
 
 function parseSseFrame(frame: string): ChatStreamEvent | null {
   const lines = frame.split("\n");
@@ -36,12 +47,15 @@ export async function* streamChat(
 ): AsyncGenerator<ChatStreamEvent> {
   const response = await fetch("/api/chat", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-chat-session-id": getSessionId(),
+    },
     body: JSON.stringify({ question }),
   });
 
   if (!response.ok || !response.body) {
-    throw new Error(`Chat request failed with status ${response.status}`);
+    throw new ChatRequestError(response.status);
   }
 
   const reader = response.body.getReader();

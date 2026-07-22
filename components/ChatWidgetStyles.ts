@@ -29,6 +29,11 @@ export const chatMessageAssistantClass =
 export const chatMessageSystemClass =
   "mx-auto max-w-[90%] rounded-lg bg-red-950 px-3 py-2 text-center text-xs text-red-300";
 
+export const chatContactLinksClass =
+  "mt-2 flex justify-center gap-3 text-xs";
+
+export const chatContactLinkClass = "underline underline-offset-2 hover:text-red-100";
+
 export const chatCitationListClass =
   "mt-2 flex flex-wrap gap-2 border-t border-zinc-700 pt-2";
 
