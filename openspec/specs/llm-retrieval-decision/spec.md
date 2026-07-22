@@ -30,11 +30,15 @@ The system SHALL project monthly cost for the selected provider against a docume
 - **THEN** the spike report records a projected monthly cost for the selected provider, the traffic assumption it's based on, and whether that projection fits the <$50/month budget
 
 ### Requirement: Thin-adapter constraint is confirmed intact
-The system SHALL demonstrate that the LLM provider can be swapped by editing a single file, per §8's adapter constraint.
+The system SHALL demonstrate that the LLM provider can be swapped by editing a single file, per §8's adapter constraint, for both non-streaming and streaming generation.
 
 #### Scenario: Provider swap requires one file edit
 - **WHEN** the adapter implementation is inspected after the decision
 - **THEN** switching the active provider requires editing exactly one file, with no changes needed elsewhere in the codebase
+
+#### Scenario: Streaming generation is part of the shared adapter interface
+- **WHEN** the `LlmProvider` interface is inspected after streaming support is added
+- **THEN** streaming generation (`generateStream`) is declared on the same shared interface as non-streaming generation (`generate`), so a future provider swap doesn't need to special-case the streaming path
 
 ### Requirement: Spike does not ship chatbot-facing surfaces
 The spike SHALL NOT include the `/api/chat` endpoint, rate limiting, or any chat widget UI — those remain scoped to later chatbot stories (5.1–5.6).
