@@ -4,6 +4,8 @@ import { loadIndex } from "../../../lib/rag/retrieve.ts";
 import { streamGroundedAnswer, dedupeCitations } from "../../../lib/rag/generate.ts";
 import { createActiveProvider } from "../../../lib/rag/active-provider.ts";
 import { formatSseEvent } from "../../../lib/rag/sse.ts";
+import { checkRateLimit, createUpstashRateLimitStore } from "../../../lib/chat/rateLimit.ts";
+import { getProfile } from "../../../lib/content/read.ts";
 
 // loadIndex() reads lib/rag/index.json from disk via node:fs, which the
 // Edge runtime doesn't support.
@@ -12,6 +14,25 @@ export const runtime = "nodejs";
 const RequestSchema = z.object({
   question: z.string().trim().min(1).max(500),
 });
+
+// PRD §7 guardrails table.
+const PER_IP_LIMIT = 10;
+const PER_IP_WINDOW_SECONDS = 5 * 60;
+const PER_SESSION_LIMIT = 20;
+const PER_SESSION_WINDOW_SECONDS = 24 * 60 * 60;
+
+function rateLimitedResponse(): Response {
+  const { contact } = getProfile();
+  return new Response(
+    JSON.stringify({
+      error: "rate_limited",
+      message:
+        "You've reached the usage limit for this chat. Please try again shortly, or reach out directly.",
+      contact,
+    }),
+    { status: 429, headers: { "Content-Type": "application/json" } },
+  );
+}
 
 export async function POST(request: Request): Promise<Response> {
   let body: unknown;
@@ -30,6 +51,32 @@ export async function POST(request: Request): Promise<Response> {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+  const store = createUpstashRateLimitStore();
+
+  const ipResult = await checkRateLimit(
+    store,
+    `ip:${ip}`,
+    PER_IP_LIMIT,
+    PER_IP_WINDOW_SECONDS,
+  );
+  if (!ipResult.allowed) {
+    return rateLimitedResponse();
+  }
+
+  const sessionId = request.headers.get("x-chat-session-id");
+  if (sessionId) {
+    const sessionResult = await checkRateLimit(
+      store,
+      `session:${sessionId}`,
+      PER_SESSION_LIMIT,
+      PER_SESSION_WINDOW_SECONDS,
+    );
+    if (!sessionResult.allowed) {
+      return rateLimitedResponse();
+    }
   }
 
   const apiKey = process.env.OPENAI_API_KEY;

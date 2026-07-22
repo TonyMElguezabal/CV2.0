@@ -1,4 +1,4 @@
-import { streamChat } from "./streamChat.ts";
+import { streamChat, ChatRequestError } from "./streamChat.ts";
 
 function fakeStream(chunks: string[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -84,12 +84,45 @@ describe("streamChat", () => {
     expect(events).toEqual([{ type: "token", value: "Hello" }]);
   });
 
-  it("throws without leaving the reader open when the response is not ok", async () => {
+  it("throws a ChatRequestError carrying the HTTP status when the response is not ok", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({ ok: false, status: 503, body: null }),
     );
 
-    await expect(collect(streamChat("Who is Jose?"))).rejects.toThrow(/503/);
+    await expect(collect(streamChat("Who is Jose?"))).rejects.toMatchObject({
+      status: 503,
+    });
+    await expect(
+      collect(streamChat("Who is Jose?")),
+    ).rejects.toBeInstanceOf(ChatRequestError);
+  });
+
+  it("carries a 429 status distinctly for a rate-limited response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: false, status: 429, body: null }),
+    );
+
+    await expect(collect(streamChat("Who is Jose?"))).rejects.toMatchObject({
+      status: 429,
+    });
+  });
+
+  it("sends a stable session id header across calls", async () => {
+    mockFetchOk(["event: done\ndata: {}\n\n"]);
+    await collect(streamChat("Who is Jose?"));
+    const firstHeaders = (fetch as ReturnType<typeof vi.fn>).mock.calls[0]![1]
+      .headers;
+
+    mockFetchOk(["event: done\ndata: {}\n\n"]);
+    await collect(streamChat("What problems has he solved?"));
+    const secondHeaders = (fetch as ReturnType<typeof vi.fn>).mock.calls[0]![1]
+      .headers;
+
+    expect(firstHeaders["x-chat-session-id"]).toBeTruthy();
+    expect(firstHeaders["x-chat-session-id"]).toBe(
+      secondHeaders["x-chat-session-id"],
+    );
   });
 });

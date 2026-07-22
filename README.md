@@ -82,6 +82,24 @@ version) — content-model tests stay on Vitest's default `node` environment.
 tooling is not yet compatible with TypeScript 7. See the motion-library-spike
 change's design notes if considering an upgrade.
 
+## Chatbot operations
+
+`POST /api/chat` (`app/api/chat/route.ts`) enforces per-IP (10 msgs / 5 min)
+and best-effort per-session (20 msgs) rate limits, backed by Upstash Redis
+(`lib/chat/rateLimit.ts`). This requires two one-time manual setup steps
+that are **not** application code and have no automated test:
+
+1. **Upstash Redis** — create a free database at
+   [console.upstash.com](https://console.upstash.com) and set
+   `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` in `.env.local`
+   (local) and the Vercel project's environment variables (production).
+   Without these, the rate limiter fails open (allows all requests) rather
+   than breaking chat — see `lib/chat/rateLimit.ts`'s `checkRateLimit`.
+2. **Monthly provider spend alarm** (PRD §7 guardrails table) — set a hard
+   usage limit/alert on the OpenAI account console. This is the last line
+   of defense against runaway cost and must be configured directly in the
+   provider's billing settings; there is no code path for it.
+
 ## Static assets
 
 `public/resume.pdf` is the downloadable résumé served from the hero's

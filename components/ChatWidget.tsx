@@ -4,12 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useChatWidget } from "./ChatWidgetContext";
-import { streamChat } from "../lib/chat/streamChat.ts";
+import { streamChat, ChatRequestError } from "../lib/chat/streamChat.ts";
 import type { Citation } from "../lib/rag/generate.ts";
+import type { ProfileContact } from "../lib/content/types.ts";
 import {
   chatCitationLinkClass,
   chatCitationListClass,
   chatCloseButtonClass,
+  chatContactLinkClass,
+  chatContactLinksClass,
   chatFormClass,
   chatInputClass,
   chatMessageAssistantClass,
@@ -30,9 +33,13 @@ interface DisplayMessage {
   role: "visitor" | "assistant" | "system";
   text: string;
   citations?: Citation[];
+  contact?: ProfileContact;
 }
 
 const MAX_QUESTION_LENGTH = 500;
+const RATE_LIMIT_MESSAGE =
+  "You've reached the usage limit for this chat. Please try again shortly, or reach out directly.";
+const GENERIC_ERROR_MESSAGE = "Something went wrong — try again.";
 
 let messageIdCounter = 0;
 function nextMessageId(): string {
@@ -42,9 +49,10 @@ function nextMessageId(): string {
 
 export interface ChatWidgetProps {
   starterQuestions: string[];
+  contact: ProfileContact;
 }
 
-export function ChatWidget({ starterQuestions }: ChatWidgetProps) {
+export function ChatWidget({ starterQuestions, contact }: ChatWidgetProps) {
   const { isOpen, openChat, closeChat } = useChatWidget();
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -112,15 +120,27 @@ export function ChatWidget({ starterQuestions }: ChatWidgetProps) {
           );
         }
       }
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: nextMessageId(),
-          role: "system",
-          text: "Something went wrong — try again.",
-        },
-      ]);
+    } catch (error) {
+      if (error instanceof ChatRequestError && error.status === 429) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: nextMessageId(),
+            role: "system",
+            text: RATE_LIMIT_MESSAGE,
+            contact,
+          },
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: nextMessageId(),
+            role: "system",
+            text: GENERIC_ERROR_MESSAGE,
+          },
+        ]);
+      }
     }
   }
 
@@ -191,6 +211,22 @@ export function ChatWidget({ starterQuestions }: ChatWidgetProps) {
                         </li>
                       ))}
                     </ul>
+                  )}
+                  {message.contact && (
+                    <div className={chatContactLinksClass}>
+                      <a
+                        href={`mailto:${message.contact.email}`}
+                        className={chatContactLinkClass}
+                      >
+                        Email
+                      </a>
+                      <a
+                        href={message.contact.scheduling}
+                        className={chatContactLinkClass}
+                      >
+                        Schedule a call
+                      </a>
+                    </div>
                   )}
                 </div>
               ))}
