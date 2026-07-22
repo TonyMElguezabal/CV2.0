@@ -2,6 +2,7 @@
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { HeroFramer } from "./HeroFramer";
+import { ChatWidgetProvider } from "./ChatWidgetContext";
 import type { Profile } from "@/lib/content/types.ts";
 
 const testProfile: Pick<Profile, "contact"> = {
@@ -55,11 +56,13 @@ describe("HeroFramer", () => {
   it("renders the real name and positioning text under default motion settings", () => {
     setPrefersReducedMotion(false);
     render(
-      <HeroFramer
-        name="Jose Muñoz"
-        positioning="Technical Delivery Manager"
-        profile={testProfile}
-      />
+      <ChatWidgetProvider>
+        <HeroFramer
+          name="Jose Muñoz"
+          positioning="Technical Delivery Manager"
+          profile={testProfile}
+        />
+      </ChatWidgetProvider>
     );
 
     expect(
@@ -73,11 +76,13 @@ describe("HeroFramer", () => {
   it("applies a y-offset to the entrance animation under default motion settings", () => {
     setPrefersReducedMotion(false);
     render(
-      <HeroFramer
-        name="Jose Muñoz"
-        positioning="Technical Delivery Manager"
-        profile={testProfile}
-      />
+      <ChatWidgetProvider>
+        <HeroFramer
+          name="Jose Muñoz"
+          positioning="Technical Delivery Manager"
+          profile={testProfile}
+        />
+      </ChatWidgetProvider>
     );
 
     const heading = screen.getByRole("heading", { level: 1 });
@@ -87,11 +92,13 @@ describe("HeroFramer", () => {
   it("renders the real name and positioning text under prefers-reduced-motion", () => {
     setPrefersReducedMotion(true);
     render(
-      <HeroFramer
-        name="Jose Muñoz"
-        positioning="Technical Delivery Manager"
-        profile={testProfile}
-      />
+      <ChatWidgetProvider>
+        <HeroFramer
+          name="Jose Muñoz"
+          positioning="Technical Delivery Manager"
+          profile={testProfile}
+        />
+      </ChatWidgetProvider>
     );
 
     expect(
@@ -105,11 +112,13 @@ describe("HeroFramer", () => {
   it("uses an opacity-only fade with no y-offset under prefers-reduced-motion", () => {
     setPrefersReducedMotion(true);
     const { container } = render(
-      <HeroFramer
-        name="Jose Muñoz"
-        positioning="Technical Delivery Manager"
-        profile={testProfile}
-      />
+      <ChatWidgetProvider>
+        <HeroFramer
+          name="Jose Muñoz"
+          positioning="Technical Delivery Manager"
+          profile={testProfile}
+        />
+      </ChatWidgetProvider>
     );
 
     const heading = screen.getByRole("heading", { level: 1 });
