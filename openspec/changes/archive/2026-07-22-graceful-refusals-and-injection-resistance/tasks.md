@@ -52,4 +52,4 @@ is not skipped or deferred — the agent executes it and records results.
 
 ## 6. OpenSpec sync
 
-- [ ] 6.1 After merge, sync `specs/graceful-refusals-and-injection-resistance/spec.md` (new capability) and the `retrieval-grounded-generation` ADDED-requirement delta into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 6.1 After merge, sync `specs/graceful-refusals-and-injection-resistance/spec.md` (new capability) and the `retrieval-grounded-generation` ADDED-requirement delta into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`) — synced, all 18 specs validate clean; archiving now
