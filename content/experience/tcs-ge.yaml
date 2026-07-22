@@ -1,0 +1,71 @@
+company: Tata Consultancy Services (General Electric account)
+role: Project Manager / Account Manager
+mission: Own delivery and account-level health across GE's multidisciplinary TCS technology portfolio, from individual project execution through portfolio governance and escalation management.
+dates:
+  start: "2008-08"
+  end: "2013-05"
+context: >
+  General Electric was one of TCS's largest and most strategically
+  important global customers, with a broad technology portfolio
+  spanning new software development, application maintenance and
+  production support, data-processing and business-intelligence
+  solutions, database administration, and modernization initiatives
+  across several GE business units. The primary challenge was managing
+  a large, technically diverse portfolio — spread across geographically
+  distributed teams, different delivery methodologies, and dependencies
+  between software, infrastructure, database, and business teams —
+  while maintaining consistent delivery performance, service quality,
+  financial control, and customer satisfaction.
+responsibilities:
+  - Coordinated software delivery, scope, schedules, risks, resources, quality, and stakeholder communication as Project Manager, then took on portfolio-level ownership of project health, staffing, financial results, and account-growth opportunities as Account Manager
+  - Connected executive stakeholders, business users, architects, developers, database administrators, QA professionals, support teams, and commercial leadership
+  - Established governance mechanisms ensuring delivery risks, customer escalations, technical issues, and financial concerns were identified early and followed through to closure
+  - Coordinated requirements gathering, feature definition, and delivery scheduling for new software-development initiatives
+  - Introduced portfolio-wide governance — delivery reviews, status dashboards, RAID logs, milestone trackers — giving account leadership a consistent view across all active engagements
+projects:
+  - title: ICAM — aviation maintenance forecasting platform
+    outcome: Led delivery and enhancement of ICAM, a Java-based platform supporting maintenance forecasting and planning for GE aircraft turbine engines, consolidating technical and operational information so airline and aviation stakeholders could anticipate maintenance needs and coordinate service windows
+    metrics:
+      - "Became one of the strongest revenue-producing projects in the portfolio following the delivery of key product enhancements"
+      - "Reduced ambiguity and rework by clarifying and agreeing key capabilities with stakeholders before significant development began"
+  - title: GE application portfolio governance
+    outcome: Coordinated a multidisciplinary portfolio spanning Java, .NET, Oracle, data integration, and application maintenance, introducing consistent governance for delivery, financial performance, resource utilization, and customer satisfaction across the account
+    metrics:
+      - "Categorized projects by delivery risk, customer impact, financial performance, and strategic importance to prioritize intervention"
+      - "Gave account leadership a consistent, portfolio-wide view of schedule, budget, risk, and SLA status across every active engagement"
+  - title: Customer escalation reduction
+    outcome: Established a structured, end-to-end escalation-management framework — accountable ownership, root-cause analysis, and tracked corrective actions — replacing inconsistent, undocumented complaint handling
+    metrics:
+      - "Reduced total customer escalations by approximately 15%"
+      - "Kept complaints visible until both the immediate issue and its underlying root cause had been addressed, using root-cause analysis, Five Whys, and corrective/preventive action tracking"
+leadership:
+  - >
+    Established and coordinated a shared-architecture model across the
+    GE portfolio — a senior architect not permanently assigned to a
+    single project, available to rapidly assess complex production
+    defects, architecture problems, or integration challenges wherever
+    they arose. Prioritized this shared specialist across the portfolio
+    by weighing business and operational impact, severity, customer
+    escalation risk, and how reusable the resulting solution would be
+    across the account, rather than assigning by whichever project
+    happened to ask first. Functioned as an early architecture center of
+    excellence: even though deploying the specialist could temporarily
+    increase a given project's recorded cost, the model was justified by
+    total business value — preventing prolonged incidents, protecting
+    strategic relationships, and transferring knowledge and reusable
+    standards between teams.
+technologies:
+  - Java
+  - C# / .NET
+  - Oracle Database
+  - Oracle Applications
+  - Informatica
+  - IBM Cognos
+  - Primavera
+lessons: >
+  The most cost-effective decision isn't always the one with the lowest
+  immediate cost. Having a senior architect available across the whole
+  account, rather than locked to one project, resolved complex problems
+  faster, protected delivery commitments, and kept customers confident —
+  even when the specialist temporarily increased the cost of an
+  individual project.

@@ -2,6 +2,9 @@
   evidence:
     - oracle
     - envato
+    - tiempo
+    - tcs-ge
+    - ibm
 - name: AI/RAG Solution Delivery
   evidence:
     - oracle
@@ -10,12 +13,26 @@
   evidence:
     - oracle
     - envato
+    - tiempo
+    - tcs-banamex
+    - tcs-ge
 - name: People Leadership & Conflict Resolution
   evidence:
     - oracle
+    - tcs-bcp
 - name: Talent Development & Mentoring
   evidence:
     - envato
 - name: Data-Driven Product Decisions
   evidence:
     - envato
+- name: Client Relationship & Contract Management
+  evidence:
+    - tiempo
+- name: Service Recovery & Incident Management
+  evidence:
+    - tcs-banamex
+    - tcs-ge
+- name: Project Recovery & Turnaround
+  evidence:
+    - tcs-bcp

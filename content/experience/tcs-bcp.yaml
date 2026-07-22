@@ -1,0 +1,70 @@
+company: Tata Consultancy Services (Banco de Crédito del Perú account)
+role: ACMA Project Manager
+mission: Recover a stalled enterprise-architecture program — BCP's first TCS-led software-development engagement — rebuilding governance, scope, and team trust to deliver against a realistic baseline.
+dates:
+  start: "2013-05"
+  end: "2014-08"
+context: >
+  Banco de Crédito del Perú operated a fragmented application landscape
+  that had evolved over many years — some processes on mainframe
+  applications, others on PHP-based systems, and some critical
+  activities still run through spreadsheets and manual procedures. The
+  ACMA program aimed to establish a common enterprise architecture and
+  reusable technology foundation to support gradual migration of these
+  legacy applications, as TCS's first major software-development
+  engagement for the bank. When ownership of the project was assumed,
+  it had no approved scope baseline, no formally accepted initial
+  phases, an incomplete Statement of Work, limited customer visibility
+  into progress and risk, and a delivery team under sustained pressure
+  and showing signs of burnout.
+responsibilities:
+  - Conducted a structured project assessment — reviewing requirements, contracts, architecture documents, schedules, and stakeholder expectations — to separate confirmed commitments from unresolved assumptions
+  - Rebuilt project governance — RAID log, change-control process, milestone tracker, decision register, and customer action log
+  - Led discussions with BCP and TCS stakeholders to agree on a revised, feasible scope that protected the program's core architectural objectives
+  - Managed execution against the new baseline through operational reviews, architecture checkpoints, status reporting, and formal milestone-acceptance meetings
+  - Coordinated architects, Java developers, database specialists, BPM engineers, and QA professionals to deliver a common technical architecture
+projects:
+  - title: ACMA project recovery and governance rebuild
+    outcome: Recovered BCP's first TCS-led software-development engagement — inheriting an unbaselined scope, an incomplete Statement of Work, and no formally accepted project phases — by rebuilding governance and redefining a realistic, jointly agreed scope
+    metrics:
+      - "Completed the project under the revised baseline, closing all agreed milestones and securing the required customer approvals within about a year of taking over"
+      - "Replaced an open-ended scope with a formal Statement of Work, RAID log, change-control process, and milestone tracker"
+  - title: Common architecture and reusable development foundation
+    outcome: Coordinated architects, developers, database specialists, and BPM engineers to build a Java/EJB/Maven/WebSphere/BPM/DB2 common architecture intended to support gradual modernization of BCP's fragmented mainframe, PHP, and spreadsheet-based application landscape
+    metrics:
+      - "Established architecture and design checkpoints reviewed before development effort was committed, reducing rework and aligning BCP architects with the TCS delivery team"
+      - "Validated the architecture's performance and scalability through HP LoadRunner and Apache JMeter load testing, tying results to milestone acceptance criteria rather than treating them as isolated technical tests"
+leadership:
+  - >
+    Inherited a cross-functional team working under prolonged pressure
+    from unclear expectations, unresolved scope discussions, and
+    continuous customer dissatisfaction. Prioritized clarity and
+    psychological stability first — meeting with team members
+    individually and as a group, making responsibilities explicit,
+    protecting the team from uncontrolled scope changes, and creating a
+    clear escalation path so engineers weren't expected to resolve
+    contractual conflicts themselves. Translated the recovery plan into
+    specific priorities, owners, and achievable dates instead of general
+    pressure that the project was late. Within about six months, morale
+    and trust had improved substantially — a senior database
+    administrator described this leadership as "the best people manager
+    I have ever known," with a senior Java developer giving similar
+    recognition, during one of the most demanding projects of this
+    career.
+technologies:
+  - Java
+  - Enterprise JavaBeans
+  - Maven
+  - IBM WebSphere
+  - IBM BPM
+  - IBM DB2
+  - HP LoadRunner
+  - Apache JMeter
+lessons: >
+  Formal customer buy-in must be built before a team begins making
+  major delivery commitments — when stakeholders agree on scope,
+  acceptance criteria, and expected outcomes in advance, approvals move
+  faster and meetings focus on decisions instead of renegotiating the
+  objective. Customer confidence isn't recovered through optimistic
+  status reports; it's recovered through transparency, realistic
+  commitments, and consistent delivery against an agreed baseline.
