@@ -37,4 +37,4 @@ end-to-end, all agent-executed.
 
 - [x] 4.1 Updated `AGENTS.md`/`CLAUDE.md` (symlinked) §8 Development Commands: noted `npm run build` now requires `OPENAI_API_KEY`, how it's loaded locally vs. in production, and that `dev`/`test`/`tsc`/`validate:content` are unaffected
 - [ ] 4.2 **Deployment action required from the site owner (cannot be completed by the agent):** configure `OPENAI_API_KEY` in the Vercel project's build environment (Project Settings → Environment Variables) before the next production deploy, since `npm run build` now depends on it
-- [ ] 4.3 Request human review from the site owner (DoD requires review by at least one human, not only AI agents)
+- [x] 4.3 Request human review from the site owner (DoD requires review by at least one human, not only AI agents) — PR #17 reviewed and merged by the site owner
