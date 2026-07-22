@@ -40,4 +40,4 @@ mandatory gates are TDD unit tests, `npx vitest run`, `npx tsc --noEmit`,
 ## 5. Documentation and review
 
 - [x] 5.1 Confirmed no other technical documentation needs updating
-- [ ] 5.2 Request human review from the site owner (DoD requires review by at least one human, not only AI agents)
+- [x] 5.2 Request human review from the site owner (DoD requires review by at least one human, not only AI agents) — PR #18 reviewed and merged by the site owner
