@@ -1,7 +1,7 @@
 ## 0. Setup: Create Feature Branch (MANDATORY - FIRST STEP)
 
-- [ ] 0.1 Create feature branch `joseelguezabal/jos-71-72-engagement-and-conversion-event-tracking` (Linear-provided branch name for JOS-71) from `main`
-- [ ] 0.2 Verify branch creation and current branch status
+- [x] 0.1 Create feature branch `joseelguezabal/jos-71-72-engagement-and-conversion-event-tracking` (Linear-provided branch name for JOS-71) from `main`
+- [x] 0.2 Verify branch creation and current branch status
 
 <!--
 Note on adapted mandatory steps: client-side instrumentation only, no
@@ -46,4 +46,4 @@ agent-executed.
 
 ## 5. OpenSpec sync
 
-- [ ] 5.1 After merge, sync `specs/engagement-event-tracking/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 5.1 After merge, sync `specs/engagement-event-tracking/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
