@@ -268,6 +268,29 @@ are asserted by tests, not just prose:
    (`lib/analytics/schema.ts` has none to write to), enforced at both
    the client call site and the schema.
 
+## Admin access
+
+`/admin` is the owner-only insights dashboard (PRD §5 F9; shell shipped by
+JOS-88 / 7.4a, reports filled in by 7.4b). It's gated by `middleware.ts`
+(scoped to `/admin/:path*` only — it never runs on the public routes, so
+static generation and the CSP from "Security & privacy" above are
+unaffected) using **HTTP Basic Auth**:
+
+1. Set `ADMIN_USER` and `ADMIN_PASSWORD` in `.env.local` (local) and the
+   Vercel project's environment variables (production). **Leaving either
+   unset fails the gate closed** — the admin area becomes entirely
+   inaccessible rather than accidentally public.
+2. The credential is verified with a constant-time comparison
+   (`lib/admin/basicAuth.ts`) and rate-limited per IP (reusing the same
+   Upstash limiter as chat/analytics) to throttle brute-force guessing.
+3. `/admin` is excluded from search indexing (`app/robots.ts` disallows
+   it; the page sets `robots: { index: false }`).
+
+**Why this satisfies the site's privacy posture**: Basic Auth sets no
+cookie, so the public site's cookieless promise (see "Security &
+privacy") is unaffected — the admin gate is a separate, owner-only
+concern from visitor-facing analytics.
+
 ## Static assets
 
 `public/resume.pdf` is the downloadable résumé served from the hero's

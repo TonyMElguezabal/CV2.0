@@ -13,4 +13,12 @@ describe("robots", () => {
     expect(result.rules).toMatchObject({ userAgent: "*", allow: "/" });
     expect(result.sitemap).toBe("https://fixture.example.com/sitemap.xml");
   });
+
+  it("disallows crawling the admin area", () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://fixture.example.com");
+
+    const result = robots();
+
+    expect(result.rules).toMatchObject({ disallow: "/admin" });
+  });
 });
