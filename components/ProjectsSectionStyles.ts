@@ -16,7 +16,7 @@ export const projectSkillTagClass =
   "rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300";
 
 export const projectSubheadingClass =
-  "text-sm font-medium uppercase tracking-wide text-zinc-500";
+  "text-sm font-medium uppercase tracking-wide text-zinc-400";
 
 export const projectParagraphClass = "mt-2 text-zinc-300";
 

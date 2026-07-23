@@ -9,6 +9,7 @@ export interface CareerChaptersProps {
 export function CareerChapters({ experiences }: CareerChaptersProps) {
   return (
     <section className={chaptersSectionClass}>
+      <h2 className="sr-only">Career</h2>
       {experiences.map((experience) => (
         <CareerChapter key={experience.id} experience={experience} />
       ))}

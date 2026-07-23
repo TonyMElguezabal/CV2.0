@@ -44,6 +44,7 @@
     "components/**/*.ts",
     "components/**/*.tsx",
     "vitest.setup.ts",
+    "vitest-axe.d.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"

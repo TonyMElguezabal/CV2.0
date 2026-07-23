@@ -7,6 +7,7 @@ import { ChatWidget } from "@/components/ChatWidget";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { SiteFooter } from "@/components/SiteFooter";
 import { StructuredData } from "@/components/StructuredData";
+import { SkipToContentLink } from "@/components/SkipToContentLink";
 
 export const metadata = buildRootMetadata(getProfile(), resolveSiteUrl());
 
@@ -25,6 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col font-sans">
+        <SkipToContentLink />
         <StructuredData />
         <ChatWidgetProvider>
           {children}
