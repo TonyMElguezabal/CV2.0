@@ -2,12 +2,13 @@
 
 import { useRef } from "react";
 import {
-  motion,
+  m,
   useScroll,
   useTransform,
   useReducedMotion,
 } from "framer-motion";
 import { HeroCtas } from "./HeroCtas";
+import { MotionProvider } from "./MotionProvider";
 import {
   heroWrapperClass,
   heroNameClass,
@@ -44,7 +45,7 @@ export function HeroFramer({ name, positioning }: HeroProps) {
     : { opacity: 1, y: 0 };
 
   return (
-    <>
+    <MotionProvider>
       {/* Framer Motion's `initial` props render as inline opacity:0 in the
           SSR HTML; without JS, that state never animates away. This
           <noscript> override guarantees the hero text stays readable when
@@ -53,34 +54,34 @@ export function HeroFramer({ name, positioning }: HeroProps) {
       <noscript>
         <style>{`.${heroAnimatedTextClass} { opacity: 1 !important; transform: none !important; }`}</style>
       </noscript>
-      <motion.div
+      <m.div
         ref={wrapperRef}
         className={heroWrapperClass}
         style={
           prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity, y }
         }
       >
-        <motion.h1
+        <m.h1
           className={`${heroNameClass} ${heroAnimatedTextClass}`}
           initial={nameInitial}
           animate={nameAnimate}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           {name}
-        </motion.h1>
-        <motion.p
+        </m.h1>
+        <m.p
           className={`${heroPositioningClass} ${heroAnimatedTextClass}`}
           initial={positioningInitial}
           animate={positioningAnimate}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
         >
           {positioning}
-        </motion.p>
+        </m.p>
         <HeroCtas />
-      </motion.div>
+      </m.div>
       <div id="hero-next" className={spacerSectionClass}>
         More below
       </div>
-    </>
+    </MotionProvider>
   );
 }

@@ -160,6 +160,66 @@ to confirm the `Person`/`ProfilePage` structured data validates. These
 external validators are the test per the SEO story's acceptance criteria
 — they can't be run from `npm test`.
 
+## Performance budget
+
+The landing route's **First Load JS is ~128 KB gzip** (measured 2026-07-23
+from a `next build --webpack` production build — Next 16's build output no
+longer prints the classic per-route size table, so this is computed
+directly from `.next/static/chunks` via `gzip -c <chunk> | wc -c`, summing
+the root framework chunks + the route's own `page`/`layout` chunks).
+**Treat a future First Load JS above ~160 KB gzip as a regression** worth
+investigating before merge.
+
+Two lazy boundaries keep the heavy client-only cost out of that number —
+confirmed via `.next/react-loadable-manifest.json`:
+
+- `components/MotionProvider.tsx -> framer-motion` (~51 KB gzip) — the
+  `LazyMotion` `domAnimation` feature bundle, loaded via dynamic import
+  instead of eagerly importing `motion`'s full API.
+- `components/ChatWidget.tsx -> ./ChatPanel` (~20 KB gzip) — the chat
+  panel (streaming, citations, `AnimatePresence`), loaded on first open;
+  only the lightweight trigger button ships in the initial bundle.
+
+**Lighthouse + LCP gate** (against a production build, `next build &&
+next start`, run `npx lighthouse <url> --preset=desktop` and a mobile
+run — this doesn't run in `npm test`, matching the `eval:chat`/Upstash
+manual-gate convention). Measured 2026-07-23:
+
+| | Performance | Accessibility | Best Practices | SEO | LCP |
+|---|---|---|---|---|---|
+| **Desktop** | 100 | 100 | 100 | 100 | 0.6s |
+| **Mobile** (throttled) | 86–87 | — | — | — | 4.1s |
+
+Desktop clears every target comfortably. **Mobile performance and LCP are
+a near-miss** against the ≥90 / <4s targets — root-caused to the
+`framer-motion` `domAnimation` feature bundle's fetch/parse cost landing
+inside the LCP window under Lighthouse's simulated mobile network+CPU
+throttling (confirmed via the `unused-javascript` audit, which flags a
+large fraction of that chunk as uncovered on this simple page — expected
+for a general-purpose animation library exercising only a fade/slide).
+`components/MotionProvider.tsx` already defers the `import()` to browser
+idle time (`requestIdleCallback`, with a `setTimeout` fallback for
+Safari) to deprioritize it behind LCP-critical requests; this measurably
+did not move the score, since the resource still has to load within the
+audited trace window regardless of scheduling priority. Removing
+`framer-motion` from the hero would close this gap but reopens a locked
+decision (`motion-library-decision` / `hero-signature-motion` — the
+signature entrance animation is an accepted design, not up for revision
+in this story). **Flagged as an owner follow-up**: accept the mobile
+trade-off as-is, or revisit the motion-library decision in a future
+story.
+
+**60fps**: verified at the code level — every `initial`/`animate`/`exit`
+value across both animated surfaces (`HeroFramer.tsx`, `ChatPanel.tsx`)
+sets only `opacity`/`y` (a `transform: translateY`), never a
+layout-triggering property (width/height/top/left/margin), so all
+animation stays compositor-only by construction. A live DevTools
+Performance recording could not be captured in this environment — the
+browser automation tab reports `document.visibilityState: "hidden"`,
+which throttles the animation frame loop entirely (the same tab-visibility
+limitation found and documented during the accessibility story's manual
+verification), not a reflection of real device behavior.
+
 ## Static assets
 
 `public/resume.pdf` is the downloadable résumé served from the hero's
