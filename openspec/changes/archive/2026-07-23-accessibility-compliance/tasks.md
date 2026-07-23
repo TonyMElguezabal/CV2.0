@@ -68,4 +68,4 @@ claude-in-chrome manual pass, all agent-executed.
 
 ## 9. OpenSpec sync
 
-- [ ] 9.1 After merge, sync `specs/accessibility-compliance/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 9.1 After merge, sync `specs/accessibility-compliance/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
