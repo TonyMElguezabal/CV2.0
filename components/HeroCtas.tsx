@@ -1,6 +1,5 @@
 "use client";
 
-import type { Profile } from "@/lib/content/types.ts";
 import { useChatWidget } from "./ChatWidgetContext";
 import {
   ctaRowClass,
@@ -8,11 +7,7 @@ import {
   ctaSecondaryClass,
 } from "./HeroShellStyles";
 
-export interface HeroCtasProps {
-  profile: Pick<Profile, "contact">;
-}
-
-export function HeroCtas({ profile }: HeroCtasProps) {
+export function HeroCtas() {
   const { openChat } = useChatWidget();
 
   return (
@@ -26,7 +21,7 @@ export function HeroCtas({ profile }: HeroCtasProps) {
       <a href="/resume.pdf" download className={ctaSecondaryClass}>
         Download résumé
       </a>
-      <a href={`mailto:${profile.contact.email}`} className={ctaSecondaryClass}>
+      <a href="#contact" className={ctaSecondaryClass}>
         Contact
       </a>
     </div>

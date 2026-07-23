@@ -3,14 +3,6 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { HeroFramer } from "./HeroFramer";
 import { ChatWidgetProvider } from "./ChatWidgetContext";
-import type { Profile } from "@/lib/content/types.ts";
-
-const testProfile: Pick<Profile, "contact"> = {
-  contact: {
-    email: "jose.elguezabal@gmail.com",
-    scheduling: "https://cal.com/josemunoz",
-  },
-};
 
 // Framer Motion's `useReducedMotion` reads `window.matchMedia` once (lazily,
 // on first use in the process) and re-reads it only via the mediaQueryList's
@@ -60,7 +52,6 @@ describe("HeroFramer", () => {
         <HeroFramer
           name="Jose Muñoz"
           positioning="Technical Delivery Manager"
-          profile={testProfile}
         />
       </ChatWidgetProvider>
     );
@@ -80,7 +71,6 @@ describe("HeroFramer", () => {
         <HeroFramer
           name="Jose Muñoz"
           positioning="Technical Delivery Manager"
-          profile={testProfile}
         />
       </ChatWidgetProvider>
     );
@@ -96,7 +86,6 @@ describe("HeroFramer", () => {
         <HeroFramer
           name="Jose Muñoz"
           positioning="Technical Delivery Manager"
-          profile={testProfile}
         />
       </ChatWidgetProvider>
     );
@@ -116,7 +105,6 @@ describe("HeroFramer", () => {
         <HeroFramer
           name="Jose Muñoz"
           positioning="Technical Delivery Manager"
-          profile={testProfile}
         />
       </ChatWidgetProvider>
     );

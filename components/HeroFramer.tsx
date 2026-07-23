@@ -7,7 +7,6 @@ import {
   useTransform,
   useReducedMotion,
 } from "framer-motion";
-import type { Profile } from "@/lib/content/types.ts";
 import { HeroCtas } from "./HeroCtas";
 import {
   heroWrapperClass,
@@ -20,10 +19,9 @@ import {
 export interface HeroProps {
   name: string;
   positioning: string;
-  profile: Pick<Profile, "contact">;
 }
 
-export function HeroFramer({ name, positioning, profile }: HeroProps) {
+export function HeroFramer({ name, positioning }: HeroProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: wrapperRef,
@@ -78,7 +76,7 @@ export function HeroFramer({ name, positioning, profile }: HeroProps) {
         >
           {positioning}
         </motion.p>
-        <HeroCtas profile={profile} />
+        <HeroCtas />
       </motion.div>
       <div id="hero-next" className={spacerSectionClass}>
         More below
