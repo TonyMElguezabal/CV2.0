@@ -39,7 +39,7 @@ Groups the events of a single anonymous visit so that engagement metrics (sessio
 **Validation Rules:**
 
 - `id` must be an opaque random value; it must not be derived from IP address, user agent, or any fingerprinting technique (PRD §5 F8)
-- **TBD:** session attribution mechanism — must work without cookies and without fingerprinting; open question pending decision
+- **Resolved:** session attribution is a client-generated, in-memory per-tab `crypto.randomUUID()` (`lib/session.ts`), sent by the client and accepted (never minted) by the server — cookieless, fingerprint-free. A "session" is therefore a page-load-until-reload window; a reload yields a new id (JOS-72)
 
 **Relationships:**
 
@@ -59,7 +59,7 @@ A single anonymized engagement event. This is the only fact table in the system;
 - `sectionId`: Site section/chapter anchor involved (optional; required for `section_reach`)
 - `scrollDepthPercent`: Scroll depth milestone reached (optional; only for `section_reach`, integer 0–100)
 - `contactTarget`: Contact channel clicked (optional; only for `contact_click`; one of `scheduling`, `email`, `linkedin`, per PRD §5 F7)
-- **TBD dimensions** (pending decision on allowed non-identifying attributes): `countryOrRegion`, `referrerDomain`, `deviceClass`
+- `countryOrRegion`, `referrerDomain`, `deviceClass`: all three are captured (resolved), each derived server-side from request headers and never from a raw stored value (see Validation Rules)
 
 **Event types (`eventType` enum, mirroring PRD §5 F8):**
 
@@ -117,15 +117,15 @@ erDiagram
 
 4. **Owner access without a users table**: The admin dashboard (F9) is restricted to the single owner. The access mechanism is TBD (open question) but is not expected to require database entities; if the chosen mechanism needs persistence, this document must be updated first.
 
-## Open Items (TBD)
+## Open Items (Resolved)
 
-These are recorded open questions from the PRD v1.1 review; the model must be revisited when they are decided:
+These were open questions from the PRD v1.1 review, resolved during Epic 7 planning and implementation (JOS-70/71/72):
 
-1. **Allowed dimensions** — which non-identifying attributes (`countryOrRegion`, `referrerDomain`, `deviceClass`) are captured on events
-2. **Retention period** — how long events are kept before deletion or aggregation (PRD §9 marks this TBD)
-3. **Database choice** — lightweight managed store, selection pending (PRD §8)
-4. **Session attribution mechanism** — must remain cookieless and fingerprint-free
-5. **Analytics topology** — whether a third-party cookieless provider runs alongside this first-party store
+1. **Allowed dimensions** — all three are captured: `countryOrRegion`, `referrerDomain`, `deviceClass`, each derived server-side from request headers (`x-vercel-ip-country`, `referer`, `user-agent`); the raw header values are never stored (JOS-72)
+2. **Retention period** — 180 days. A retention cleanup job is not built yet (future story); the schema doesn't preclude one (`occurredAt` is indexed)
+3. **Database choice** — Neon, provisioned via the Vercel Marketplace integration, accessed with `@neondatabase/serverless`'s parameterized `sql` tagged template (no ORM) — see README.md "Analytics store" (JOS-72)
+4. **Session attribution mechanism** — client-generated, in-memory per-tab `crypto.randomUUID()`, shared between chat and analytics (`lib/session.ts`); cookieless and fingerprint-free by construction (JOS-70/72)
+5. **Analytics topology** — first-party only; no third-party analytics provider (JOS-70)
 
 ## Notes
 
