@@ -133,6 +133,33 @@ automated test:
 **Retention**: events are intended to be kept for 180 days. A retention
 cleanup job is not built yet — this is a future story, not part of JOS-72.
 
+## SEO / site URL
+
+The site's metadata (canonical link, OpenGraph, Twitter card, sitemap,
+JSON-LD `@id`s) all derive from one configured origin, resolved by
+`lib/seo/siteUrl.ts`:
+
+1. **`NEXT_PUBLIC_SITE_URL`** — the real production domain. Set it in
+   `.env.local` (local) and the Vercel project's environment variables
+   (production). Without it, absolute URLs fall back to Vercel's
+   auto-provided production URL, then to `http://localhost:3000` in dev —
+   so nothing breaks locally, but production needs the real value for
+   correct share cards and a correct sitemap.
+
+The OpenGraph share image (`app/opengraph-image.tsx`) is **generated from
+content** via `next/og`'s `ImageResponse` — it renders the profile's name
+and positioning from `content/profile.yaml`, so it can never drift from
+the site's actual content.
+
+**Manual verification (owner, post-deploy)**: once a real domain is live,
+paste the site URL into a share-link debugger (e.g. Facebook's Sharing
+Debugger, or just share it in Slack/iMessage) to confirm the OpenGraph
+card renders as designed, and run the landing page through
+[Google's Rich Results Test](https://search.google.com/test/rich-results)
+to confirm the `Person`/`ProfilePage` structured data validates. These
+external validators are the test per the SEO story's acceptance criteria
+— they can't be run from `npm test`.
+
 ## Static assets
 
 `public/resume.pdf` is the downloadable résumé served from the hero's
