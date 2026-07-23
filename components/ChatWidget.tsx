@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useChatWidget } from "./ChatWidgetContext";
 import { streamChat, ChatRequestError } from "../lib/chat/streamChat.ts";
 import { track } from "../lib/analytics/track.ts";
@@ -57,6 +57,12 @@ export interface ChatWidgetProps {
 
 export function ChatWidget({ starterQuestions, contact }: ChatWidgetProps) {
   const { isOpen, openChat, closeChat } = useChatWidget();
+  // `null` (SSR / not-yet-resolved) is treated as "not reduced" — matches
+  // HeroFramer's convention.
+  const prefersReducedMotion = useReducedMotion() === true;
+  const panelInitial = prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 };
+  const panelAnimate = prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 };
+  const panelExit = prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 };
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -187,9 +193,9 @@ export function ChatWidget({ starterQuestions, contact }: ChatWidgetProps) {
             role="region"
             aria-label="Ask about Jose"
             className={chatPanelClass}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 12 }}
+            initial={panelInitial}
+            animate={panelAnimate}
+            exit={panelExit}
             transition={{ duration: 0.15 }}
           >
             <div className={chatPanelHeaderClass}>

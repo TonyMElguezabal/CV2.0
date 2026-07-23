@@ -19,6 +19,38 @@ vi.mock("../lib/analytics/track.ts", () => ({ track: vi.fn() }));
 
 const mockStreamChat = vi.mocked(streamChat);
 
+// Mirrors HeroFramer.test.tsx's fake matchMedia harness — see that file's
+// comment for why this shape is needed to drive useReducedMotion in tests.
+let currentMatches = false;
+const changeListeners: Array<(event: { matches: boolean }) => void> = [];
+const fakeMediaQueryList = {
+  media: "(prefers-reduced-motion)",
+  get matches() {
+    return currentMatches;
+  },
+  addEventListener: (
+    _type: string,
+    listener: (event: { matches: boolean }) => void
+  ) => {
+    changeListeners.push(listener);
+  },
+  removeEventListener: () => {},
+  dispatchEvent: () => true,
+  onchange: null,
+} as unknown as MediaQueryList;
+
+beforeAll(() => {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: () => fakeMediaQueryList,
+  });
+});
+
+function setPrefersReducedMotion(matches: boolean) {
+  currentMatches = matches;
+  changeListeners.forEach((listener) => listener({ matches }));
+}
+
 async function* eventsOf(events: ChatStreamEvent[]) {
   for (const event of events) {
     yield event;
@@ -295,5 +327,31 @@ describe("ChatWidget", () => {
     const link = screen.getByRole("link", { name: "Background link" });
     link.focus();
     expect(link).toHaveFocus();
+  });
+});
+
+describe("ChatWidget reduced motion", () => {
+  beforeEach(() => {
+    mockStreamChat.mockReset();
+    mockStreamChat.mockReturnValue(eventsOf([{ type: "done" }]));
+    vi.mocked(track).mockClear();
+  });
+
+  it("applies a y-offset to the panel's entrance animation under default motion settings", () => {
+    setPrefersReducedMotion(false);
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    const panel = screen.getByRole("region", { name: /ask about jose/i });
+    expect(panel.style.transform).toContain("px");
+  });
+
+  it("uses an opacity-only fade with no y-offset under prefers-reduced-motion", () => {
+    setPrefersReducedMotion(true);
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    const panel = screen.getByRole("region", { name: /ask about jose/i });
+    expect(panel.style.transform).not.toContain("px");
   });
 });

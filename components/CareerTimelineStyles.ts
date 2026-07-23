@@ -13,4 +13,4 @@ export const timelineNodeClass =
 export const timelineCompanyClass =
   "text-sm font-medium text-zinc-300 group-hover:text-white group-aria-[current=location]:text-white";
 
-export const timelineDateClass = "text-xs text-zinc-500";
+export const timelineDateClass = "text-xs text-zinc-400";

@@ -54,4 +54,14 @@ describe("CareerChapters — server-rendered (no-JS) output", () => {
 
     expect(html).toMatch(/<summary class="[^"]*\[&amp;::-webkit-details-marker\]:hidden/);
   });
+
+  it("introduces the chapters region with an h2, so chapter h3s don't skip a level from the page h1", () => {
+    const html = renderToStaticMarkup(<CareerChapters experiences={[FIXTURE]} />);
+
+    expect(html).toMatch(/<h2[^>]*>/);
+    const h2Index = html.indexOf("<h2");
+    const h3Index = html.indexOf("<h3");
+    expect(h2Index).toBeGreaterThanOrEqual(0);
+    expect(h3Index).toBeGreaterThan(h2Index);
+  });
 });

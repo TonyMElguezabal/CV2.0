@@ -18,7 +18,7 @@ export default function Home() {
   const projects = getProjects();
 
   return (
-    <main>
+    <main id="main" tabIndex={-1}>
       <HeroFramer name={profile.name} positioning={profile.positioning} />
       <CareerTimeline experiences={experiences} />
       <CareerChapters experiences={experiences} />
