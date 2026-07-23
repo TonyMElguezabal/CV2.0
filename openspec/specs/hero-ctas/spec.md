@@ -25,23 +25,23 @@ The "Download résumé" CTA SHALL link to a real, downloadable résumé PDF serv
 - **WHEN** a visitor activates the "Download résumé" CTA
 - **THEN** the browser downloads a valid PDF file
 
-### Requirement: Contact CTA uses real profile contact data
-The "Contact" CTA SHALL link using `content/profile.yaml`'s `contact.email` field, not a hardcoded value.
+### Requirement: Contact CTA leads to the contact section
+The "Contact" CTA SHALL scroll the visitor to the page's contact section (`#contact`) rather than opening an email client directly, so the visitor lands on the full set of contact options.
 
 #### Scenario: Contact CTA activated
 - **WHEN** a visitor activates the "Contact" CTA
-- **THEN** their email client opens a new message addressed to the email address defined in `content/profile.yaml`
+- **THEN** the page scrolls to the `#contact` contact section
 
-### Requirement: Ask AI CTA is visibly present but non-functional
-The "Ask AI" CTA SHALL be visibly rendered as a disabled control indicating the capability is not yet available, since the chatbot feature does not exist yet.
+### Requirement: Ask AI CTA opens the chat widget
+The "Ask AI" CTA SHALL be a visibly enabled control that opens the chat widget when activated, since the chatbot feature now exists.
 
 #### Scenario: Ask AI CTA rendered
 - **WHEN** the hero is rendered
-- **THEN** the "Ask AI" CTA is visible, disabled, and labeled to indicate it is not yet available
+- **THEN** the "Ask AI" CTA is visible and enabled
 
-#### Scenario: Ask AI CTA activation attempt
-- **WHEN** a visitor attempts to activate the disabled "Ask AI" CTA
-- **THEN** no navigation or chat interface occurs
+#### Scenario: Ask AI CTA activated
+- **WHEN** a visitor activates the "Ask AI" CTA
+- **THEN** the chat widget opens
 
 ### Requirement: Hero content remains readable with JavaScript disabled
 All hero content — name, positioning, and CTA labels — SHALL remain fully readable when JavaScript is disabled in the visitor's browser.
