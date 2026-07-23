@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import { AnalyticsTracker } from "./AnalyticsTracker";
 import { track } from "../lib/analytics/track.ts";
 
@@ -88,5 +88,69 @@ describe("AnalyticsTracker", () => {
     expect(sectionReachCalls).toHaveLength(1);
 
     document.body.removeChild(section);
+  });
+
+  it("fires a resume_download event when an annotated link is clicked", () => {
+    const link = document.createElement("a");
+    link.setAttribute("data-analytics-event", "resume_download");
+    document.body.appendChild(link);
+
+    render(<AnalyticsTracker />);
+    fireEvent.click(link);
+
+    expect(track).toHaveBeenCalledWith(
+      expect.objectContaining({ eventType: "resume_download" })
+    );
+
+    document.body.removeChild(link);
+  });
+
+  it("fires a contact_click event with contactTarget when an annotated contact link is clicked", () => {
+    const link = document.createElement("a");
+    link.setAttribute("data-analytics-event", "contact_click");
+    link.setAttribute("data-analytics-target", "email");
+    document.body.appendChild(link);
+
+    render(<AnalyticsTracker />);
+    fireEvent.click(link);
+
+    expect(track).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "contact_click",
+        contactTarget: "email",
+      })
+    );
+
+    document.body.removeChild(link);
+  });
+
+  it("resolves a click on a child node inside an annotated link to the link itself", () => {
+    const link = document.createElement("a");
+    link.setAttribute("data-analytics-event", "resume_download");
+    const icon = document.createElement("span");
+    link.appendChild(icon);
+    document.body.appendChild(link);
+
+    render(<AnalyticsTracker />);
+    fireEvent.click(icon);
+
+    expect(track).toHaveBeenCalledWith(
+      expect.objectContaining({ eventType: "resume_download" })
+    );
+
+    document.body.removeChild(link);
+  });
+
+  it("fires nothing for a click on an unannotated element", () => {
+    const button = document.createElement("button");
+    document.body.appendChild(button);
+
+    render(<AnalyticsTracker />);
+    vi.mocked(track).mockClear();
+    fireEvent.click(button);
+
+    expect(track).not.toHaveBeenCalled();
+
+    document.body.removeChild(button);
   });
 });

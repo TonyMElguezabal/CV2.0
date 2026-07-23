@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { track } from "../lib/analytics/track.ts";
+import type { ContactTarget } from "../lib/analytics/schema.ts";
 
 // Sections carrying a real anchor id are the ones worth tracking as scroll
 // milestones (experience chapters, the contact section, project cards) —
@@ -50,7 +51,31 @@ export function AnalyticsTracker() {
       observer.observe(section);
     }
 
-    return () => observer.disconnect();
+    function handleClick(event: MouseEvent) {
+      const target = event.target as Element | null;
+      const annotated = target?.closest<HTMLElement>(
+        "[data-analytics-event]"
+      );
+      if (!annotated) return;
+
+      const eventType = annotated.dataset.analyticsEvent;
+      const pagePath = window.location.pathname;
+
+      if (eventType === "resume_download") {
+        track({ eventType: "resume_download", pagePath });
+      } else if (eventType === "contact_click") {
+        const contactTarget = annotated.dataset
+          .analyticsTarget as ContactTarget;
+        track({ eventType: "contact_click", pagePath, contactTarget });
+      }
+    }
+
+    document.addEventListener("click", handleClick);
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("click", handleClick);
+    };
   }, []);
 
   return null;
