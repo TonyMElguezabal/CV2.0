@@ -53,4 +53,4 @@ is merged — sequence the final gate accordingly.
 
 ## 6. OpenSpec sync
 
-- [ ] 6.1 After merge, sync `specs/performance-budget-compliance/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 6.1 After merge, sync `specs/performance-budget-compliance/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
