@@ -3,6 +3,8 @@ import "./globals.css";
 import { getFaq, getProfile } from "@/lib/content/read.ts";
 import { ChatWidgetProvider } from "@/components/ChatWidgetContext";
 import { ChatWidget } from "@/components/ChatWidget";
+import { AnalyticsTracker } from "@/components/AnalyticsTracker";
+import { SiteFooter } from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
   title: "CareerDNA — Jose Muñoz",
@@ -26,8 +28,10 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans">
         <ChatWidgetProvider>
           {children}
+          <SiteFooter />
           <ChatWidget starterQuestions={starterQuestions} contact={contact} />
         </ChatWidgetProvider>
+        <AnalyticsTracker />
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
 import type { Citation } from "../rag/generate.ts";
-import { getSessionId } from "./session.ts";
+import { getSessionId } from "../session.ts";
 
 export type ChatStreamEvent =
   | { type: "token"; value: string }
