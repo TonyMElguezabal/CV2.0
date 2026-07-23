@@ -220,6 +220,54 @@ which throttles the animation frame loop entirely (the same tab-visibility
 limitation found and documented during the accessibility story's manual
 verification), not a reflection of real device behavior.
 
+## Security & privacy
+
+The site is public with a public AI endpoint (PRD §9). Five controls
+back that posture; the first four already shipped in earlier stories and
+are asserted by tests, not just prose:
+
+1. **Secrets are server-side only.** `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+   `DATABASE_URL`, and `UPSTASH_REDIS_*` are read only in server code
+   (route handlers, `lib/analytics/store.ts`, build/eval scripts) — never
+   in a `"use client"` module, never as a `NEXT_PUBLIC_*` variable.
+   Regression-guarded by `lib/security/noClientSecrets.test.ts`, which
+   scans every client-bundled file for these names.
+2. **Endpoint input validation.** `POST /api/chat` and `POST /api/events`
+   both validate and bound their request body with Zod before doing any
+   work (question length 1–500; the analytics `EventPayloadSchema`), and
+   are rate-limited (see "Chatbot operations" / "Analytics store" above).
+3. **CSP + hardening headers**, applied to every response via
+   `next.config.ts`'s `headers()` (`lib/security/config.ts`, tested in
+   `lib/security/headers.test.ts`): a Content-Security-Policy locking
+   down `default-src`/`object-src`/`base-uri`/`form-action`/
+   `frame-ancestors`/`connect-src` to same-origin, plus
+   `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`,
+   `Permissions-Policy`, and `Strict-Transport-Security`.
+   - **Trade-off, deliberately made:** `script-src`/`style-src` allow
+     `'unsafe-inline'`. A strict nonce-based CSP was evaluated and
+     declined — it requires per-request dynamic rendering, which would
+     give up this site's static generation and the performance budget
+     (see "Performance budget" above) for a marginal security gain given
+     the actual threat model: no third-party scripts load, and all
+     dynamic content (the chat stream, citations) is rendered by React
+     as text, never as HTML. The policy still blocks base-tag hijacking,
+     framing/clickjacking, cross-origin form exfiltration, plugin/object
+     embedding, and any non-same-origin `connect-src`/`img-src`/
+     `font-src`.
+   - A live-domain header re-check (`curl -I` against the deployed URL)
+     is a post-deploy owner follow-up — `next.config.ts`'s `headers()`
+     is verified locally, but Vercel may layer its own headers in
+     production (harmless duplication for `Strict-Transport-Security`).
+4. **The footer discloses first-party analytics** and its 180-day
+   retention (see "Analytics store" above).
+5. **Chat conversations are never persisted server-side.** The chat
+   route streams tokens only; it has no database or analytics-store
+   collaborator at all — regression-guarded by
+   `app/api/chat/route.noPersistence.test.ts`. The `question_asked`
+   analytics event records a count with no text field
+   (`lib/analytics/schema.ts` has none to write to), enforced at both
+   the client call site and the schema.
+
 ## Static assets
 
 `public/resume.pdf` is the downloadable résumé served from the hero's
