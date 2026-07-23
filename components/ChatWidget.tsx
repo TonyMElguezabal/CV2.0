@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useChatWidget } from "./ChatWidgetContext";
 import { streamChat, ChatRequestError } from "../lib/chat/streamChat.ts";
+import { track } from "../lib/analytics/track.ts";
 import type { Citation } from "../lib/rag/generate.ts";
 import type { ProfileContact } from "../lib/content/types.ts";
 import {
@@ -94,6 +95,13 @@ export function ChatWidget({ starterQuestions, contact }: ChatWidgetProps) {
     setInputValue("");
 
     const assistantId = nextMessageId();
+
+    // Count-only, per the PRD §F8 privacy rule — no question text is ever
+    // passed to track().
+    track({
+      eventType: "question_asked",
+      pagePath: window.location.pathname,
+    });
 
     try {
       for await (const event of streamChat(trimmed)) {

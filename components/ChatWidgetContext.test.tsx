@@ -2,6 +2,9 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { renderHook } from "@testing-library/react";
 import { ChatWidgetProvider, useChatWidget } from "./ChatWidgetContext";
+import { track } from "../lib/analytics/track.ts";
+
+vi.mock("../lib/analytics/track.ts", () => ({ track: vi.fn() }));
 
 function TestConsumer() {
   const { isOpen, openChat, closeChat } = useChatWidget();
@@ -19,6 +22,25 @@ function TestConsumer() {
 }
 
 describe("ChatWidgetContext", () => {
+  beforeEach(() => {
+    vi.mocked(track).mockClear();
+  });
+
+  it("fires a chat_open tracking event when openChat is called", () => {
+    render(
+      <ChatWidgetProvider>
+        <TestConsumer />
+      </ChatWidgetProvider>,
+    );
+
+    fireEvent.click(screen.getByText("open"));
+
+    expect(track).toHaveBeenCalledOnce();
+    expect(track).toHaveBeenCalledWith(
+      expect.objectContaining({ eventType: "chat_open" }),
+    );
+  });
+
   it("starts closed and toggles via openChat/closeChat", () => {
     render(
       <ChatWidgetProvider>

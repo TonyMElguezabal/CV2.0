@@ -4,6 +4,7 @@ import { ChatWidgetProvider } from "./ChatWidgetContext";
 import { ChatWidget } from "./ChatWidget";
 import { streamChat, ChatRequestError } from "../lib/chat/streamChat.ts";
 import type { ChatStreamEvent } from "../lib/chat/streamChat.ts";
+import { track } from "../lib/analytics/track.ts";
 
 vi.mock("../lib/chat/streamChat.ts", async (importOriginal) => {
   const actual =
@@ -13,6 +14,8 @@ vi.mock("../lib/chat/streamChat.ts", async (importOriginal) => {
     streamChat: vi.fn(),
   };
 });
+
+vi.mock("../lib/analytics/track.ts", () => ({ track: vi.fn() }));
 
 const mockStreamChat = vi.mocked(streamChat);
 
@@ -42,6 +45,22 @@ function renderWidget() {
 describe("ChatWidget", () => {
   beforeEach(() => {
     mockStreamChat.mockReset();
+    vi.mocked(track).mockClear();
+  });
+
+  it("fires a question_asked tracking event with no argument containing the question text when a question is submitted", async () => {
+    mockStreamChat.mockReturnValue(eventsOf([{ type: "done" }]));
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    fireEvent.click(screen.getByRole("button", { name: FIRST_STARTER_QUESTION }));
+
+    expect(track).toHaveBeenCalledWith(
+      expect.objectContaining({ eventType: "question_asked" }),
+    );
+    for (const call of vi.mocked(track).mock.calls) {
+      expect(JSON.stringify(call)).not.toContain(FIRST_STARTER_QUESTION);
+    }
   });
 
   it("renders the trigger as a real button", () => {

@@ -44,4 +44,26 @@ describe("ContactSection — server-rendered (no-JS) output", () => {
 
     expect(html).toMatch(/<section id="contact"/);
   });
+
+  it("annotates each contact link with data-analytics-event and the right data-analytics-target", () => {
+    const html = renderToStaticMarkup(<ContactSection {...FIXTURE} />);
+
+    const schedulingLinkMatch = html.match(
+      /<a[^>]*href="https:\/\/cal\.com\/fixture"[^>]*>/
+    );
+    expect(schedulingLinkMatch![0]).toContain('data-analytics-event="contact_click"');
+    expect(schedulingLinkMatch![0]).toContain('data-analytics-target="scheduling"');
+
+    const mailtoLinkMatch = html.match(
+      /<a[^>]*href="mailto:fixture@example\.com"[^>]*>/
+    );
+    expect(mailtoLinkMatch![0]).toContain('data-analytics-event="contact_click"');
+    expect(mailtoLinkMatch![0]).toContain('data-analytics-target="email"');
+
+    const linkedinLinkMatch = html.match(
+      /<a[^>]*href="https:\/\/www\.linkedin\.com\/in\/fixture"[^>]*>/
+    );
+    expect(linkedinLinkMatch![0]).toContain('data-analytics-event="contact_click"');
+    expect(linkedinLinkMatch![0]).toContain('data-analytics-target="linkedin"');
+  });
 });

@@ -18,7 +18,12 @@ export function HeroCtas() {
       <button type="button" onClick={openChat} className={ctaSecondaryClass}>
         Ask AI
       </button>
-      <a href="/resume.pdf" download className={ctaSecondaryClass}>
+      <a
+        href="/resume.pdf"
+        download
+        data-analytics-event="resume_download"
+        className={ctaSecondaryClass}
+      >
         Download résumé
       </a>
       <a href="#contact" className={ctaSecondaryClass}>
