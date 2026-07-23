@@ -111,11 +111,15 @@ erDiagram
 
 1. **Anonymity by schema**: The model makes PII collection structurally impossible — there are no fields for identity, message content, or raw network data. Compliance is enforced by design, not by policy.
 
-2. **Single fact table**: All F8 metrics and F9 dashboard reports are aggregations over `AnalyticsEvent`. In the MVP, aggregation happens at query time; rollup tables are added only if dashboard performance requires them.
+2. **Single fact table**: All F8 metrics and F9 dashboard reports are aggregations over `AnalyticsEvent`. In the MVP, aggregation happens at query time; rollup tables are added only if dashboard performance requires them. **Resolved (JOS-89 / 7.4b):** `lib/analytics/reports.ts` reads this fact table directly (`visit_session` + `analytics_event`, no new columns) —
+   - **Traffic** → `COUNT`/`COUNT(DISTINCT session_id)` on `page_view`, `date_trunc('day', occurred_at)` for the trend, `GROUP BY device_class`/`country_or_region`/`referrer_domain`.
+   - **Engagement depth** → `percentile_cont(0.5)` over `last_event_at − started_at` per `visit_session`; second-chapter reach computed against `section_reach.section_id`, using chapter order injected from `/content` at render time; `GROUP BY scroll_depth_percent`.
+   - **Chat usage** → `COUNT(DISTINCT session_id)` on `chat_open`; `COUNT(*)` on `question_asked` (count only, per principle 1 — no text field exists to leak).
+   - **Conversions** → `COUNT(*)` on `resume_download`; `GROUP BY contact_target` on `contact_click`.
 
 3. **Content stays in files**: The database never stores profile content. The content files in `/content` remain the single source of truth for the site and the chatbot (PRD §6).
 
-4. **Owner access without a users table**: The admin dashboard (F9) is restricted to the single owner. **Resolved (JOS-88 / 7.4a):** HTTP Basic Auth via a path-scoped `middleware.ts` (matcher `/admin/:path*`), with the credential read from server-only environment variables (`ADMIN_USER`/`ADMIN_PASSWORD`) and verified with a constant-time comparison. No database entities — the gate fails closed if the credential is unconfigured, and sets no cookie on the public site.
+4. **Owner access without a users table**: The admin dashboard (F9) is restricted to the single owner. **Resolved (JOS-88 / 7.4a):** HTTP Basic Auth via a path-scoped `proxy.ts` (matcher `/admin/:path*`), with the credential read from server-only environment variables (`ADMIN_USER`/`ADMIN_PASSWORD`) and verified with a constant-time comparison. No database entities — the gate fails closed if the credential is unconfigured, and sets no cookie on the public site.
 
 ## Open Items (Resolved)
 

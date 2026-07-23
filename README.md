@@ -270,11 +270,11 @@ are asserted by tests, not just prose:
 
 ## Admin access
 
-`/admin` is the owner-only insights dashboard (PRD §5 F9; shell shipped by
-JOS-88 / 7.4a, reports filled in by 7.4b). It's gated by `middleware.ts`
-(scoped to `/admin/:path*` only — it never runs on the public routes, so
-static generation and the CSP from "Security & privacy" above are
-unaffected) using **HTTP Basic Auth**:
+`/admin` is the owner-only insights dashboard (PRD §5 F9; gate + shell
+shipped by JOS-88 / 7.4a, reports filled in by JOS-89 / 7.4b). It's gated
+by `proxy.ts` (scoped to `/admin/:path*` only — it never runs on the
+public routes, so static generation and the CSP from "Security &
+privacy" above are unaffected) using **HTTP Basic Auth**:
 
 1. Set `ADMIN_USER` and `ADMIN_PASSWORD` in `.env.local` (local) and the
    Vercel project's environment variables (production). **Leaving either
@@ -290,6 +290,28 @@ unaffected) using **HTTP Basic Auth**:
 cookie, so the public site's cookieless promise (see "Security &
 privacy") is unaffected — the admin gate is a separate, owner-only
 concern from visitor-facing analytics.
+
+**What the dashboard shows**: `lib/analytics/reports.ts` reads the
+existing analytics store (`lib/analytics/store.ts` — write-only) at
+request time and renders four report families, doubling as a scorecard
+against the PRD §10 launch metrics:
+
+- **Traffic** — page views, unique sessions, a daily trend, and
+  breakdowns by device class / country-or-region / referrer domain.
+- **Engagement depth** — median session duration and the share of
+  sessions reaching the second career chapter (§10.2 target: >2 min
+  median, ≥40% reach the 2nd chapter), plus a scroll-depth distribution.
+- **Chat usage** — sessions that opened chat and their share of all
+  sessions (§10.3 target: ≥25%), and a question-asked count only (no
+  question text is ever stored or shown).
+- **Conversions** — résumé downloads and contact clicks by target
+  (scheduling / email / LinkedIn).
+
+Every report is an aggregate (count, share, median, or trend bucket) —
+never a raw per-session row — so no PII can leak through the dashboard,
+by construction of the underlying schema. Numbers stay at zero with an
+explicit "No data yet" message until the deployed site is live and
+collecting events.
 
 ## Static assets
 
