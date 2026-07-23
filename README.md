@@ -111,6 +111,28 @@ results are flagged for manual review instead — read those answers by
 hand. This makes real API calls (cost + `OPENAI_API_KEY`), so it's a
 manual, owner-executed gate, not part of `npm test`/CI.
 
+## Analytics store
+
+`POST /api/events` (`app/api/events/route.ts`) persists anonymized
+first-party engagement events (page views, section reach, chat opens,
+question counts, résumé downloads, contact clicks) to Neon Postgres, per
+`docs/data-model.md`. It reuses the chat endpoint's per-IP rate limiter
+(`lib/chat/rateLimit.ts`) and fails open on limiter errors. Requires one
+one-time manual setup step that is **not** application code and has no
+automated test:
+
+1. **Neon database** — provision one via the
+   [Vercel Marketplace's Neon integration](https://vercel.com/marketplace/neon)
+   (or directly at [console.neon.tech](https://console.neon.tech)), apply
+   `lib/analytics/schema.sql` once against it, and set `DATABASE_URL` in
+   `.env.local` (local) and the Vercel project's environment variables
+   (production). Without this, `POST /api/events` fails cleanly (5xx)
+   rather than crashing the site — analytics is fire-and-forget, so a
+   failed beacon never affects the page.
+
+**Retention**: events are intended to be kept for 180 days. A retention
+cleanup job is not built yet — this is a future story, not part of JOS-72.
+
 ## Static assets
 
 `public/resume.pdf` is the downloadable résumé served from the hero's

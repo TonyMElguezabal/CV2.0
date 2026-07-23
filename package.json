@@ -15,6 +15,7 @@
     "eval:chat": "node --env-file-if-exists=.env.local lib/rag/eval-run.ts"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "framer-motion": "12.42.2",
