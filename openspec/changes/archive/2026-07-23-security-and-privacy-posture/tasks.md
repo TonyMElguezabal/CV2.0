@@ -52,4 +52,4 @@ check, all agent-executed.
 
 ## 7. OpenSpec sync
 
-- [ ] 7.1 After merge, sync `specs/security-and-privacy-posture/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 7.1 After merge, sync `specs/security-and-privacy-posture/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
