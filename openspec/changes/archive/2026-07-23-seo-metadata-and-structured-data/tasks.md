@@ -63,4 +63,4 @@ server check of the built <head>, /opengraph-image, /robots.txt,
 
 ## 8. OpenSpec sync
 
-- [ ] 8.1 After merge, sync `specs/seo-metadata-and-structured-data/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 8.1 After merge, sync `specs/seo-metadata-and-structured-data/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
