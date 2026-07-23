@@ -2,19 +2,11 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { HeroCtas } from "./HeroCtas";
 import { ChatWidgetProvider, useChatWidget } from "./ChatWidgetContext";
-import type { Profile } from "@/lib/content/types.ts";
 
-const testProfile: Pick<Profile, "contact"> = {
-  contact: {
-    email: "jose.elguezabal@gmail.com",
-    scheduling: "https://cal.com/josemunoz",
-  },
-};
-
-function renderWithProvider(profile: Pick<Profile, "contact"> = testProfile) {
+function renderWithProvider() {
   return render(
     <ChatWidgetProvider>
-      <HeroCtas profile={profile} />
+      <HeroCtas />
     </ChatWidgetProvider>,
   );
 }
@@ -41,29 +33,11 @@ describe("HeroCtas", () => {
     expect(resumeLink).toHaveAttribute("download");
   });
 
-  it("wires Contact to a mailto link built from the profile's contact.email", () => {
+  it("wires Contact to the #contact in-page anchor", () => {
     renderWithProvider();
 
     const contactLink = screen.getByRole("link", { name: /contact/i });
-    expect(contactLink).toHaveAttribute(
-      "href",
-      "mailto:jose.elguezabal@gmail.com"
-    );
-  });
-
-  it("uses a different contact.email if the profile prop changes, proving it is not hardcoded", () => {
-    renderWithProvider({
-      contact: {
-        email: "someone-else@example.com",
-        scheduling: "https://cal.com/someone-else",
-      },
-    });
-
-    const contactLink = screen.getByRole("link", { name: /contact/i });
-    expect(contactLink).toHaveAttribute(
-      "href",
-      "mailto:someone-else@example.com"
-    );
+    expect(contactLink).toHaveAttribute("href", "#contact");
   });
 
   it("renders Ask AI as an enabled button that opens the chat widget", () => {
@@ -74,7 +48,7 @@ describe("HeroCtas", () => {
 
     render(
       <ChatWidgetProvider>
-        <HeroCtas profile={testProfile} />
+        <HeroCtas />
         <OpenState />
       </ChatWidgetProvider>,
     );

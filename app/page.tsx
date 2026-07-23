@@ -9,6 +9,7 @@ import { CareerTimeline } from "@/components/CareerTimeline";
 import { CareerChapters } from "@/components/CareerChapters";
 import { SkillsSection } from "@/components/SkillsSection";
 import { ProjectsSection } from "@/components/ProjectsSection";
+import { ContactSection } from "@/components/ContactSection";
 
 export default function Home() {
   const profile = getProfile();
@@ -18,15 +19,12 @@ export default function Home() {
 
   return (
     <main>
-      <HeroFramer
-        name={profile.name}
-        positioning={profile.positioning}
-        profile={profile}
-      />
+      <HeroFramer name={profile.name} positioning={profile.positioning} />
       <CareerTimeline experiences={experiences} />
       <CareerChapters experiences={experiences} />
       <SkillsSection skills={skills} experiences={experiences} />
       <ProjectsSection projects={projects} />
+      <ContactSection contact={profile.contact} links={profile.links} />
     </main>
   );
 }
