@@ -7,6 +7,8 @@ const SECRET_NAMES = [
   "DATABASE_URL",
   "UPSTASH_REDIS_REST_URL",
   "UPSTASH_REDIS_REST_TOKEN",
+  "ADMIN_USER",
+  "ADMIN_PASSWORD",
 ];
 
 const SOURCE_ROOTS = ["app", "components", "lib"];

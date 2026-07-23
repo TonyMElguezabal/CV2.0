@@ -115,7 +115,7 @@ erDiagram
 
 3. **Content stays in files**: The database never stores profile content. The content files in `/content` remain the single source of truth for the site and the chatbot (PRD §6).
 
-4. **Owner access without a users table**: The admin dashboard (F9) is restricted to the single owner. The access mechanism is TBD (open question) but is not expected to require database entities; if the chosen mechanism needs persistence, this document must be updated first.
+4. **Owner access without a users table**: The admin dashboard (F9) is restricted to the single owner. **Resolved (JOS-88 / 7.4a):** HTTP Basic Auth via a path-scoped `middleware.ts` (matcher `/admin/:path*`), with the credential read from server-only environment variables (`ADMIN_USER`/`ADMIN_PASSWORD`) and verified with a constant-time comparison. No database entities — the gate fails closed if the credential is unconfigured, and sets no cookie on the public site.
 
 ## Open Items (Resolved)
 
