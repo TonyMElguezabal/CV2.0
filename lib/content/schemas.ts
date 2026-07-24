@@ -35,6 +35,11 @@ export const ProfileContactSchema = z.object({
   scheduling: z.string(),
 });
 
+export const ChatSchema = z.object({
+  greeting: z.string(),
+  tooltipLabel: z.string(),
+});
+
 export const HeroSchema = z.object({
   terminalLines: z.array(z.string()).min(1),
 });
@@ -45,6 +50,7 @@ export const ProfileSchema = z.object({
   summary: z.string(),
   links: ProfileLinksSchema,
   contact: ProfileContactSchema,
+  chat: ChatSchema,
   hero: HeroSchema,
 });
 

@@ -80,6 +80,8 @@ describe("Automated accessibility structure checks", () => {
             email: "fixture@example.com",
             scheduling: "https://cal.com/fixture",
           }}
+          tooltipLabel="chat with me"
+          greeting="Hi! Fixture greeting."
         />
       </ChatWidgetProvider>
     );
@@ -115,6 +117,8 @@ describe("Automated accessibility structure checks", () => {
             email: "fixture@example.com",
             scheduling: "https://cal.com/fixture",
           }}
+          tooltipLabel="chat with me"
+          greeting="Hi! Fixture greeting."
         />
       </ChatWidgetProvider>
     );

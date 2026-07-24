@@ -11,7 +11,12 @@ describe("ChatWidget — server-rendered output", () => {
   it("renders the trigger button, closed, without throwing", () => {
     const html = renderToStaticMarkup(
       <ChatWidgetProvider>
-        <ChatWidget starterQuestions={["Who is Jose?"]} contact={TEST_CONTACT} />
+        <ChatWidget
+          starterQuestions={["Who is Jose?"]}
+          contact={TEST_CONTACT}
+          tooltipLabel="chat with me"
+          greeting="Hi! Test greeting."
+        />
       </ChatWidgetProvider>,
     );
 
@@ -21,7 +26,12 @@ describe("ChatWidget — server-rendered output", () => {
   it("does not render the panel content when closed", () => {
     const html = renderToStaticMarkup(
       <ChatWidgetProvider>
-        <ChatWidget starterQuestions={["Who is Jose?"]} contact={TEST_CONTACT} />
+        <ChatWidget
+          starterQuestions={["Who is Jose?"]}
+          contact={TEST_CONTACT}
+          tooltipLabel="chat with me"
+          greeting="Hi! Test greeting."
+        />
       </ChatWidgetProvider>,
     );
 

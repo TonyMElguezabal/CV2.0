@@ -1,6 +1,14 @@
 import { focusRingClass } from "./a11yStyles.ts";
 
-export const chatTriggerClass = `fixed bottom-6 right-6 z-40 rounded-full border border-zinc-700 bg-zinc-900 px-5 py-3 text-sm font-medium text-zinc-200 shadow-lg hover:border-zinc-500 hover:text-white ${focusRingClass}`;
+export const chatTriggerWrapperClass = "group fixed bottom-6 right-6 z-40";
+
+export const chatTriggerClass = `rounded-full border border-zinc-700 bg-zinc-900 px-5 py-3 text-sm font-medium text-zinc-200 shadow-lg hover:border-zinc-500 hover:text-white ${focusRingClass}`;
+
+// Revealed via CSS :hover/:focus-within on the wrapper — no JS involved in
+// the reveal itself; JS only conditionally removes the tooltip from the DOM
+// while the panel is open (see ChatWidget.tsx).
+export const chatTooltipClass =
+  "pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-200 opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100";
 
 export const chatPanelClass =
   "fixed bottom-24 right-6 z-40 flex max-h-[70vh] w-[min(92vw,380px)] flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900 shadow-2xl";
@@ -14,6 +22,8 @@ export const chatCloseButtonClass = `rounded-full p-1 text-zinc-400 hover:bg-zin
 
 export const chatMessageListClass =
   "flex-1 space-y-3 overflow-y-auto px-4 py-3";
+
+export const chatGreetingClass = "px-4 pb-2 text-sm text-zinc-300";
 
 export const chatStarterQuestionsClass = "flex flex-col gap-2 px-4 pb-3";
 

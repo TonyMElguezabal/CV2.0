@@ -16,6 +16,7 @@ import {
   chatContactLinkClass,
   chatContactLinksClass,
   chatFormClass,
+  chatGreetingClass,
   chatInputClass,
   chatMessageAssistantClass,
   chatMessageListClass,
@@ -53,9 +54,10 @@ function nextMessageId(): string {
 export interface ChatPanelProps {
   starterQuestions: string[];
   contact: ProfileContact;
+  greeting: string;
 }
 
-export function ChatPanel({ starterQuestions, contact }: ChatPanelProps) {
+export function ChatPanel({ starterQuestions, contact, greeting }: ChatPanelProps) {
   const { isOpen, closeChat } = useChatWidget();
   // `null` (SSR / not-yet-resolved) is treated as "not reduced" — matches
   // HeroFramer's convention.
@@ -63,6 +65,11 @@ export function ChatPanel({ starterQuestions, contact }: ChatPanelProps) {
   const panelInitial = prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 };
   const panelAnimate = prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 };
   const panelExit = prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 };
+  // Unlike the hero's reduced-motion state (a fade-only alternative), this
+  // capability's spec requires "no fade or slide animation" at all under
+  // reduced motion — initial already equals animate, so no transition runs.
+  const greetingInitial = prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 8 };
+  const greetingAnimate = { opacity: 1, y: 0 };
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -241,6 +248,18 @@ export function ChatPanel({ starterQuestions, contact }: ChatPanelProps) {
                 </div>
               ))}
             </div>
+
+            {messages.length === 0 && (
+              <m.p
+                className={chatGreetingClass}
+                data-testid="chat-greeting"
+                initial={greetingInitial}
+                animate={greetingAnimate}
+                transition={{ duration: 0.3 }}
+              >
+                {greeting}
+              </m.p>
+            )}
 
             {messages.length === 0 && starterQuestions.length > 0 && (
               <div className={chatStarterQuestionsClass}>

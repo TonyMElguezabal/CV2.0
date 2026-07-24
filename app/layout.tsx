@@ -22,8 +22,7 @@ export default function RootLayout({
   const starterQuestions = getFaq()
     .slice(0, STARTER_QUESTION_COUNT)
     .map((entry) => entry.question);
-  const profile = getProfile();
-  const { contact } = profile;
+  const { contact, chat, hero } = getProfile();
 
   return (
     <html lang="en" className="h-full antialiased">
@@ -32,12 +31,17 @@ export default function RootLayout({
         {/* Fixed, whole-page background layer (z-index behind normal-flow
             content) — the signature scroll-driven laptop, per
             hero-signature-motion / openspec/changes/hero-laptop-scroll-motion. */}
-        <HeroLaptop terminalLines={profile.hero.terminalLines} />
+        <HeroLaptop terminalLines={hero.terminalLines} />
         <StructuredData />
         <ChatWidgetProvider>
           {children}
           <SiteFooter />
-          <ChatWidget starterQuestions={starterQuestions} contact={contact} />
+          <ChatWidget
+            starterQuestions={starterQuestions}
+            contact={contact}
+            tooltipLabel={chat.tooltipLabel}
+            greeting={chat.greeting}
+          />
         </ChatWidgetProvider>
         <AnalyticsTracker />
       </body>

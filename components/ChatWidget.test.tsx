@@ -29,11 +29,18 @@ const TEST_CONTACT = {
   email: "jose.elguezabal@gmail.com",
   scheduling: "https://cal.com/josemunoz",
 };
+const TOOLTIP_LABEL = "chat with me";
+const GREETING = "Hi! Test greeting.";
 
 function renderWidget() {
   render(
     <ChatWidgetProvider>
-      <ChatWidget starterQuestions={STARTER_QUESTIONS} contact={TEST_CONTACT} />
+      <ChatWidget
+        starterQuestions={STARTER_QUESTIONS}
+        contact={TEST_CONTACT}
+        tooltipLabel={TOOLTIP_LABEL}
+        greeting={GREETING}
+      />
     </ChatWidgetProvider>,
   );
 }
@@ -92,5 +99,36 @@ describe("ChatWidget", () => {
       ).not.toBeInTheDocument(),
     );
     expect(trigger).toHaveFocus();
+  });
+
+  it("renders a decorative tooltip (robot + label) revealed on hover/focus while the panel is closed", () => {
+    renderWidget();
+
+    const tooltip = screen.getByTestId("chat-tooltip");
+    expect(tooltip).toHaveAttribute("aria-hidden", "true");
+    expect(tooltip.textContent).toContain(TOOLTIP_LABEL);
+    expect(tooltip.className).toEqual(
+      expect.stringContaining("group-hover:opacity-100"),
+    );
+    expect(tooltip.className).toEqual(
+      expect.stringContaining("group-focus-within:opacity-100"),
+    );
+  });
+
+  it("keeps the trigger's accessible name unaffected by the tooltip", () => {
+    renderWidget();
+    expect(
+      screen.getByRole("button", { name: /ask about jose/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("hides the tooltip while the panel is open", async () => {
+    renderWidget();
+    expect(screen.getByTestId("chat-tooltip")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+    await screen.findByRole("region", { name: /ask about jose/i });
+
+    expect(screen.queryByTestId("chat-tooltip")).not.toBeInTheDocument();
   });
 });
