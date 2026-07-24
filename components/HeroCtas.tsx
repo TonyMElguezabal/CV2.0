@@ -20,7 +20,7 @@ export function HeroCtas() {
       </button>
       <a
         href="/resume.pdf"
-        download
+        download="Jose Munoz Elguezabal.pdf"
         data-analytics-event="resume_download"
         className={ctaSecondaryClass}
       >
