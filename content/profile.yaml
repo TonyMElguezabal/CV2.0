@@ -12,3 +12,10 @@ links:
 contact:
   email: jose.elguezabal@gmail.com
   scheduling: https://cal.com/jose-munoz-elguezabal-xsgp2a
+hero:
+  terminalLines:
+    - "$ whoami"
+    - "jose_munoz — technical delivery manager"
+    - "$ cat focus.txt"
+    - "cloud migrations · AI-enabled products · cross-functional delivery"
+    - "$ echo 'this is not a résumé'"

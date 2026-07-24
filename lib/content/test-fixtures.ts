@@ -11,6 +11,10 @@ links:
 contact:
   email: test@example.com
   scheduling: https://cal.com/test
+hero:
+  terminalLines:
+    - "$ whoami"
+    - "test_person"
 `;
 
 export const VALID_EXPERIENCE = `

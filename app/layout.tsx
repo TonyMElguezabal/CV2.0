@@ -8,6 +8,7 @@ import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { SiteFooter } from "@/components/SiteFooter";
 import { StructuredData } from "@/components/StructuredData";
 import { SkipToContentLink } from "@/components/SkipToContentLink";
+import { HeroLaptop } from "@/components/HeroLaptop";
 
 export const metadata = buildRootMetadata(getProfile(), resolveSiteUrl());
 
@@ -21,12 +22,17 @@ export default function RootLayout({
   const starterQuestions = getFaq()
     .slice(0, STARTER_QUESTION_COUNT)
     .map((entry) => entry.question);
-  const { contact } = getProfile();
+  const profile = getProfile();
+  const { contact } = profile;
 
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col font-sans">
         <SkipToContentLink />
+        {/* Fixed, whole-page background layer (z-index behind normal-flow
+            content) — the signature scroll-driven laptop, per
+            hero-signature-motion / openspec/changes/hero-laptop-scroll-motion. */}
+        <HeroLaptop terminalLines={profile.hero.terminalLines} />
         <StructuredData />
         <ChatWidgetProvider>
           {children}

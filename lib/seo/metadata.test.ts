@@ -17,6 +17,9 @@ const FIXTURE_PROFILE: Profile = {
     email: "fixture@example.com",
     scheduling: "https://cal.com/fixture",
   },
+  hero: {
+    terminalLines: ["$ whoami", "fixture_person"],
+  },
 };
 
 const SITE_URL = "https://fixture.example.com";

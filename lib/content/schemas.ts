@@ -35,12 +35,17 @@ export const ProfileContactSchema = z.object({
   scheduling: z.string(),
 });
 
+export const HeroSchema = z.object({
+  terminalLines: z.array(z.string()).min(1),
+});
+
 export const ProfileSchema = z.object({
   name: z.string(),
   positioning: z.string(),
   summary: z.string(),
   links: ProfileLinksSchema,
   contact: ProfileContactSchema,
+  hero: HeroSchema,
 });
 
 export const ExperienceDatesSchema = z.object({
