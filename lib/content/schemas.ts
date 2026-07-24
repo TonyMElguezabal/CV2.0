@@ -40,6 +40,10 @@ export const ChatSchema = z.object({
   tooltipLabel: z.string(),
 });
 
+export const HeroSchema = z.object({
+  terminalLines: z.array(z.string()).min(1),
+});
+
 export const ProfileSchema = z.object({
   name: z.string(),
   positioning: z.string(),
@@ -47,6 +51,7 @@ export const ProfileSchema = z.object({
   links: ProfileLinksSchema,
   contact: ProfileContactSchema,
   chat: ChatSchema,
+  hero: HeroSchema,
 });
 
 export const ExperienceDatesSchema = z.object({

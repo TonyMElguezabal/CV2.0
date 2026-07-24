@@ -21,6 +21,9 @@ const FIXTURE_PROFILE: Profile = {
     greeting: "Hi! Fixture greeting.",
     tooltipLabel: "chat with me",
   },
+  hero: {
+    terminalLines: ["$ whoami", "fixture_person"],
+  },
 };
 
 const SITE_URL = "https://fixture.example.com";

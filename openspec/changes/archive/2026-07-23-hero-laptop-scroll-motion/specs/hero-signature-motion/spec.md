@@ -1,12 +1,4 @@
-## Purpose
-
-Defines the production behavior contract for the site's signature animated
-sequence — a whole-page MacBook that opens and reorients to front-facing as
-the visitor scrolls the document, revealing a terminal — the
-`prefers-reduced-motion` static alternative, no-JS readability regardless of
-motion mode, and the PRD §9 60fps performance requirement.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Signature animated sequence plays under default motion settings
 The hero SHALL play one signature animated sequence — a whole-page MacBook that opens and reorients as the visitor scrolls — when the visitor has no `prefers-reduced-motion` preference set. On load the laptop renders closed and angled toward the lower-left with a slight downward tilt, as a background layer behind the page content; as the visitor scrolls, the lid opens and the body reorients toward front-facing in proportion to **full-document** scroll progress, animating transform only. The hero's name and positioning text also animate in.
@@ -43,6 +35,8 @@ The default (non-reduced-motion) signature sequence — including the laptop's s
 #### Scenario: Frame rate measured during playback
 - **WHEN** the laptop's scroll-driven animation is profiled via browser performance profiling while it plays
 - **THEN** the recorded frame rate sustains 60fps and only transform/opacity are animated, or the measurement report documents why a full profiling run was not achievable in the execution environment
+
+## ADDED Requirements
 
 ### Requirement: A terminal is revealed when the laptop is fully open
 The system SHALL show a readable terminal window on the laptop screen when full-document scroll progress reaches the bottom of the page (laptop fully open and front-facing). The terminal's text SHALL be sourced from the site's content, not hardcoded in components.

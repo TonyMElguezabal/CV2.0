@@ -14,6 +14,10 @@ contact:
 chat:
   greeting: Hi! Test greeting.
   tooltipLabel: chat with me
+hero:
+  terminalLines:
+    - "$ whoami"
+    - "test_person"
 `;
 
 export const VALID_EXPERIENCE = `

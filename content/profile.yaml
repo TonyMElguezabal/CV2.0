@@ -17,3 +17,10 @@ chat:
     Hi! I'm an AI assistant Jose built to answer questions about him. Here
     are a few examples — or just type your own question!
   tooltipLabel: chat with me
+hero:
+  terminalLines:
+    - "$ whoami"
+    - "jose_munoz — technical delivery manager"
+    - "$ cat focus.txt"
+    - "cloud migrations · AI-enabled products · cross-functional delivery"
+    - "$ echo 'this is not a résumé'"

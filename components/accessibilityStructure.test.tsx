@@ -2,6 +2,7 @@
 import { render, cleanup } from "@testing-library/react";
 import { axe } from "vitest-axe";
 import { HeroFramer } from "./HeroFramer";
+import { HeroLaptop } from "./HeroLaptop";
 import { ChatWidgetProvider } from "./ChatWidgetContext";
 import { ChatWidget } from "./ChatWidget";
 import { CareerChapters } from "./CareerChapters";
@@ -104,6 +105,7 @@ describe("Automated accessibility structure checks", () => {
         <a href="#main" className="sr-only focus:not-sr-only">
           Skip to content
         </a>
+        <HeroLaptop terminalLines={["$ whoami", "fixture_person"]} />
         <main id="main">
           <HeroFramer name="Fixture Person" positioning="Fixture Positioning" />
           <CareerChapters experiences={[FIXTURE_EXPERIENCE]} />
@@ -123,5 +125,14 @@ describe("Automated accessibility structure checks", () => {
 
     const results = await axe(container, AXE_OPTIONS);
     expect(results).toHaveNoViolations();
+
+    expect(
+      container.querySelector('[data-testid="hero-laptop-layer"]')
+    ).toHaveAttribute("aria-hidden", "true");
+    expect(
+      container.querySelectorAll(
+        '[data-testid="hero-laptop-layer"] button, [data-testid="hero-laptop-layer"] a, [data-testid="hero-laptop-layer"] [tabindex]'
+      )
+    ).toHaveLength(0);
   });
 });
