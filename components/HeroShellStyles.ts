@@ -39,13 +39,36 @@ export const heroLaptopSceneClass =
   "hero-laptop-scene relative [perspective:1200px] [transform-style:preserve-3d]";
 
 export const heroLaptopBaseClass =
-  "h-40 w-64 rounded-b-lg border border-zinc-700 bg-zinc-800 sm:h-56 sm:w-96";
+  "relative h-40 w-64 rounded-b-lg border border-zinc-700 bg-gradient-to-b from-zinc-700 to-zinc-900 sm:h-56 sm:w-96";
 
 export const heroLaptopLidClass =
-  "hero-laptop-lid absolute inset-x-0 bottom-full h-40 origin-bottom rounded-t-lg border border-zinc-700 bg-zinc-800 [transform-style:preserve-3d] sm:h-56";
+  "hero-laptop-lid absolute inset-x-0 bottom-full h-40 origin-bottom rounded-t-lg border border-zinc-700 bg-gradient-to-t from-zinc-900 to-zinc-700 [transform-style:preserve-3d] sm:h-56";
 
 export const heroLaptopScreenClass =
-  "hero-laptop-screen absolute inset-2 overflow-hidden rounded bg-black";
+  "hero-laptop-screen absolute inset-2 overflow-hidden rounded border-2 border-zinc-950 bg-black";
+
+// Hinge shadow line at the base's top edge, where the lid meets the base.
+export const heroLaptopHingeClass =
+  "absolute inset-x-3 top-0 h-px bg-black/50 sm:inset-x-4";
+
+// Keyboard deck: a small grid of key marks on the base's top face. The
+// container needs an explicit height for `grid-rows-5` to divide — grid
+// cells have no intrinsic size of their own to size the rows from.
+export const heroLaptopKeyboardClass =
+  "absolute inset-x-4 top-3 grid h-16 grid-cols-10 grid-rows-5 gap-1 sm:inset-x-6 sm:top-5 sm:h-28 sm:gap-1.5";
+
+export const heroLaptopKeyClass =
+  "rounded-[1px] bg-zinc-950/60 sm:rounded-sm";
+
+// Trackpad: a rounded rectangle centered below the keyboard.
+export const heroLaptopTrackpadClass =
+  "absolute inset-x-0 bottom-3 mx-auto h-8 w-20 rounded-md border border-zinc-950/40 bg-zinc-950/20 sm:bottom-4 sm:h-10 sm:w-28";
+
+// Closed-pose lid accent: a subtle centered mark on the lid's outward-facing
+// top, so the shut clamshell still reads as a laptop rather than a flat slab
+// — see design.md Decision 3 in openspec/changes/hero-laptop-visual-fidelity.
+export const heroLaptopLidAccentClass =
+  "absolute left-1/2 top-3 h-2 w-2 -translate-x-1/2 rounded-full bg-zinc-950/40 sm:top-4 sm:h-2.5 sm:w-2.5";
 
 export const terminalClass =
   "h-full w-full space-y-1 p-3 font-mono text-[0.6rem] text-emerald-400 sm:text-xs";
