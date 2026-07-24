@@ -23,7 +23,7 @@ export async function runEval(
   provider: ReturnType<typeof createActiveProvider>,
   questions: EvalQuestion[] = EVAL_SET,
 ): Promise<EvalRunResult[]> {
-  const index = loadIndex();
+  const index = await loadIndex();
   const results: EvalRunResult[] = [];
 
   for (const evalQuestion of questions) {

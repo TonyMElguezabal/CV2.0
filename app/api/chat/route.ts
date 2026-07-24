@@ -5,10 +5,8 @@ import { streamGroundedAnswer, dedupeCitations } from "../../../lib/rag/generate
 import { createActiveProvider } from "../../../lib/rag/active-provider.ts";
 import { formatSseEvent } from "../../../lib/rag/sse.ts";
 import { checkRateLimit, createUpstashRateLimitStore } from "../../../lib/chat/rateLimit.ts";
-import { getProfile } from "../../../lib/content/read.ts";
+import { loadSiteConfig } from "../../../lib/site-config/read.ts";
 
-// loadIndex() reads lib/rag/index.json from disk via node:fs, which the
-// Edge runtime doesn't support.
 export const runtime = "nodejs";
 
 const RequestSchema = z.object({
@@ -21,8 +19,8 @@ const PER_IP_WINDOW_SECONDS = 5 * 60;
 const PER_SESSION_LIMIT = 20;
 const PER_SESSION_WINDOW_SECONDS = 24 * 60 * 60;
 
-function rateLimitedResponse(): Response {
-  const { contact } = getProfile();
+async function rateLimitedResponse(): Promise<Response> {
+  const { contact } = await loadSiteConfig();
   return new Response(
     JSON.stringify({
       error: "rate_limited",
@@ -34,8 +32,8 @@ function rateLimitedResponse(): Response {
   );
 }
 
-function unavailableResponse(): Response {
-  const { contact } = getProfile();
+async function unavailableResponse(): Promise<Response> {
+  const { contact } = await loadSiteConfig();
   return new Response(
     JSON.stringify({
       error: "unavailable",
@@ -76,7 +74,7 @@ export async function POST(request: Request): Promise<Response> {
     PER_IP_WINDOW_SECONDS,
   );
   if (!ipResult.allowed) {
-    return rateLimitedResponse();
+    return await rateLimitedResponse();
   }
 
   const sessionId = request.headers.get("x-chat-session-id");
@@ -88,7 +86,7 @@ export async function POST(request: Request): Promise<Response> {
       PER_SESSION_WINDOW_SECONDS,
     );
     if (!sessionResult.allowed) {
-      return rateLimitedResponse();
+      return await rateLimitedResponse();
     }
   }
 
@@ -102,7 +100,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const embeddingClient = new OpenAI({ apiKey });
   const provider = createActiveProvider(apiKey);
-  const index = loadIndex();
+  const index = await loadIndex();
 
   let retrievedChunks;
   let tokens;
@@ -112,7 +110,7 @@ export async function POST(request: Request): Promise<Response> {
       { embeddingClient, provider, index },
     ));
   } catch {
-    return unavailableResponse();
+    return await unavailableResponse();
   }
 
   const encoder = new TextEncoder();

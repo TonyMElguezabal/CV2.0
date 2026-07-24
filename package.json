@@ -6,21 +6,23 @@
   "description": "CareerDNA — interactive professional profile. See docs/PRD.md.",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node --env-file-if-exists=.env.local lib/rag/embed.ts",
+    "prebuild": "node --env-file-if-exists=.env.local lib/rag/embed.ts && node lib/site-config/build.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
     "validate:content": "node lib/content/cli.ts",
-    "eval:chat": "node --env-file-if-exists=.env.local lib/rag/eval-run.ts"
+    "eval:chat": "node --env-file-if-exists=.env.local lib/rag/eval-run.ts",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
+    "@opennextjs/cloudflare": "^1.20.2",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "framer-motion": "12.42.2",
     "gray-matter": "4.0.3",
-    "next": "16.2.10",
+    "next": "16.2.11",
     "openai": "^6.48.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -41,6 +43,7 @@
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vitest": "4.1.10",
-    "vitest-axe": "^0.1.0"
+    "vitest-axe": "^0.1.0",
+    "wrangler": "^4.114.0"
   }
 }

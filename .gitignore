@@ -12,6 +12,11 @@ next-env.d.ts
 .vercel
 .env*
 
+# Cloudflare (OpenNext adapter build output + local wrangler state)
+.open-next/
+.wrangler/
+.dev.vars
+
 # TypeScript
 *.tsbuildinfo
 
@@ -19,3 +24,6 @@ next-env.d.ts
 lib/rag/index.json
 lib/rag/eval-results.json
 lib/rag/eval-report.json
+
+# Generated site config (build artifact derived from /content, regenerate via lib/site-config/build.ts)
+lib/site-config/generated.json

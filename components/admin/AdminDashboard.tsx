@@ -32,7 +32,7 @@ function isEmpty(props: AdminDashboardProps): boolean {
 
 export function AdminDashboard(props: AdminDashboardProps) {
   return (
-    <main className={adminShellClass}>
+    <main id="main" tabIndex={-1} className={adminShellClass}>
       <h1 className={adminHeadingClass}>Insights</h1>
       {isEmpty(props) ? (
         <EmptyState />
