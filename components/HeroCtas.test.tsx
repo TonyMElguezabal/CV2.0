@@ -25,12 +25,12 @@ describe("HeroCtas", () => {
     expect(screen.getByRole("link", { name: /contact/i })).toBeInTheDocument();
   });
 
-  it("wires Download résumé to the real static PDF with a download attribute", () => {
+  it("wires Download résumé to the real static PDF with a professional download filename", () => {
     renderWithProvider();
 
     const resumeLink = screen.getByRole("link", { name: /download résumé/i });
     expect(resumeLink).toHaveAttribute("href", "/resume.pdf");
-    expect(resumeLink).toHaveAttribute("download");
+    expect(resumeLink).toHaveAttribute("download", "Jose Munoz Elguezabal.pdf");
   });
 
   it("wires Contact to the #contact in-page anchor", () => {
