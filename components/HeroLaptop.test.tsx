@@ -84,10 +84,19 @@ describe("HeroLaptop", () => {
     expect(scene.style.transform).not.toContain("-8deg");
 
     const lid = screen.getByTestId("hero-laptop-lid");
-    expect(lid.style.transform).not.toContain("-100deg");
+    expect(lid.style.transform).not.toContain("-170deg");
 
     const screenEl = screen.getByTestId("hero-laptop-screen");
     expect(screenEl.style.opacity).toBe("1");
+  });
+
+  it("renders a keyboard, trackpad, and closed-pose lid accent so the shell reads as a laptop", () => {
+    setPrefersReducedMotion(false);
+    render(<HeroLaptop terminalLines={terminalLines} />);
+
+    expect(screen.getByTestId("hero-laptop-keyboard")).toBeInTheDocument();
+    expect(screen.getByTestId("hero-laptop-trackpad")).toBeInTheDocument();
+    expect(screen.getByTestId("hero-laptop-lid-accent")).toBeInTheDocument();
   });
 
   it("is simplified away below the sm breakpoint (hidden on small viewports, shown at sm and up)", () => {

@@ -10,17 +10,24 @@ import {
   heroLaptopBaseClass,
   heroLaptopLidClass,
   heroLaptopScreenClass,
+  heroLaptopHingeClass,
+  heroLaptopKeyboardClass,
+  heroLaptopKeyClass,
+  heroLaptopTrackpadClass,
+  heroLaptopLidAccentClass,
 } from "./HeroShellStyles";
 
 export interface HeroLaptopProps {
   terminalLines: string[];
 }
 
+const KEYBOARD_KEY_COUNT = 50;
+
 // Lid: closed (flat against the base) -> fully open, over the first 85% of
 // the document's scroll range. Body: angled toward the lower-left/tilted
 // down -> front-facing, over the full scroll range. See design.md Decisions
 // 1-2 in openspec/changes/hero-laptop-scroll-motion.
-const CLOSED_LID_ROTATE_X = -100;
+const CLOSED_LID_ROTATE_X = -170;
 const OPEN_LID_ROTATE_X = 0;
 const ANGLED_ROTATE_Y = -35;
 const FRONT_ROTATE_Y = 0;
@@ -87,12 +94,30 @@ export function HeroLaptop({ terminalLines }: HeroLaptopProps) {
           style={sceneStyle}
           data-testid="hero-laptop-scene"
         >
-          <div className={heroLaptopBaseClass} />
+          <div className={heroLaptopBaseClass}>
+            <div className={heroLaptopHingeClass} />
+            <div
+              className={heroLaptopKeyboardClass}
+              data-testid="hero-laptop-keyboard"
+            >
+              {Array.from({ length: KEYBOARD_KEY_COUNT }, (_, index) => (
+                <div key={index} className={heroLaptopKeyClass} />
+              ))}
+            </div>
+            <div
+              className={heroLaptopTrackpadClass}
+              data-testid="hero-laptop-trackpad"
+            />
+          </div>
           <m.div
             className={heroLaptopLidClass}
             style={lidStyle}
             data-testid="hero-laptop-lid"
           >
+            <div
+              className={heroLaptopLidAccentClass}
+              data-testid="hero-laptop-lid-accent"
+            />
             <m.div
               className={heroLaptopScreenClass}
               style={screenStyle}
