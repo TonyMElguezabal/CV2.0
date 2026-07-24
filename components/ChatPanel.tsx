@@ -28,6 +28,9 @@ import {
   chatStarterQuestionButtonClass,
   chatStarterQuestionsClass,
   chatSubmitButtonClass,
+  chatThinkingDotsRowClass,
+  chatThinkingDotClass,
+  chatThinkingDotAnimatedClass,
 } from "./ChatWidgetStyles";
 
 interface DisplayMessage {
@@ -44,6 +47,8 @@ const RATE_LIMIT_MESSAGE =
 const UNAVAILABLE_MESSAGE =
   "The AI assistant is temporarily unavailable. Please try again shortly, or reach out directly.";
 const GENERIC_ERROR_MESSAGE = "Something went wrong — try again.";
+
+const THINKING_DOT_DELAYS_MS = [0, 150, 300];
 
 let messageIdCounter = 0;
 function nextMessageId(): string {
@@ -72,6 +77,7 @@ export function ChatPanel({ starterQuestions, contact, greeting }: ChatPanelProp
   const greetingAnimate = { opacity: 1, y: 0 };
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const [isAwaitingResponse, setIsAwaitingResponse] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -91,10 +97,11 @@ export function ChatPanel({ starterQuestions, contact, greeting }: ChatPanelProp
 
   async function submit(question: string) {
     const trimmed = question.trim().slice(0, MAX_QUESTION_LENGTH);
-    if (!trimmed) {
+    if (!trimmed || isAwaitingResponse) {
       return;
     }
 
+    setIsAwaitingResponse(true);
     setMessages((prev) => [
       ...prev,
       { id: nextMessageId(), role: "visitor", text: trimmed },
@@ -116,6 +123,7 @@ export function ChatPanel({ starterQuestions, contact, greeting }: ChatPanelProp
           setMessages((prev) => {
             const exists = prev.some((message) => message.id === assistantId);
             if (!exists) {
+              setIsAwaitingResponse(false);
               return [
                 ...prev,
                 { id: assistantId, role: "assistant", text: event.value },
@@ -168,6 +176,8 @@ export function ChatPanel({ starterQuestions, contact, greeting }: ChatPanelProp
           },
         ]);
       }
+    } finally {
+      setIsAwaitingResponse(false);
     }
   }
 
@@ -247,6 +257,33 @@ export function ChatPanel({ starterQuestions, contact, greeting }: ChatPanelProp
                   )}
                 </div>
               ))}
+              {isAwaitingResponse && (
+                <div
+                  className={chatMessageAssistantClass}
+                  data-testid="chat-thinking-indicator"
+                >
+                  <span className={chatThinkingDotsRowClass} aria-hidden="true">
+                    {THINKING_DOT_DELAYS_MS.map((delay) => (
+                      <span
+                        key={delay}
+                        className={
+                          prefersReducedMotion
+                            ? chatThinkingDotClass
+                            : chatThinkingDotAnimatedClass
+                        }
+                        style={
+                          prefersReducedMotion
+                            ? undefined
+                            : { animationDelay: `${delay}ms` }
+                        }
+                      />
+                    ))}
+                  </span>
+                  <span className="sr-only" role="status">
+                    Thinking…
+                  </span>
+                </div>
+              )}
             </div>
 
             {messages.length === 0 && (
@@ -286,7 +323,11 @@ export function ChatPanel({ starterQuestions, contact, greeting }: ChatPanelProp
                 onChange={(event) => setInputValue(event.target.value)}
                 placeholder="Ask a question…"
               />
-              <button type="submit" className={chatSubmitButtonClass}>
+              <button
+                type="submit"
+                className={chatSubmitButtonClass}
+                disabled={isAwaitingResponse}
+              >
                 Send
               </button>
             </form>

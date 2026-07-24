@@ -54,3 +54,14 @@ export const chatFormClass =
 export const chatInputClass = `flex-1 rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-400 focus:border-zinc-500 ${focusRingClass}`;
 
 export const chatSubmitButtonClass = `rounded-full border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-200 hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 ${focusRingClass}`;
+
+// Thinking indicator: a 3-dot row shown inside an assistant-styled bubble
+// from submit until the first token arrives — Decisions 2/3 in
+// openspec/changes/chat-thinking-indicator. Animated variant uses Tailwind's
+// built-in transform-only `animate-bounce`; the static variant (reduced
+// motion) omits it entirely.
+export const chatThinkingDotsRowClass = "flex items-center gap-1 py-1";
+
+export const chatThinkingDotClass = "h-1.5 w-1.5 rounded-full bg-zinc-400";
+
+export const chatThinkingDotAnimatedClass = `${chatThinkingDotClass} animate-bounce`;

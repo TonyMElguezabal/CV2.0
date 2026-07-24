@@ -231,6 +231,9 @@ describe("ChatPanel", () => {
     expect(
       await screen.findByText(/something went wrong/i),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("chat-thinking-indicator"),
+    ).not.toBeInTheDocument();
   });
 
   it("shows a specific rate-limit message with contact links when streamChat rejects with a 429 ChatRequestError", async () => {
@@ -252,6 +255,9 @@ describe("ChatPanel", () => {
     expect(
       screen.getByRole("link", { name: /schedul/i }),
     ).toHaveAttribute("href", TEST_CONTACT.scheduling);
+    expect(
+      screen.queryByTestId("chat-thinking-indicator"),
+    ).not.toBeInTheDocument();
   });
 
   it("still shows the generic message (not the rate-limit or unavailable fallback) for a ChatRequestError with an unrelated status", async () => {
@@ -270,6 +276,9 @@ describe("ChatPanel", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText(/usage limit/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/temporarily unavailable/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("chat-thinking-indicator"),
+    ).not.toBeInTheDocument();
   });
 
   it("shows a specific unavailable message with contact links when streamChat rejects with a 503 ChatRequestError", async () => {
@@ -292,6 +301,66 @@ describe("ChatPanel", () => {
     expect(
       screen.getByRole("link", { name: /schedul/i }),
     ).toHaveAttribute("href", TEST_CONTACT.scheduling);
+    expect(
+      screen.queryByTestId("chat-thinking-indicator"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows a thinking indicator after submit while awaiting the first token, then replaces it on first token", async () => {
+    let releaseFirstToken: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      releaseFirstToken = resolve;
+    });
+    mockStreamChat.mockReturnValue(
+      (async function* () {
+        await gate;
+        yield { type: "token", value: "Answer." } as const;
+        yield { type: "done" } as const;
+      })(),
+    );
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+    fireEvent.click(screen.getByRole("button", { name: FIRST_STARTER_QUESTION }));
+
+    expect(
+      await screen.findByTestId("chat-thinking-indicator"),
+    ).toBeInTheDocument();
+
+    releaseFirstToken();
+
+    await screen.findByText("Answer.");
+    expect(
+      screen.queryByTestId("chat-thinking-indicator"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("disables the Send control while a request is in flight and re-enables it once the request completes", async () => {
+    let releaseDone: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      releaseDone = resolve;
+    });
+    mockStreamChat.mockReturnValue(
+      (async function* () {
+        await gate;
+        yield { type: "done" } as const;
+      })(),
+    );
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    const input = screen.getByRole("textbox", { name: /ask a question/i });
+    fireEvent.change(input, { target: { value: "Has he led cloud migrations?" } });
+    fireEvent.submit(input.closest("form")!);
+
+    const sendButton = screen.getByRole("button", { name: /send/i });
+    expect(sendButton).toBeDisabled();
+
+    fireEvent.submit(input.closest("form")!);
+    expect(mockStreamChat).toHaveBeenCalledTimes(1);
+
+    releaseDone();
+
+    await waitFor(() => expect(sendButton).not.toBeDisabled());
   });
 
   it("recovers without a reload: a successful send after a 503 failure works normally", async () => {
@@ -412,5 +481,31 @@ describe("ChatPanel reduced motion", () => {
     const greeting = screen.getByTestId("chat-greeting");
     expect(greeting.style.transform).not.toContain("px");
     expect(greeting.style.opacity).toBe("1");
+  });
+
+  it("renders the thinking indicator's dots in a static form with no looping animation under prefers-reduced-motion", async () => {
+    let releaseDone: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      releaseDone = resolve;
+    });
+    setPrefersReducedMotion(true);
+    mockStreamChat.mockReturnValue(
+      (async function* () {
+        await gate;
+        yield { type: "done" } as const;
+      })(),
+    );
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+    fireEvent.click(screen.getByRole("button", { name: FIRST_STARTER_QUESTION }));
+
+    const indicator = await screen.findByTestId("chat-thinking-indicator");
+    const dots = indicator.querySelectorAll<HTMLElement>("[aria-hidden] > span");
+    expect(dots.length).toBeGreaterThan(0);
+    dots.forEach((dot) => {
+      expect(dot.className).not.toContain("animate-bounce");
+    });
+
+    releaseDone();
   });
 });
