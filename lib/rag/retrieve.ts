@@ -1,8 +1,16 @@
-import { readFileSync } from "node:fs";
-import { DEFAULT_INDEX_PATH, type IndexedChunk } from "./embed.ts";
+import type { IndexedChunk } from "./embed.ts";
 
-export function loadIndex(path: string = DEFAULT_INDEX_PATH): IndexedChunk[] {
-  return JSON.parse(readFileSync(path, "utf-8"));
+// A dynamic import (not `node:fs`) so the index is bundled at build time as
+// a module reference rather than read from disk at request time — the
+// Cloudflare Workers runtime (via the OpenNext adapter) does not support
+// request-time `readFileSync` for this — see
+// openspec/changes/cloudflare-deployment-readiness. Kept dynamic (not a
+// static top-level import) so merely importing this module doesn't require
+// lib/rag/index.json to already exist — only calling loadIndex() does,
+// preserving the previous lazy-read behavior for tests that never call it.
+export async function loadIndex(): Promise<IndexedChunk[]> {
+  const module = await import("./index.json", { with: { type: "json" } });
+  return module.default as IndexedChunk[];
 }
 
 export function cosineSimilarity(a: number[], b: number[]): number {

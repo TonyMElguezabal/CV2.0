@@ -1,4 +1,4 @@
-import { cosineSimilarity, retrieveTopK } from "./retrieve.ts";
+import { cosineSimilarity, loadIndex, retrieveTopK } from "./retrieve.ts";
 import type { IndexedChunk } from "./embed.ts";
 
 function makeChunk(id: string, embedding: number[]): IndexedChunk {
@@ -10,6 +10,24 @@ function makeChunk(id: string, embedding: number[]): IndexedChunk {
     embedding,
   };
 }
+
+describe("loadIndex", () => {
+  it("loads the bundled RAG index via a static import, not a runtime filesystem read", async () => {
+    const index = await loadIndex();
+
+    expect(Array.isArray(index)).toBe(true);
+    expect(index.length).toBeGreaterThan(0);
+    expect(index[0]).toEqual(
+      expect.objectContaining({
+        id: expect.any(String),
+        text: expect.any(String),
+        source: expect.any(String),
+        anchor: expect.any(String),
+        embedding: expect.any(Array),
+      }),
+    );
+  });
+});
 
 describe("cosineSimilarity", () => {
   it("returns 1 for identical vectors", () => {

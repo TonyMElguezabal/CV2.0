@@ -296,25 +296,38 @@ are asserted by tests, not just prose:
 ## Admin access
 
 `/admin` is the owner-only insights dashboard (PRD §5 F9; gate + shell
-shipped by JOS-88 / 7.4a, reports filled in by JOS-89 / 7.4b). It's gated
-by `proxy.ts` (scoped to `/admin/:path*` only — it never runs on the
-public routes, so static generation and the CSP from "Security &
-privacy" above are unaffected) using **HTTP Basic Auth**:
+shipped by JOS-88 / 7.4a, reports filled in by JOS-89 / 7.4b). It renders
+under its own independent root layout (`app/admin/layout.tsx` — no hero,
+chat widget, or footer; those are marketing chrome that never belonged on
+an internal dashboard) and is gated by a **cookie-session login**
+(`app/admin/(protected)/layout.tsx`), not HTTP Basic Auth — that switch
+was part of `cloudflare-deployment-readiness`, since Next 16's Proxy
+(which the old Basic Auth challenge required) doesn't build under the
+Cloudflare adapter (`cloudflare/workers-sdk#13755`):
 
 1. Set `ADMIN_USER` and `ADMIN_PASSWORD` in `.env.local` (local) and the
-   Vercel project's environment variables (production). **Leaving either
-   unset fails the gate closed** — the admin area becomes entirely
-   inaccessible rather than accidentally public.
-2. The credential is verified with a constant-time comparison
-   (`lib/admin/basicAuth.ts`) and rate-limited per IP (reusing the same
-   Upstash limiter as chat/analytics) to throttle brute-force guessing.
-3. `/admin` is excluded from search indexing (`app/robots.ts` disallows
-   it; the page sets `robots: { index: false }`).
+   deployment platform's environment variables (production). **Leaving
+   either unset fails the gate closed** — no session can ever be issued,
+   so the admin area becomes entirely inaccessible rather than
+   accidentally public.
+2. Visiting `/admin` without a valid session redirects to `/admin/login`,
+   a plain server-rendered form (no JS required) that posts to
+   `/admin/login/submit`. Credentials are verified with a constant-time
+   comparison (`lib/admin/credentials.ts`) and rate-limited per IP
+   (reusing the same Upstash limiter as chat/analytics) to throttle
+   brute-force guessing.
+3. On success, a signed session token (`lib/admin/session.ts` — HMAC-SHA256
+   via Web Crypto, `ADMIN_PASSWORD` as the signing key, 7-day expiry) is
+   set as an `HttpOnly`, `Secure`, `SameSite=Strict` cookie scoped to
+   `Path=/admin` — never sent on public routes.
+4. `/admin` and `/admin/login` are excluded from search indexing
+   (`app/robots.ts` disallows `/admin`, which covers both by standard
+   robots.txt prefix matching; both pages set `robots: { index: false }`).
 
-**Why this satisfies the site's privacy posture**: Basic Auth sets no
-cookie, so the public site's cookieless promise (see "Security &
-privacy") is unaffected — the admin gate is a separate, owner-only
-concern from visitor-facing analytics.
+**Why this satisfies the site's privacy posture**: the session cookie is
+scoped to `/admin` only, so the public site's cookieless promise (see
+"Security & privacy") is unaffected — the admin gate is a separate,
+owner-only concern from visitor-facing analytics.
 
 **What the dashboard shows**: `lib/analytics/reports.ts` reads the
 existing analytics store (`lib/analytics/store.ts` — write-only) at
@@ -343,3 +356,52 @@ collecting events.
 `public/resume.pdf` is the downloadable résumé served from the hero's
 "Download résumé" CTA, via Next.js's static-file convention (no route or
 build step needed).
+
+## Cloudflare deployment
+
+The site deploys to Cloudflare Workers via `@opennextjs/cloudflare`
+(`wrangler.jsonc`, `open-next.config.ts`). Two adapter-specific things
+that took real hands-on verification to get right (not documented clearly
+upstream) — see `openspec/changes/archive/*-cloudflare-deployment-readiness/`
+for the full investigation:
+
+- **The static-assets incremental cache must be configured and populated.**
+  `open-next.config.ts` sets `incrementalCache: staticAssetsIncrementalCache`
+  so prerendered routes (`/`, `/opengraph-image`) are served from build-time
+  output rather than re-executed per request — without it, or without
+  running the population step, *every* route (even fully static ones)
+  falls through to a live re-render and crashes on `node:fs` calls the
+  Workers runtime doesn't support. **Always verify with
+  `npm run preview` (`opennextjs-cloudflare build && opennextjs-cloudflare
+  preview`), which populates the cache automatically — a raw `wrangler
+  dev` against an unpopulated cache gives false-negative crashes for
+  static routes.** A real deploy must run the equivalent population step
+  (`opennextjs-cloudflare populateCache remote`, or confirm `deploy`
+  handles it) before traffic hits the Worker, or the first request to a
+  static route could 500 until it's populated.
+- **No request-time `node:fs` reads survive in genuinely dynamic routes.**
+  `/api/chat` and `/admin` don't benefit from the static-assets cache (one's
+  a Route Handler, the other is `force-dynamic` for fresh Neon queries), so
+  both were reworked to avoid any runtime filesystem read: the RAG index
+  (`lib/rag/retrieve.ts`) and a small site-config artifact (`{ contact,
+  chapterIds }`, `lib/site-config/`) are both loaded via `import()`
+  resolved at build time, not `readFileSync`. `lib/content/read.ts` itself
+  is unchanged — every other consumer renders on static, cache-served
+  routes and never executes in the Worker.
+
+**Bundle size**: a dry-run deploy (`npx wrangler deploy --dry-run`)
+measured the full Worker upload at **~2.86 MiB gzip** (~12.1 MiB
+uncompressed) — dominated by the ~2.6 MB RAG embedding index bundled
+directly into the Worker. This is close enough to Cloudflare's **free-tier
+3 MiB gzip Worker size limit** that any further content growth (more
+career chapters, more FAQ entries expanding the index) risks tipping over
+it — **the paid Workers plan (10 MiB gzip limit) is recommended** rather
+than assuming the free tier has headroom.
+
+**Also required, unrelated to the adapter itself**: Next 16's Proxy
+(`proxy.ts`) always runs on the Node.js runtime, which the adapter
+currently rejects outright (`Node.js middleware is not currently
+supported`, a live gap tracked at `cloudflare/workers-sdk#13755`) — this
+repo has no `proxy.ts`/`middleware.ts` as a result; `/admin`'s access gate
+was moved to a cookie-session login (Route Handler + Server Component
+layout) instead of Proxy-based Basic Auth, see "Admin access" above.

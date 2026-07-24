@@ -1,4 +1,4 @@
-import "./globals.css";
+import "../globals.css";
 import { getFaq, getProfile } from "@/lib/content/read.ts";
 import { resolveSiteUrl } from "@/lib/seo/siteUrl.ts";
 import { buildRootMetadata } from "@/lib/seo/metadata.ts";
