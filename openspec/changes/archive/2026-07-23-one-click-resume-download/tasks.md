@@ -41,4 +41,4 @@ static asset and the tracking transport is unchanged from 7.1/7.3.
 
 ## 4. OpenSpec sync
 
-- [ ] 4.1 After merge, sync `specs/one-click-resume-download/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 4.1 After merge, sync `specs/one-click-resume-download/spec.md` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
