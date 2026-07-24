@@ -32,4 +32,4 @@
 
 ## 5. OpenSpec sync
 
-- [ ] 5.1 After merge, sync `specs/chat-widget-entry-point/spec.md` into `openspec/specs/chat-widget-entry-point/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 5.1 After merge, sync `specs/chat-widget-entry-point/spec.md` into `openspec/specs/chat-widget-entry-point/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
