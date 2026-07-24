@@ -17,6 +17,10 @@ const FIXTURE_PROFILE: Profile = {
     email: "fixture@example.com",
     scheduling: "https://cal.com/fixture",
   },
+  chat: {
+    greeting: "Hi! Fixture greeting.",
+    tooltipLabel: "chat with me",
+  },
 };
 
 const SITE_URL = "https://fixture.example.com";

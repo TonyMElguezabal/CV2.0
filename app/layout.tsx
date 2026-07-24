@@ -21,7 +21,7 @@ export default function RootLayout({
   const starterQuestions = getFaq()
     .slice(0, STARTER_QUESTION_COUNT)
     .map((entry) => entry.question);
-  const { contact } = getProfile();
+  const { contact, chat } = getProfile();
 
   return (
     <html lang="en" className="h-full antialiased">
@@ -31,7 +31,12 @@ export default function RootLayout({
         <ChatWidgetProvider>
           {children}
           <SiteFooter />
-          <ChatWidget starterQuestions={starterQuestions} contact={contact} />
+          <ChatWidget
+            starterQuestions={starterQuestions}
+            contact={contact}
+            tooltipLabel={chat.tooltipLabel}
+            greeting={chat.greeting}
+          />
         </ChatWidgetProvider>
         <AnalyticsTracker />
       </body>

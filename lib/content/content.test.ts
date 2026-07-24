@@ -17,6 +17,8 @@ describe("content-model: profile", () => {
       expect(profile.summary).toEqual(expect.any(String));
       expect(profile.links).toEqual(expect.any(Object));
       expect(profile.contact).toEqual(expect.any(Object));
+      expect(profile.chat.greeting).toEqual(expect.any(String));
+      expect(profile.chat.tooltipLabel).toEqual(expect.any(String));
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

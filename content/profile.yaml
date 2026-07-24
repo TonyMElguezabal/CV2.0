@@ -12,3 +12,8 @@ links:
 contact:
   email: jose.elguezabal@gmail.com
   scheduling: https://cal.com/jose-munoz-elguezabal-xsgp2a
+chat:
+  greeting: >-
+    Hi! I'm an AI assistant Jose built to answer questions about him. Here
+    are a few examples — or just type your own question!
+  tooltipLabel: chat with me

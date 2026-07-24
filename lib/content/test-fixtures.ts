@@ -11,6 +11,9 @@ links:
 contact:
   email: test@example.com
   scheduling: https://cal.com/test
+chat:
+  greeting: Hi! Test greeting.
+  tooltipLabel: chat with me
 `;
 
 export const VALID_EXPERIENCE = `

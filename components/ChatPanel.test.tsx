@@ -64,6 +64,7 @@ const TEST_CONTACT = {
   email: "jose.elguezabal@gmail.com",
   scheduling: "https://cal.com/josemunoz",
 };
+const GREETING = "Hi! Test greeting.";
 
 // ChatPanel reads isOpen/closeChat from context itself (no longer via
 // props from ChatWidget, which now dynamically imports it — see
@@ -85,7 +86,11 @@ function renderWidget() {
     <ChatWidgetProvider>
       <a href="#background">Background link</a>
       <TestTrigger />
-      <ChatPanel starterQuestions={STARTER_QUESTIONS} contact={TEST_CONTACT} />
+      <ChatPanel
+        starterQuestions={STARTER_QUESTIONS}
+        contact={TEST_CONTACT}
+        greeting={GREETING}
+      />
     </ChatWidgetProvider>,
   );
 }
@@ -118,6 +123,32 @@ describe("ChatPanel", () => {
     for (const question of STARTER_QUESTIONS) {
       expect(screen.getByRole("button", { name: question })).toBeInTheDocument();
     }
+  });
+
+  it("shows the greeting above the starter questions when opened with no messages", () => {
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    expect(screen.getByText(GREETING)).toBeInTheDocument();
+  });
+
+  it("no longer shows the greeting after the first message is sent", async () => {
+    mockStreamChat.mockReturnValue(eventsOf([{ type: "done" }]));
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+    expect(screen.getByText(GREETING)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: FIRST_STARTER_QUESTION }));
+
+    await screen.findByText(FIRST_STARTER_QUESTION);
+    expect(screen.queryByText(GREETING)).not.toBeInTheDocument();
+  });
+
+  it("still gives the close button focus on open alongside the greeting", () => {
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    expect(screen.getByRole("button", { name: /close chat/i })).toHaveFocus();
   });
 
   it("submits a selected starter question as a visitor message and calls streamChat with its exact text", async () => {
@@ -362,5 +393,24 @@ describe("ChatPanel reduced motion", () => {
 
     const panel = screen.getByRole("region", { name: /ask about jose/i });
     expect(panel.style.transform).not.toContain("px");
+  });
+
+  it("applies a y-offset to the greeting's entrance under default motion settings", () => {
+    setPrefersReducedMotion(false);
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    const greeting = screen.getByTestId("chat-greeting");
+    expect(greeting.style.transform).toContain("px");
+  });
+
+  it("renders the greeting with no motion (final state) under prefers-reduced-motion", () => {
+    setPrefersReducedMotion(true);
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    const greeting = screen.getByTestId("chat-greeting");
+    expect(greeting.style.transform).not.toContain("px");
+    expect(greeting.style.opacity).toBe("1");
   });
 });

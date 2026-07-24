@@ -35,12 +35,18 @@ export const ProfileContactSchema = z.object({
   scheduling: z.string(),
 });
 
+export const ChatSchema = z.object({
+  greeting: z.string(),
+  tooltipLabel: z.string(),
+});
+
 export const ProfileSchema = z.object({
   name: z.string(),
   positioning: z.string(),
   summary: z.string(),
   links: ProfileLinksSchema,
   contact: ProfileContactSchema,
+  chat: ChatSchema,
 });
 
 export const ExperienceDatesSchema = z.object({
