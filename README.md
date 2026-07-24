@@ -162,7 +162,10 @@ external validators are the test per the SEO story's acceptance criteria
 
 ## Performance budget
 
-The landing route's **First Load JS is ~128 KB gzip** (measured 2026-07-23
+The landing route's **First Load JS is ~123 KB gzip** (re-measured
+2026-07-24 after adding the whole-page `HeroLaptop` scroll motif — no
+regression from the ~128 KB baseline recorded 2026-07-23; the new component
+adds no dependency and reuses the existing `MotionProvider` lazy boundary —
 from a `next build --webpack` production build — Next 16's build output no
 longer prints the classic per-route size table, so this is computed
 directly from `.next/static/chunks` via `gzip -c <chunk> | wc -c`, summing
@@ -219,6 +222,28 @@ browser automation tab reports `document.visibilityState: "hidden"`,
 which throttles the animation frame loop entirely (the same tab-visibility
 limitation found and documented during the accessibility story's manual
 verification), not a reflection of real device behavior.
+
+**Re-measured 2026-07-24** after adding the whole-page `HeroLaptop` scroll
+motif (`hero-signature-motion` / `openspec/changes/hero-laptop-scroll-motion`):
+
+| | Performance | Accessibility | Best Practices | SEO | LCP |
+|---|---|---|---|---|---|
+| **Desktop** | 100 | 100 | 100 | 100 | 0.6s |
+| **Mobile** | 95 | 100 | 100 | 100 | 2.9s |
+
+Both clear every target. The laptop layer is hidden below Tailwind's `sm`
+breakpoint (`components/HeroShellStyles.ts`'s `heroLaptopLayerClass`,
+`hidden sm:flex` — the mobile-simplification requirement), so it adds
+**zero cost** on Lighthouse's mobile emulation. The LCP element (via the
+`lcp-breakdown-insight` audit) is the hero's positioning paragraph text on
+both runs — the laptop layer never becomes the LCP element. The
+Accessibility 100 (contrast enabled, unlike the jsdom a11y tests) confirms
+the legibility scrim keeps text over the laptop within contrast
+requirements. 60fps: the laptop's animated style props (`rotateX`,
+`rotateY`, `rotateZ`, `opacity`) are transform/opacity-only by
+construction, same compositor-only guarantee as the existing surfaces; a
+live DevTools recording has the same headless-environment limitation
+noted above.
 
 ## Security & privacy
 
