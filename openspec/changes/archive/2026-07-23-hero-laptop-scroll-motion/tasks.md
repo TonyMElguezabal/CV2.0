@@ -42,4 +42,4 @@
 
 ## 6. OpenSpec sync
 
-- [ ] 6.1 After merge, sync `specs/hero-signature-motion/spec.md` into `openspec/specs/hero-signature-motion/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 6.1 After merge, sync `specs/hero-signature-motion/spec.md` into `openspec/specs/hero-signature-motion/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
