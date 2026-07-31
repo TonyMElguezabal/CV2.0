@@ -145,5 +145,5 @@
 - [x] 14.1 Run the full gate one final time: `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run validate:content`, `npm run build` (363/363 tests, tsc/validate/build all clean; `npm run lint` has a pre-existing, unrelated missing `eslint.config.js` — predates this branch)
 - [x] 14.2 Re-read the four delta specs and confirm every scenario has a corresponding test or documented verification (all 21 scenarios cross-checked — see below)
 - [x] 14.3 Confirm no broken symlinks or stale targets were introduced (CLAUDE.md §6) (`CLAUDE.md`/`codex.md`/`GEMINI.md` → `AGENTS.md`, all resolve; `AGENTS.md` edit propagated correctly)
-- [ ] 14.4 Open the PR referencing JOS-101 with the eval ship-gate summary attached
-- [ ] 14.5 Run `/opsx:archive` after review and verification
+- [x] 14.4 Open the PR referencing JOS-101 with the eval ship-gate summary attached (https://github.com/TonyMElguezabal/CV2.0/pull/42, merged)
+- [x] 14.5 Run `/opsx:archive` after review and verification
