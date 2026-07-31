@@ -3,6 +3,7 @@ import { basename, extname, join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import matter from "gray-matter";
 import type { Profile, Experience, Project, Skill } from "./types";
+import { SkillSchema, MetaSchema } from "./schemas";
 import { makeFixtureRoot } from "./test-fixtures";
 
 describe("content-model: profile", () => {
@@ -113,6 +114,51 @@ describe("content-model: skills", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it("requires a non-empty summary alongside name and evidence", () => {
+    expect(
+      SkillSchema.safeParse({ name: "Testing", evidence: ["acme"] }).success,
+    ).toBe(false);
+    expect(
+      SkillSchema.safeParse({
+        name: "Testing",
+        evidence: ["acme"],
+        summary: "",
+      }).success,
+    ).toBe(false);
+    expect(
+      SkillSchema.safeParse({
+        name: "Testing",
+        evidence: ["acme"],
+        summary: "   ",
+      }).success,
+    ).toBe(false);
+    expect(
+      SkillSchema.safeParse({
+        name: "Testing",
+        evidence: ["acme"],
+        summary: "Evidenced by real project delivery.",
+      }).success,
+    ).toBe(true);
+  });
+});
+
+describe("content-model: meta", () => {
+  it("parses title and topics frontmatter, and rejects a missing title", () => {
+    const result = MetaSchema.safeParse({
+      title: "About This Site",
+      topics: ["architecture", "chatbot"],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.title).toBe("About This Site");
+      expect(result.data.topics).toEqual(["architecture", "chatbot"]);
+    }
+
+    expect(
+      MetaSchema.safeParse({ topics: ["architecture"] }).success,
+    ).toBe(false);
   });
 });
 

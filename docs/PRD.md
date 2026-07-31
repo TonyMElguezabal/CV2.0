@@ -145,8 +145,13 @@ Content lives in version-controlled structured files (JSON or YAML + Markdown), 
   projects/
     <project>.md      # frontmatter: title, company, skills[], metrics[]
                       # body: problem / approach / outcome narrative
-  skills.yaml         # skill → evidence references (project/chapter IDs)
+  skills.yaml         # skill → summary (prose) + evidence references (project/chapter IDs)
   faq.md              # curated Q&A pairs to strengthen chatbot answers
+  meta.md             # frontmatter: title, topics[]
+                      # body: sections describing the site itself and its
+                      # chatbot's retrieval/generation pipeline, so questions
+                      # about the site are answerable from real evidence
+                      # (JOS-101 / chatbot-corpus-coverage)
 ```
 
 Validation: a build-time schema check (Zod or JSON Schema) fails the build on missing required fields, dangling skill→evidence references, or malformed dates.

@@ -1,14 +1,6 @@
 import OpenAI from "openai";
 import type { GenerateRequest, GenerateResponse, LlmProvider } from "../adapter.ts";
-
-// Cost-efficient/fast tier, not a flagship reasoning model — matches what
-// a real deployment would use to hit PRD §10's <$50/month budget. Confirmed
-// against OpenAI's live model list at execution time (see design.md's Open
-// Questions in openspec/changes/llm-retrieval-spike): gpt-4.1-mini exists
-// but is dated next to the current gpt-5.x lineup; gpt-5.4-mini (released
-// 2026-03) is the current mini tier and the fairer comparison against
-// Claude's Haiku 4.5.
-const MODEL = "gpt-5.4-mini";
+import { OPENAI_MODEL as MODEL } from "../models.ts";
 
 export class OpenAiProvider implements LlmProvider {
   readonly name = "gpt";

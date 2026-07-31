@@ -43,6 +43,7 @@ describe("validateContent: dangling skill evidence references", () => {
   evidence:
     - acme
     - does-not-exist
+  summary: Test summary evidencing this skill.
 `;
       writeFileSync(join(root, "skills.yaml"), brokenSkills);
 
@@ -96,6 +97,137 @@ describe("validateContent: dangling skill evidence references", () => {
           e.message.toLowerCase().includes("dangling"),
         ),
       ).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reports an error when a skill's summary is missing", () => {
+    const root = makeFixtureRoot();
+    try {
+      const missingSummarySkills = `
+- name: Testing
+  evidence:
+    - acme
+`;
+      writeFileSync(join(root, "skills.yaml"), missingSummarySkills);
+
+      const result = validateContent(root);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({
+          file: "skills.yaml",
+          field: "0.summary",
+        }),
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reports an error when a skill's summary is empty or whitespace-only", () => {
+    const root = makeFixtureRoot();
+    try {
+      const blankSummarySkills = `
+- name: Testing
+  evidence:
+    - acme
+  summary: "   "
+`;
+      writeFileSync(join(root, "skills.yaml"), blankSummarySkills);
+
+      const result = validateContent(root);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({
+          file: "skills.yaml",
+          field: "0.summary",
+        }),
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("validateContent: meta content source", () => {
+  it("reports an error when content/meta.md is absent", () => {
+    const root = makeFixtureRoot();
+    try {
+      rmSync(join(root, "meta.md"));
+
+      const result = validateContent(root);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({ file: "meta.md" }),
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reports an error when content/meta.md is missing a required frontmatter field", () => {
+    const root = makeFixtureRoot();
+    try {
+      const brokenMeta = `---
+topics:
+  - architecture
+---
+
+## What This Site Is
+
+Missing a title.
+`;
+      writeFileSync(join(root, "meta.md"), brokenMeta);
+
+      const result = validateContent(root);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({ file: "meta.md", field: "title" }),
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reports an error when content/meta.md hardcodes the active LLM or embedding model identifier", () => {
+    const root = makeFixtureRoot();
+    try {
+      const metaWithModelLiteral = `---
+title: About This Site
+topics:
+  - architecture
+---
+
+## What This Site Is
+
+This chatbot uses gpt-5.4-mini to generate answers.
+`;
+      writeFileSync(join(root, "meta.md"), metaWithModelLiteral);
+
+      const result = validateContent(root);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({ file: "meta.md" }),
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reports no model-literal error when content/meta.md contains no model identifier", () => {
+    const root = makeFixtureRoot();
+    try {
+      const result = validateContent(root);
+
+      expect(
+        result.errors.filter((e) => e.file === "meta.md"),
+      ).toEqual([]);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

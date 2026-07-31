@@ -22,6 +22,7 @@ const FIXTURE_EXPERIENCE: ExperienceWithId = {
 const FIXTURE_SKILL: Skill = {
   name: "Fixture Skill",
   evidence: ["acme"],
+  summary: "Fixture summary for the fixture skill.",
 };
 
 describe("SkillsSection — server-rendered (no-JS) output", () => {

@@ -1,12 +1,33 @@
-import { getExperiences, getSkills, getProjects, getFaq } from "./read.ts";
+import { getExperiences, getProfile, getSkills, getProjects, getFaq, getMeta } from "./read.ts";
 
 export interface ContentChunk {
   id: string;
   text: string;
-  source: "experience" | "project" | "skill" | "faq";
+  source: "experience" | "project" | "skill" | "faq" | "profile" | "meta";
   chapterId?: string;
   anchor: string;
 }
+
+// Required, not optional: a caller cannot silently produce chunks (in
+// particular the site-meta chunks, which name the active model) without
+// naming the model actually configured in code. See design.md in
+// openspec/changes/chatbot-corpus-coverage.
+export interface ContentChunkModels {
+  llm: string;
+  embedding: string;
+}
+
+export interface GetContentChunksOptions {
+  contentRoot?: string;
+  models: ContentChunkModels;
+}
+
+// A chunk shorter than this carries a bare label or identifier list rather
+// than retrievable meaning. Never used to filter or merge chunks — a chunk
+// below this length means the underlying content is thin and should be
+// authored, not hidden (design decision 5). See design.md in
+// openspec/changes/chatbot-corpus-coverage.
+export const MIN_CHUNK_LENGTH = 60;
 
 function slugify(value: string): string {
   return value
@@ -15,12 +36,42 @@ function slugify(value: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+// Renders a YYYY-MM or YYYY-MM-DD date string as "Month YYYY" — embeddings
+// match natural phrasing ("March 2019") better than raw ISO values, but the
+// raw values are also carried in the chunk text since eval expectedSubstrings
+// are most stable against them (design decision 7).
+function renderMonthYear(dateString: string): string {
+  const [year, month] = dateString.split("-");
+  const monthName = MONTH_NAMES[Number(month) - 1] ?? month;
+  return `${monthName} ${year}`;
+}
+
+function renderDateRange(start: string, end: string | undefined): string {
+  const startRendered = renderMonthYear(start);
+  const endRendered = end ? renderMonthYear(end) : "present";
+  return `${startRendered} – ${endRendered}`;
+}
+
 // Chunks by semantic unit (chapter section, project, leadership story, FAQ
 // pair), per PRD §7 — each chunk carries source/chapter/anchor metadata so
 // retrieved answers can cite and deep-link into the site. See design.md in
 // openspec/changes/llm-retrieval-spike.
-export function getContentChunks(contentRoot?: string): ContentChunk[] {
+export function getContentChunks(options: GetContentChunksOptions): ContentChunk[] {
+  const { contentRoot } = options;
   const chunks: ContentChunk[] = [];
+
+  const profile = getProfile(contentRoot);
+  chunks.push({
+    id: "profile-summary",
+    text: `${profile.positioning}\n\n${profile.summary}`,
+    source: "profile",
+    anchor: "#main",
+  });
 
   for (const experience of getExperiences(contentRoot)) {
     const anchor = `#${experience.id}`;
@@ -28,6 +79,19 @@ export function getContentChunks(contentRoot?: string): ContentChunk[] {
     chunks.push({
       id: `${experience.id}-context`,
       text: `${experience.role} at ${experience.company}\n\n${experience.context}`,
+      source: "experience",
+      chapterId: experience.id,
+      anchor,
+    });
+
+    chunks.push({
+      id: `${experience.id}-mission-dates`,
+      text: [
+        `${experience.role} at ${experience.company}`,
+        experience.mission,
+        `Dates: ${experience.dates.start} to ${experience.dates.end ?? "present"}`,
+        `(${renderDateRange(experience.dates.start, experience.dates.end)})`,
+      ].join("\n"),
       source: "experience",
       chapterId: experience.id,
       anchor,
@@ -53,6 +117,16 @@ export function getContentChunks(contentRoot?: string): ContentChunk[] {
       });
     });
 
+    if (experience.technologies.length > 0) {
+      chunks.push({
+        id: `${experience.id}-technologies`,
+        text: `As ${experience.role} at ${experience.company}, Jose worked with the following tools and technologies: ${experience.technologies.join(", ")}.`,
+        source: "experience",
+        chapterId: experience.id,
+        anchor,
+      });
+    }
+
     chunks.push({
       id: `${experience.id}-leadership`,
       text: experience.leadership.join("\n"),
@@ -73,7 +147,7 @@ export function getContentChunks(contentRoot?: string): ContentChunk[] {
   for (const skill of getSkills(contentRoot)) {
     chunks.push({
       id: `skill-${slugify(skill.name)}`,
-      text: `${skill.name} — evidenced by ${skill.evidence.join(", ")}`,
+      text: `${skill.name}\n${skill.summary}\nEvidenced by: ${skill.evidence.join(", ")}`,
       source: "skill",
       anchor: "#skills",
     });
@@ -101,6 +175,27 @@ export function getContentChunks(contentRoot?: string): ContentChunk[] {
       source: "faq",
       anchor: "#faq",
     });
+  });
+
+  // Site-meta chunks: a few dense, semantically distinct chunks (not one
+  // per paragraph) so they compete fairly for retrieval slots against the
+  // rest of the corpus at a fixed k=5 (design decision 4). Anchored at
+  // #chat — the real, existing element these chunks describe (design
+  // decision 8).
+  const meta = getMeta(contentRoot);
+  for (const [heading, content] of Object.entries(meta.sections)) {
+    chunks.push({
+      id: `meta-${slugify(heading)}`,
+      text: `${meta.title}\n\n${content}`,
+      source: "meta",
+      anchor: "#chat",
+    });
+  }
+  chunks.push({
+    id: "meta-model-stack",
+    text: `${meta.title} — this chatbot generates answers using the ${options.models.llm} language model, over content retrieved with the ${options.models.embedding} embedding model.`,
+    source: "meta",
+    anchor: "#chat",
   });
 
   return chunks;

@@ -4,6 +4,7 @@
 // lives in eval-grade.ts; the live run procedure is `npm run eval:chat`.
 
 export { SYSTEM_PROMPT } from "./generate.ts";
+import { ACTIVE_LLM_MODEL } from "./active-provider.ts";
 
 export type EvalCategory = "core" | "factual" | "trap" | "injection" | "uncovered";
 
@@ -106,7 +107,11 @@ export const EVAL_SET: EvalQuestion[] = [
     category: "factual",
     question:
       "How many junior engineers did Jose mentor into senior roles at Envato?",
-    expectedSubstrings: ["two junior engineers"],
+    // Pre-existing wording mismatch fixed in passing (chatbot-corpus-coverage):
+    // the eval expected "two junior engineers", but content/experience/envato.yaml's
+    // leadership field says "two junior backend developers" — corrected to match
+    // the real content rather than the content's actual, more specific wording.
+    expectedSubstrings: ["two junior backend developers"],
     sourceId: "envato",
   },
   {
@@ -124,6 +129,32 @@ export const EVAL_SET: EvalQuestion[] = [
       "What tools did Jose's team use to validate the ACMA architecture's performance and scalability?",
     expectedSubstrings: ["LoadRunner"],
     sourceId: "tcs-bcp",
+  },
+
+  // Corpus-coverage additions (JOS-101 / chatbot-corpus-coverage) — tooling,
+  // tenure, and site-meta questions that were previously refused because
+  // technologies/dates/meta content was never chunked. See
+  // openspec/changes/chatbot-corpus-coverage.
+  {
+    id: "factual-11",
+    category: "factual",
+    question: "What tools and technologies did Jose use at Envato/Placeit?",
+    expectedSubstrings: ["Datadog"],
+    sourceId: "envato",
+  },
+  {
+    id: "factual-12",
+    category: "factual",
+    question: "When did Jose work at Envato/Placeit?",
+    expectedSubstrings: ["2019", "2021"],
+    sourceId: "envato",
+  },
+  {
+    id: "factual-13",
+    category: "factual",
+    question: "What language model powers the chatbot on this site?",
+    expectedSubstrings: [ACTIVE_LLM_MODEL],
+    sourceId: "meta",
   },
 
   // Trap — clearly off-topic questions the deterministic guard (5.4)

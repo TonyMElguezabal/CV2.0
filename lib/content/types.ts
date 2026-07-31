@@ -10,6 +10,7 @@ import type {
   ExperienceSchema,
   ProjectSchema,
   SkillSchema,
+  MetaSchema,
 } from "./schemas";
 
 export type ProfileLinks = z.infer<typeof ProfileLinksSchema>;
@@ -25,3 +26,5 @@ export type Experience = z.infer<typeof ExperienceSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
 
 export type Skill = z.infer<typeof SkillSchema>;
+
+export type Meta = z.infer<typeof MetaSchema>;

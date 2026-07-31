@@ -1,7 +1,7 @@
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { getExperiences, getSkills, getProjects } from "./read.ts";
+import { getExperiences, getSkills, getProjects, getMeta } from "./read.ts";
 
 const OLDER_EXPERIENCE = `
 company: Acme
@@ -107,9 +107,11 @@ const SKILLS_FIXTURE = `
   evidence:
     - acme
     - beta
+  summary: Testing skill summary.
 - name: Leadership
   evidence:
     - beta
+  summary: Leadership skill summary.
 `;
 
 function makeSkillsFixtureRoot(): string {
@@ -191,6 +193,43 @@ function makeProjectsFixtureRoot(): string {
   writeFileSync(join(root, "projects", "reordered.md"), REORDERED_PROJECT);
   return root;
 }
+
+const META_FIXTURE = `---
+title: About This Site
+topics:
+  - architecture
+  - chatbot
+---
+
+## What This Site Is
+
+This site is a content-first application.
+
+## How The Chatbot Works
+
+It retrieves matching content and generates a grounded answer.
+`;
+
+function makeMetaFixtureRoot(): string {
+  const root = mkdtempSync(join(tmpdir(), "read-meta-fixture-"));
+  writeFileSync(join(root, "meta.md"), META_FIXTURE);
+  return root;
+}
+
+describe("getMeta", () => {
+  it("returns parsed frontmatter plus body sections from a fixture content root", () => {
+    const root = makeMetaFixtureRoot();
+    const meta = getMeta(root);
+    expect(meta.title).toBe("About This Site");
+    expect(meta.topics).toEqual(["architecture", "chatbot"]);
+    expect(meta.sections["what this site is"]).toContain(
+      "This site is a content-first application.",
+    );
+    expect(meta.sections["how the chatbot works"]).toContain(
+      "It retrieves matching content and generates a grounded answer.",
+    );
+  });
+});
 
 describe("getProjects", () => {
   it("returns one entry per file under content/projects/", () => {

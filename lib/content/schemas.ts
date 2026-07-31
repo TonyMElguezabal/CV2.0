@@ -89,4 +89,10 @@ export const ProjectSchema = z.object({
 export const SkillSchema = z.object({
   name: z.string(),
   evidence: z.array(z.string()).min(1),
+  summary: z.string().trim().min(1),
+});
+
+export const MetaSchema = z.object({
+  title: z.string(),
+  topics: z.array(z.string()),
 });

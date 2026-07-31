@@ -39,11 +39,13 @@ const ENVATO: ExperienceWithId = {
 const SINGLE_EVIDENCE_SKILL: Skill = {
   name: "Technical Program Leadership",
   evidence: ["oracle"],
+  summary: "Fixture summary for a single-evidence skill.",
 };
 
 const MULTI_EVIDENCE_SKILL: Skill = {
   name: "Stakeholder Management",
   evidence: ["oracle", "envato"],
+  summary: "Fixture summary for a multi-evidence skill.",
 };
 
 describe("SkillsSection", () => {
