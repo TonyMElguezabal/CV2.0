@@ -8,7 +8,9 @@ import {
   ExperienceSchema,
   ProjectSchema,
   SkillSchema,
+  MetaSchema,
 } from "./schemas.ts";
+import { OPENAI_MODEL, EMBEDDING_MODEL } from "../rag/models.ts";
 
 export interface ValidationError {
   file: string;
@@ -102,6 +104,26 @@ export function validateContent(
     }
   } else {
     errors.push({ file: "skills.yaml", message: "file is missing" });
+  }
+
+  const metaPath = join(contentRoot, "meta.md");
+  if (existsSync(metaPath)) {
+    const raw = readFileSync(metaPath, "utf-8");
+    const { data, content } = matter(raw);
+    const result = MetaSchema.safeParse(data);
+    if (!result.success) {
+      errors.push(...zodIssuesToErrors("meta.md", result.error.issues));
+    }
+    for (const modelLiteral of [OPENAI_MODEL, EMBEDDING_MODEL]) {
+      if (content.includes(modelLiteral)) {
+        errors.push({
+          file: "meta.md",
+          message: `hardcodes model identifier "${modelLiteral}" — let it be injected at index-build time instead of writing it into content`,
+        });
+      }
+    }
+  } else {
+    errors.push({ file: "meta.md", message: "file is missing" });
   }
 
   return { valid: errors.length === 0, errors };

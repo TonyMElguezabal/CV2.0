@@ -1,4 +1,6 @@
 import { EVAL_SET } from "./eval-set.ts";
+import { getExperiences } from "../content/read.ts";
+import { ACTIVE_LLM_MODEL } from "./active-provider.ts";
 
 const CORE_QUESTIONS = [
   "Who is Jose?",
@@ -55,5 +57,45 @@ describe("EVAL_SET", () => {
   it("has no duplicate ids", () => {
     const ids = EVAL_SET.map((q) => q.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  // Corpus-coverage additions (JOS-101 / chatbot-corpus-coverage): proves
+  // the tooling/tenure/site-meta gaps this change closes stay closed, per
+  // chatbot-eval-and-ship-gate's added requirements.
+  it("has a factual question whose expectedSubstrings include a real chapter's technology", () => {
+    const experiences = getExperiences();
+    const factualQuestions = EVAL_SET.filter((q) => q.category === "factual");
+    const covered = factualQuestions.some((q) =>
+      experiences.some((exp) =>
+        exp.technologies.some((tech) => q.expectedSubstrings?.includes(tech)),
+      ),
+    );
+    expect(covered).toBe(true);
+  });
+
+  it("has a factual question whose expectedSubstrings include a real chapter's date year", () => {
+    const experiences = getExperiences();
+    const factualQuestions = EVAL_SET.filter((q) => q.category === "factual");
+    const covered = factualQuestions.some((q) =>
+      experiences.some((exp) => {
+        const startYear = exp.dates.start.slice(0, 4);
+        const endYear = exp.dates.end?.slice(0, 4);
+        return q.expectedSubstrings?.some(
+          (substring) =>
+            substring.includes(startYear) ||
+            (endYear !== undefined && substring.includes(endYear)),
+        );
+      }),
+    );
+    expect(covered).toBe(true);
+  });
+
+  it("has a factual question whose expectedSubstrings include ACTIVE_LLM_MODEL resolved from code, not a hardcoded string", () => {
+    const covered = EVAL_SET.some(
+      (q) =>
+        q.category === "factual" &&
+        q.expectedSubstrings?.includes(ACTIVE_LLM_MODEL),
+    );
+    expect(covered).toBe(true);
   });
 });

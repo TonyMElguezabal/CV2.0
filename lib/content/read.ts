@@ -7,8 +7,9 @@ import {
   ProfileSchema,
   SkillSchema,
   ProjectSchema,
+  MetaSchema,
 } from "./schemas.ts";
-import type { Experience, Profile, Skill, Project } from "./types.ts";
+import type { Experience, Profile, Skill, Project, Meta } from "./types.ts";
 
 // process.cwd(), not import.meta.dirname: this module is imported into
 // Next.js's bundle (unlike validate.ts/cli.ts, which only run via raw
@@ -17,8 +18,8 @@ import type { Experience, Profile, Skill, Project } from "./types.ts";
 // at request/build time — Next always runs with cwd set to the project root.
 const defaultContentRoot = join(process.cwd(), "content");
 
-export function getProfile(): Profile {
-  const raw = readFileSync(join(defaultContentRoot, "profile.yaml"), "utf-8");
+export function getProfile(contentRoot: string = defaultContentRoot): Profile {
+  const raw = readFileSync(join(contentRoot, "profile.yaml"), "utf-8");
   return ProfileSchema.parse(parseYaml(raw));
 }
 
@@ -51,12 +52,10 @@ export interface ProjectWithId extends Project {
   outcome: string;
 }
 
-// Splits a project's markdown body into named sections by `## <Name>`
-// headings, so the card can render Problem/Approach/Outcome in a fixed
-// order regardless of the order those sections appear in the source file.
-function splitProjectSections(
-  markdown: string
-): Pick<ProjectWithId, "problem" | "approach" | "outcome"> {
+// Splits a markdown body into named sections by `## <Name>` headings,
+// keyed by lowercased heading text, regardless of the order those sections
+// appear in the source file.
+function splitMarkdownSections(markdown: string): Record<string, string> {
   const sections: Record<string, string> = {};
   const parts = markdown.split(/^##\s+(.+)$/m);
   for (let i = 1; i < parts.length; i += 2) {
@@ -64,11 +63,7 @@ function splitProjectSections(
     const content = (parts[i + 1] ?? "").trim();
     sections[heading] = content;
   }
-  return {
-    problem: sections.problem ?? "",
-    approach: sections.approach ?? "",
-    outcome: sections.outcome ?? "",
-  };
+  return sections;
 }
 
 export function getProjects(
@@ -79,12 +74,26 @@ export function getProjects(
     const raw = readFileSync(join(projectsDir, filename), "utf-8");
     const { data, content } = matter(raw);
     const project = ProjectSchema.parse(data);
+    const sections = splitMarkdownSections(content);
     return {
       ...project,
       id: basename(filename, extname(filename)),
-      ...splitProjectSections(content),
+      problem: sections.problem ?? "",
+      approach: sections.approach ?? "",
+      outcome: sections.outcome ?? "",
     };
   });
+}
+
+export interface MetaWithSections extends Meta {
+  sections: Record<string, string>;
+}
+
+export function getMeta(contentRoot: string = defaultContentRoot): MetaWithSections {
+  const raw = readFileSync(join(contentRoot, "meta.md"), "utf-8");
+  const { data, content } = matter(raw);
+  const meta = MetaSchema.parse(data);
+  return { ...meta, sections: splitMarkdownSections(content) };
 }
 
 export interface FaqEntry {

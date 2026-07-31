@@ -53,7 +53,7 @@ export function ChatWidget({
 
   return (
     <>
-      <div className={chatTriggerWrapperClass}>
+      <div id="chat" className={chatTriggerWrapperClass}>
         {!isOpen && (
           <span
             className={chatTooltipClass}

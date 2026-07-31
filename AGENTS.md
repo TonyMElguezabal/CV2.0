@@ -129,6 +129,11 @@ integrity matter beyond rendering.
   `CareerChapters.tsx` renders `getExperiences()` output as native
   `<details>`/`<summary>` chapters — chosen for free keyboard operability and
   no-JS readability over a custom button + ARIA state approach).
+- `lib/rag/models.ts` — single source of truth for the active LLM and
+  embedding model identifiers (`OPENAI_MODEL`, `EMBEDDING_MODEL`). Any
+  self-describing content (e.g. `content/meta.md`) gets model names injected
+  from here at chunk-build time — never hardcoded — so it can't drift when
+  `lib/rag/active-provider.ts`'s provider swap changes the active model.
 
 **Stack choices worth knowing before changing them:**
 - Framer Motion was selected over GSAP ScrollTrigger via a comparative spike

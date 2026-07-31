@@ -68,3 +68,29 @@ chatbot into an internal developer platform. At Envato/Placeit, he led
 delivery of an AI-powered background-removal tool, coordinating the
 training and integration of a machine-learning image-segmentation
 model.
+
+### What AI tools does Jose use?
+
+Jose has worked hands-on with AI across both delivery and technical
+integration. At Oracle, he managed the integration of a
+retrieval-augmented generation (RAG) chatbot into an internal
+developer platform, using Oracle Cloud Infrastructure's AI/LLM
+services. At Envato/Placeit, he led delivery of an AI-powered
+background-removal tool, coordinating the training and integration of
+a machine-learning image-segmentation model. This site's own chat
+assistant is itself a retrieval-augmented generation system he built —
+content is chunked and embedded into a retrieval index at build time,
+and a language model generates answers grounded only in the chunks
+retrieved for a given question.
+
+### How was this site built?
+
+This site is a content-first Next.js application: career history,
+projects, skills, and FAQ content live as structured, version-controlled
+files, kept separate from the presentational components that render
+them. That same content backs the chat assistant on this page — at
+build time it's split into semantic chunks and embedded into a
+retrieval index, and each visitor question is answered by retrieving
+the most relevant chunks and generating a response grounded only in
+that retrieved content, with citations linking back to the section of
+the site each answer came from.

@@ -2,15 +2,14 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import OpenAI from "openai";
 import { getContentChunks, type ContentChunk } from "../content/chunk.ts";
+import { EMBEDDING_MODEL } from "./models.ts";
+import { ACTIVE_LLM_MODEL } from "./active-provider.ts";
 
 export interface IndexedChunk extends ContentChunk {
   embedding: number[];
 }
 
-// Embeddings use OpenAI's text-embedding-3-small regardless of which
-// provider wins the generation comparison — Anthropic has no first-party
-// embeddings API. See design.md in openspec/changes/llm-retrieval-spike.
-export const EMBEDDING_MODEL = "text-embedding-3-small";
+export { EMBEDDING_MODEL };
 
 export const DEFAULT_INDEX_PATH = join(process.cwd(), "lib", "rag", "index.json");
 
@@ -40,7 +39,9 @@ async function main(): Promise<void> {
   }
 
   const client = new OpenAI({ apiKey });
-  const chunks = getContentChunks();
+  const chunks = getContentChunks({
+    models: { llm: ACTIVE_LLM_MODEL, embedding: EMBEDDING_MODEL },
+  });
   console.log(`Embedding ${chunks.length} chunks with ${EMBEDDING_MODEL}...`);
   const indexed = await buildEmbeddingIndex(chunks, client);
   writeFileSync(DEFAULT_INDEX_PATH, JSON.stringify(indexed, null, 2));

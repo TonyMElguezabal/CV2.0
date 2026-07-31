@@ -5,10 +5,24 @@
     - tiempo
     - tcs-ge
     - ibm
+  summary: >-
+    Jose leads complex technical programs end to end — owning delivery and
+    stakeholder alignment for Oracle's internal SCM platform while leading
+    its Database Engineering workforce, directing software delivery for
+    Tiempo Development's client engagements across healthcare,
+    transportation, and media, and owning account-level delivery across
+    GE's multidisciplinary TCS technology portfolio.
 - name: AI/RAG Solution Delivery
   evidence:
     - oracle
     - envato
+  summary: >-
+    Jose has delivered AI-powered products on both the technical-integration
+    and product-delivery sides: managing the integration of a
+    retrieval-augmented generation chatbot into Oracle's internal developer
+    platform, and leading delivery of an AI-powered background-removal tool
+    at Envato/Placeit built on a trained machine-learning image-segmentation
+    model.
 - name: Stakeholder Management
   evidence:
     - oracle
@@ -16,23 +30,63 @@
     - tiempo
     - tcs-banamex
     - tcs-ge
+  summary: >-
+    Jose manages stakeholder relationships across enterprise clients and
+    internal teams — rebuilding Citibanamex leadership's trust during an
+    incident-management transformation, sustaining GE's account-level
+    confidence across TCS's multidisciplinary portfolio, and coordinating
+    product, design, and engineering stakeholders on feature delivery at
+    Envato/Placeit.
 - name: People Leadership & Conflict Resolution
   evidence:
     - oracle
     - tcs-bcp
+  summary: >-
+    Jose resolves strained team dynamics under pressure — acting as a
+    neutral facilitator for manager-employee conflicts across a roughly
+    54-person Oracle office in Guadalajara, and stabilizing a burned-out
+    team during a distressed program recovery for a major Peruvian bank.
 - name: Talent Development & Mentoring
   evidence:
     - envato
+  summary: >-
+    Jose grows engineers into more senior roles — personally mentoring two
+    junior backend developers into senior positions over roughly two years
+    at Envato/Placeit, and coaching a senior developer's transition into a
+    Project Manager role and later Engineering Manager.
 - name: Data-Driven Product Decisions
   evidence:
     - envato
+  summary: >-
+    Jose drives product prioritization from real usage data — building
+    analytics dashboards at Envato/Placeit to monitor adoption and customer
+    behavior across newly shipped tools, turning usage patterns into a
+    feedback loop that validated assumptions and informed the product
+    roadmap.
 - name: Client Relationship & Contract Management
   evidence:
     - tiempo
+  summary: >-
+    Jose manages client engagements and delivery commitments — leading
+    Tiempo Development's client-facing delivery teams across healthcare,
+    transportation, and media accounts, translating customer objectives
+    into predictable, high-quality software releases.
 - name: Service Recovery & Incident Management
   evidence:
     - tcs-banamex
     - tcs-ge
+  summary: >-
+    Jose rebuilds trust after service breakdowns — reducing a Citibanamex
+    client's average Priority 1 incident resolution time by roughly 97%
+    (from about 12 days to eight hours) through clearer ownership and
+    escalation, and protecting delivery commitments across GE's TCS account
+    through structured account-level escalation management.
 - name: Project Recovery & Turnaround
   evidence:
     - tcs-bcp
+  summary: >-
+    Jose recovers distressed programs from the ground up — taking over
+    Banco de Crédito del Perú's first TCS-led software-development
+    engagement with an unbaselined scope and an incomplete Statement of
+    Work, then rebuilding governance and scope to close all agreed
+    milestones within about a year.

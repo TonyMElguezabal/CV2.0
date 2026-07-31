@@ -18,8 +18,11 @@ component (PRD §6):
   projects/
     <project>.md          # frontmatter (title, company, skills, metrics)
                            # + a problem/approach/outcome narrative body
-  skills.yaml              # skill -> evidence references
+  skills.yaml              # skill -> summary (prose) + evidence references
   faq.md                    # curated Q&A pairs
+  meta.md                    # frontmatter (title, topics) + narrative body
+                              # describing the site itself and its chatbot's
+                              # retrieval/generation pipeline
 ```
 
 **ID convention:** an experience or project file's ID is its filename
