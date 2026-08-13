@@ -1,7 +1,16 @@
 import { focusRingClass } from "./a11yStyles.ts";
 
+// Below sm the laptop layer doesn't render at all (`hidden sm:flex`), so the
+// hero copy stays centered there; at sm+ it anchors to a left column so it
+// no longer shares the laptop's centered axis — see design.md Decision 5 in
+// openspec/changes/hero-laptop-cinematic-lighting. The extra `md:pl-56`
+// clears CareerTimeline's fixed left rail (`md:fixed md:left-4`, ~176px
+// right edge measured in the browser — real-browser verification during
+// Step 11 caught this collision, which jsdom's layout-free tests could not)
+// — that rail only goes fixed at `md:`, so `sm:pl-16` alone is enough
+// between sm and md where the rail is still in normal document flow.
 export const heroWrapperClass =
-  "relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center";
+  "relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center sm:items-start sm:justify-center sm:pl-16 sm:pr-16 sm:text-left md:pl-56";
 
 export const heroNameClass =
   "font-sans text-4xl font-semibold tracking-tight sm:text-6xl";
@@ -24,8 +33,12 @@ export const ctaSecondaryClass = `rounded-full border border-zinc-700 px-4 py-2 
 // The laptop is a fixed, whole-page background layer, kept behind page
 // content (negative z-index) and non-interactive (pointer-events none) —
 // see design.md Decision 2/3 in openspec/changes/hero-laptop-scroll-motion.
+// Docked to the bottom-right corner (rather than centered) so the enlarged
+// scene bleeds past the viewport edge — design.md Decision 5 in
+// openspec/changes/hero-laptop-cinematic-lighting. `overflow-hidden` on
+// this full-viewport layer is what clips the part that bleeds past.
 export const heroLaptopLayerClass =
-  "fixed inset-0 -z-10 hidden items-center justify-center overflow-hidden pointer-events-none sm:flex";
+  "fixed inset-0 -z-10 hidden items-end justify-end overflow-hidden pointer-events-none sm:flex";
 
 // Scrim keeps the laptop subdued behind text for contrast — Decision 3.
 export const heroLaptopScrimClass =
@@ -35,14 +48,43 @@ export const heroLaptopScrimClass =
 // Tailwind utilities) so the `<noscript>` override in HeroLaptop.tsx can
 // force the no-JS static state without depending on test-only attributes —
 // mirrors `heroAnimatedTextClass`'s role for HeroFramer's noscript override.
+// The negative margin is a static layout offset (not animated, not
+// transform — so it doesn't collide with framer-motion's inline `transform`
+// on this same element, which manages rotateY/rotateZ via sceneStyle) that
+// pushes the corner-docked scene further past the viewport edge than flex
+// alignment alone would; `heroLaptopLayerClass`'s overflow-hidden clips the
+// excess. See design.md Decision 5 in openspec/changes/
+// hero-laptop-cinematic-lighting.
 export const heroLaptopSceneClass =
-  "hero-laptop-scene relative [perspective:1200px] [transform-style:preserve-3d]";
+  "hero-laptop-scene relative [perspective:1200px] [transform-style:preserve-3d] sm:-mr-4 sm:-mb-6";
 
+// Enlarged from the original sm:h-56 sm:w-96 (224x384px centered thumbnail)
+// so the laptop reads as a cropped, off-axis composition rather than a
+// small centered object — design.md Decision 5.
 export const heroLaptopBaseClass =
-  "relative h-40 w-64 rounded-b-lg border border-zinc-700 bg-gradient-to-b from-zinc-700 to-zinc-900 sm:h-56 sm:w-96";
+  "relative h-40 w-64 rounded-b-lg border border-zinc-700 bg-gradient-to-b from-zinc-700 to-zinc-900 sm:h-[300px] sm:w-[520px]";
 
+// The lid's own transform (rotateX, driven by scroll) lives on this
+// container; position/size/frame only — the two faces below carry the
+// per-side material and content, see design.md Decision 4 in
+// openspec/changes/hero-laptop-cinematic-lighting.
 export const heroLaptopLidClass =
-  "hero-laptop-lid absolute inset-x-0 bottom-full h-40 origin-bottom rounded-t-lg border border-zinc-700 bg-gradient-to-t from-zinc-900 to-zinc-700 [transform-style:preserve-3d] sm:h-56";
+  "hero-laptop-lid absolute inset-x-0 bottom-full h-40 origin-bottom rounded-t-lg border border-zinc-700 [transform-style:preserve-3d] sm:h-[300px]";
+
+// Shared face geometry: each face fills the lid and hides itself once
+// rotated past 90° from the viewer, so only the viewer-facing face ever
+// renders its content (screen bleeding through the closed pose, fixed).
+export const heroLaptopLidFaceClass =
+  "absolute inset-0 overflow-hidden rounded-t-lg [backface-visibility:hidden]";
+
+export const heroLaptopLidFaceScreenClass =
+  "hero-laptop-lid-face-screen bg-gradient-to-t from-zinc-900 to-zinc-700";
+
+// Outer (aluminium) face sits back-to-back with the screen face via
+// rotateY(180deg), so it is the one visible whenever the lid is rotated
+// past horizontal (i.e. at/near the closed pose).
+export const heroLaptopLidFaceOuterClass =
+  "hero-laptop-lid-face-outer bg-gradient-to-b from-zinc-800 to-zinc-950 [transform:rotateY(180deg)]";
 
 export const heroLaptopScreenClass =
   "hero-laptop-screen absolute inset-2 overflow-hidden rounded border-2 border-zinc-950 bg-black";
@@ -70,5 +112,75 @@ export const heroLaptopTrackpadClass =
 export const heroLaptopLidAccentClass =
   "absolute left-1/2 top-3 h-2 w-2 -translate-x-1/2 rounded-full bg-zinc-950/40 sm:top-4 sm:h-2.5 sm:w-2.5";
 
+// ── Lighting rig (openspec/changes/hero-laptop-cinematic-lighting) ────────
+// Every layer below is a static overlay; HeroLaptop.tsx binds each one's
+// opacity (and, for the specular sweep, translateX) to the laptop's
+// existing scroll-derived MotionValues — no new scroll listener, no new
+// driver, and no animated `filter`/`box-shadow`/`background-position`
+// anywhere in the rig (design.md Decision 3). Most layers share one
+// position class; the specular sweep and contact shadow need their own
+// geometry (oversized/overflowing respectively).
+export const heroLaptopLightOverlayClass = "absolute inset-0";
+
+export const heroLaptopContactShadowPositionClass =
+  "absolute inset-x-[-8%] top-full h-24";
+
+export const heroLaptopSpecularPositionClass =
+  "absolute -inset-y-3 left-0 w-[300%]";
+
+// Shared screen accent (sapphire, owner-selected from a bronze/emerald/
+// sapphire comparison) — the terminal's text color and the light the
+// screen casts (deck spill, bezel bloom) derive from the same value, since
+// a display can't emit light of a different color than it shows (design.md
+// Decision 6). Contrast against the terminal's black screen background is
+// verified in HeroLaptop.test.tsx.
+export const heroLaptopAccentHex = "#4d82bd";
+const heroLaptopAccentSoft = `${heroLaptopAccentHex}4d`;
+
+// Marker classes (mirroring `hero-laptop-scene`/`-lid`/`-screen`'s role) so
+// the no-JS `<noscript>` override in HeroLaptop.tsx can force each light
+// type to its open-pose opacity without depending on test-only attributes.
+export const heroLaptopRimMarkerClass = "hero-laptop-rim";
+export const heroLaptopSpillMarkerClass = "hero-laptop-spill";
+export const heroLaptopContactShadowMarkerClass = "hero-laptop-contact-shadow-layer";
+export const heroLaptopHingeAoMarkerClass = "hero-laptop-hinge";
+export const heroLaptopSpecularMarkerClass = "hero-laptop-specular";
+
+// ① Rim — a diagonal top-left highlight standing in for a grazing-angle
+// (Fresnel) edge light; strongest when the surface is most turned away.
+export const heroLaptopRimGradient =
+  "linear-gradient(135deg, rgba(227,242,255,0.85) 0%, rgba(227,242,255,0.25) 18%, transparent 42%)";
+
+// ② Screen spill — light the display throws onto the deck, and a soft
+// bloom around the bezel; both colored from the shared screen accent.
+export const heroLaptopDeckSpillGradient = `radial-gradient(ellipse 62% 100% at 50% 0%, ${heroLaptopAccentSoft}, transparent 68%)`;
+export const heroLaptopBezelBloomGradient = `radial-gradient(ellipse at center, ${heroLaptopAccentSoft}, transparent 62%)`;
+
+// ③ Contact shadow — grounds the laptop instead of letting it float.
+export const heroLaptopContactShadowGradient =
+  "radial-gradient(ellipse 55% 100% at 50% 0%, rgba(0,0,0,0.85), transparent 72%)";
+
+// ④ Specular sweep — an oversized band translated across an
+// overflow-hidden face (a compositor transform), never a shifting
+// background-position.
+export const heroLaptopSpecularGradient =
+  "linear-gradient(105deg, transparent 34%, rgba(255,244,230,0.18) 46%, rgba(255,255,255,0.3) 50%, rgba(255,244,230,0.18) 54%, transparent 66%)";
+
+// ⑤ Key/shadow wash was evaluated (complementary lit/shadowed overlays with
+// opposing opacities) and removed — real-browser verification during Step
+// 11 of openspec/changes/hero-laptop-cinematic-lighting found it visually
+// indistinguishable from the other four lights once composited under the
+// scrim, at both mid-scroll and peak intensity. See design.md Decision 8.
+
+// Layout/typography only — color is deliberately NOT a Tailwind utility
+// here. Tailwind's JIT scanner only sees literal text in source files, so
+// a class name built via JS template-literal interpolation (an earlier
+// version of this file had `text-[${heroLaptopAccentHex}]`) never gets a
+// CSS rule generated: the className string looks correct but has zero
+// visual effect on the actual page. Found via Step 11's real-browser
+// verification in openspec/changes/hero-laptop-cinematic-lighting — jsdom
+// has no CSS engine, so no unit test could have caught it. Terminal.tsx
+// applies `heroLaptopAccentHex` as an inline `style.color` instead, the
+// same technique the lighting rig already uses for its gradients.
 export const terminalClass =
-  "h-full w-full space-y-1 p-3 font-mono text-[0.6rem] text-emerald-400 sm:text-xs";
+  "h-full w-full space-y-1 p-3 font-mono text-[0.6rem] sm:text-xs";
