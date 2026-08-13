@@ -119,4 +119,25 @@ describe("HeroFramer", () => {
     expect(wrapper).not.toBeNull();
     expect(wrapper?.style.transform ?? "").not.toContain("px");
   });
+
+  it("anchors the name/positioning copy to a left column on sm+ viewports, off the laptop's centered axis", () => {
+    setPrefersReducedMotion(false);
+    render(
+      <ChatWidgetProvider>
+        <HeroFramer
+          name="Jose Muñoz"
+          positioning="Technical Delivery Manager"
+        />
+      </ChatWidgetProvider>
+    );
+
+    const wrapper = screen.getByTestId("hero-wrapper");
+    const wrapperClasses = wrapper.className.split(/\s+/);
+    // hero-signature-motion "Copy and laptop do not share one axis" — the
+    // laptop layer docks to a corner (items-end justify-end); the copy
+    // anchors to a left column instead of staying centered.
+    expect(wrapperClasses).toEqual(
+      expect.arrayContaining(["sm:items-start", "sm:text-left"])
+    );
+  });
 });

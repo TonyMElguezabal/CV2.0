@@ -60,6 +60,7 @@ export function HeroFramer({ name, positioning }: HeroProps) {
         style={
           prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity, y }
         }
+        data-testid="hero-wrapper"
       >
         <m.h1
           className={`${heroNameClass} ${heroAnimatedTextClass}`}
