@@ -9,6 +9,8 @@ import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { SiteFooter } from "@/components/SiteFooter";
 import { StructuredData } from "@/components/StructuredData";
 import { SkipToContentLink } from "@/components/SkipToContentLink";
+import { SiteHeader } from "@/components/SiteHeader";
+import { GridOverlay } from "@/components/GridOverlay";
 import { HeroLaptop } from "@/components/HeroLaptop";
 
 export const metadata = buildRootMetadata(getProfile(), resolveSiteUrl());
@@ -23,7 +25,7 @@ export default function RootLayout({
   const starterQuestions = getFaq()
     .slice(0, STARTER_QUESTION_COUNT)
     .map((entry) => entry.question);
-  const { contact, chat, hero } = getProfile();
+  const { name, contact, chat, hero } = getProfile();
 
   return (
     <html
@@ -32,10 +34,17 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-sans">
         <SkipToContentLink />
+        <SiteHeader brandName={name} />
         {/* Fixed, whole-page background layer (z-index behind normal-flow
             content) — the signature scroll-driven laptop, per
             hero-signature-motion / openspec/changes/hero-laptop-scroll-motion. */}
         <HeroLaptop terminalLines={hero.terminalLines} />
+        {/* Decorative grid — vertical hairlines plus the rule under the
+            header, both drawn from --hair. `-z-10`, same stacking
+            approach as HeroLaptop above, mounted after it so the grid
+            paints on top of the laptop layer while both stay behind all
+            normal content — editorial-frame design.md Decision 6. */}
+        <GridOverlay />
         <StructuredData />
         <ChatWidgetProvider>
           {children}

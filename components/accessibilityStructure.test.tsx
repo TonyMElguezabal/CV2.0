@@ -6,9 +6,29 @@ import { HeroLaptop } from "./HeroLaptop";
 import { ChatWidgetProvider } from "./ChatWidgetContext";
 import { ChatWidget } from "./ChatWidget";
 import { CareerChapters } from "./CareerChapters";
+import { CareerTimeline } from "./CareerTimeline";
 import { ContactSection } from "./ContactSection";
+import { SiteHeader } from "./SiteHeader";
 import type { ExperienceWithId } from "@/lib/content/read.ts";
 import type { Profile } from "@/lib/content/types.ts";
+
+// jsdom has no IntersectionObserver implementation (same gap documented in
+// CareerTimeline.activeState.test.tsx) — this test only needs CareerTimeline
+// to mount without throwing, not to track active state, so a no-op stub is
+// enough.
+class NoopIntersectionObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+}
+beforeEach(() => {
+  (
+    globalThis as { IntersectionObserver?: unknown }
+  ).IntersectionObserver = NoopIntersectionObserver;
+});
 
 // Structural rules only — jsdom cannot compute contrast (no real layout),
 // so color-contrast is left to the manual/browser gate (design.md
@@ -105,7 +125,9 @@ describe("Automated accessibility structure checks", () => {
         <a href="#main" className="sr-only focus:not-sr-only">
           Skip to content
         </a>
+        <SiteHeader brandName="Fixture Person" />
         <HeroLaptop terminalLines={["$ whoami", "fixture_person"]} />
+        <CareerTimeline experiences={[FIXTURE_EXPERIENCE]} />
         <main id="main">
           <HeroFramer name="Fixture Person" positioning="Fixture Positioning" />
           <CareerChapters experiences={[FIXTURE_EXPERIENCE]} />

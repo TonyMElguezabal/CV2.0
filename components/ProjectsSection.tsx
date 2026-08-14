@@ -19,7 +19,7 @@ export interface ProjectsSectionProps {
 
 export function ProjectsSection({ projects }: ProjectsSectionProps) {
   return (
-    <section className={projectsSectionClass}>
+    <section id="projects" className={projectsSectionClass}>
       <h2 className={projectsHeadingClass}>Projects</h2>
       <div className={projectsListClass}>
         {projects.map((project) => (

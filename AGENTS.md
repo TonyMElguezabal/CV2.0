@@ -153,7 +153,22 @@ integrity matter beyond rendering.
   `components/HeroShellStyles.ts`'s `heroLaptopAccentHex` (JOS-105): CSS
   can't `var()`-reference a JS constant, and Tailwind's JIT can't compile an
   arbitrary-value class built from one — the same test file guards against
-  the two drifting apart.
+  the two drifting apart. The same file's `[id] { scroll-margin-top }` rule
+  (JOS-109) applies fixed-header clearance to every in-page anchor at once,
+  deliberately universal rather than per-target — see
+  `components/anchorClearance.test.tsx`.
+- `components/SiteHeader.tsx` / `siteNavigation.ts` — the persistent site
+  header (brand, section nav, contact pill), mounted only in
+  `app/(marketing)/layout.tsx` (never `/admin`). `siteNavigation.ts` is the
+  single source of the header's nav items, consumed by both the header and
+  its own anchor-resolution test. **`CareerTimeline` is the site's one and
+  only scroll-position indicator** — `GridOverlay` (the decorative,
+  `aria-hidden`, `-z-10` hairline grid) and the header never introduce a
+  second one; this is enforced in spec
+  (`openspec/changes/editorial-frame/specs/site-editorial-frame/spec.md`
+  and the amended `career-timeline-navigation` requirement, pending
+  post-merge sync into `openspec/specs/`), not just remembered, and
+  regression-tested in `components/oneScrollIndicator.test.tsx`.
 
 **Stack choices worth knowing before changing them:**
 - Framer Motion was selected over GSAP ScrollTrigger via a comparative spike

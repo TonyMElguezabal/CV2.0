@@ -5,8 +5,10 @@ import type { ExperienceWithId } from "@/lib/content/read.ts";
 import { formatChapterDateRange } from "./formatChapterDate";
 import {
   timelineNavClass,
+  timelineSpineClass,
   timelineListClass,
   timelineNodeClass,
+  timelineMarkerClass,
   timelineCompanyClass,
   timelineDateClass,
 } from "./CareerTimelineStyles";
@@ -106,6 +108,7 @@ export function CareerTimeline({ experiences }: CareerTimelineProps) {
 
   return (
     <nav aria-label="Career timeline" className={timelineNavClass}>
+      <span aria-hidden="true" className={timelineSpineClass} />
       <ol className={timelineListClass}>
         {experiences.map((experience) => {
           const dateRange = formatChapterDateRange(experience.dates);
@@ -118,6 +121,7 @@ export function CareerTimeline({ experiences }: CareerTimelineProps) {
                 aria-current={isActive ? "location" : undefined}
                 className={timelineNodeClass}
               >
+                <span aria-hidden="true" className={timelineMarkerClass} />
                 <span aria-hidden="true" className={timelineCompanyClass}>
                   {experience.company}
                 </span>

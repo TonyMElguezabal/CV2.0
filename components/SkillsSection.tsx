@@ -21,7 +21,7 @@ export function SkillsSection({ skills, experiences }: SkillsSectionProps) {
   );
 
   return (
-    <section className={skillsSectionClass}>
+    <section id="skills" className={skillsSectionClass}>
       <h2 className={skillsHeadingClass}>Skills</h2>
       <ul className={skillsListClass}>
         {skills.map((skill) => (

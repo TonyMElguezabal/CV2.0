@@ -9,6 +9,11 @@ import {
   chatContactLinkClass,
   chatInputClass,
 } from "./ChatWidgetStyles.ts";
+import {
+  siteHeaderBrandClass,
+  siteHeaderContactLinkClass,
+  siteHeaderNavLinkClass,
+} from "./SiteHeaderStyles.ts";
 
 const RING_MARKER = "focus-visible:outline";
 
@@ -34,5 +39,11 @@ describe("visible focus on every interactive surface", () => {
 
   it("focusRingClass is the shared utility used everywhere", () => {
     expect(focusRingClass).toContain(RING_MARKER);
+  });
+
+  it("every interactive surface in the site header carries the shared focus ring", () => {
+    expect(siteHeaderBrandClass).toContain(RING_MARKER);
+    expect(siteHeaderContactLinkClass).toContain(RING_MARKER);
+    expect(siteHeaderNavLinkClass).toContain(RING_MARKER);
   });
 });
