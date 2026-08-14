@@ -33,6 +33,10 @@ describe("AdminLayout", () => {
       screen.queryByTestId("hero-laptop-layer"),
     ).not.toBeInTheDocument();
     expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument();
+    // The site header/grid overlay (editorial-frame) mount only in
+    // app/(marketing)/layout.tsx — /admin has its own independent root
+    // layout and must never inherit them.
+    expect(screen.queryByRole("banner")).not.toBeInTheDocument();
   });
 
   it("applies the shared font-variable classes from lib/fonts to <html>, proving real end-to-end wiring", async () => {

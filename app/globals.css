@@ -40,3 +40,16 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* Fixed header clearance for every in-page anchor destination —
+   editorial-frame design.md Decision 3. A universal [id] rule rather than
+   per-target overrides, so it covers all three anchor families at once
+   (header nav targets, the timeline's per-chapter targets, and the skip
+   link's #main) without relying on remembering to add it to each one —
+   see components/anchorClearance.test.tsx. 112px clears the header's
+   measured 96px (SiteHeaderStyles.ts: 56px utility row + 40px nav row)
+   with room to spare; re-verified against the real rendered header in the
+   browser verification step (Task Group 12). */
+[id] {
+  scroll-margin-top: 7rem;
+}
