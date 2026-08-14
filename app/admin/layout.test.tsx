@@ -1,7 +1,17 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import AdminLayout from "./layout.tsx";
+
+// next/font/local requires Next's own compiler transform; mocked here so
+// the layout can be rendered under Vitest — see lib/fonts.test.ts.
+vi.mock("next/font/local", () => ({
+  default: (options: { variable: string }) => ({
+    variable: `mock-var__${options.variable.replace(/^--/, "")}`,
+    className: `mock-class__${options.variable.replace(/^--/, "")}`,
+    style: { fontFamily: "mock" },
+  }),
+}));
 
 afterEach(() => {
   cleanup();
@@ -23,5 +33,19 @@ describe("AdminLayout", () => {
       screen.queryByTestId("hero-laptop-layer"),
     ).not.toBeInTheDocument();
     expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument();
+  });
+
+  it("applies the shared font-variable classes from lib/fonts to <html>, proving real end-to-end wiring", async () => {
+    render(
+      <AdminLayout>
+        <div>Admin content</div>
+      </AdminLayout>,
+    );
+
+    const { fontVariablesClassName } = await import("@/lib/fonts.ts");
+    const htmlClasses = document.documentElement.className.split(/\s+/);
+    for (const cls of fontVariablesClassName.split(/\s+/)) {
+      expect(htmlClasses).toContain(cls);
+    }
   });
 });

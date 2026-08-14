@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { HeroFramer } from "./HeroFramer";
 import { ChatWidgetProvider } from "./ChatWidgetContext";
 
@@ -118,6 +120,44 @@ describe("HeroFramer", () => {
     ) as HTMLElement | null;
     expect(wrapper).not.toBeNull();
     expect(wrapper?.style.transform ?? "").not.toContain("px");
+  });
+
+  it("also drops the positioning text's y-offset under prefers-reduced-motion, not just the heading's", () => {
+    setPrefersReducedMotion(true);
+    render(
+      <ChatWidgetProvider>
+        <HeroFramer
+          name="Jose Muñoz"
+          positioning="Technical Delivery Manager"
+        />
+      </ChatWidgetProvider>
+    );
+
+    const positioning = screen.getByText("Technical Delivery Manager");
+    expect(positioning.style.transform).not.toContain("px");
+    expect(positioning.style.opacity).toBe("0");
+  });
+
+  it("derives its entrance timing from the shared motion pace token, not its own hardcoded duration/easing", () => {
+    // Source-content check: framer-motion's initial/animate-driven
+    // transitions aren't real CSS `transition-duration`/`transition-timing-
+    // function` properties inspectable post-render in jsdom (render()
+    // captures the synchronous *initial* inline style, not the animated
+    // timing config) — the same reason HeroLaptop's lighting-rig tests
+    // check source/computed style rather than trying to observe animation
+    // playback. This confirms the source wires both entrances to the one
+    // shared token instead of picking its own numbers.
+    const source = readFileSync(
+      join(process.cwd(), "components", "HeroFramer.tsx"),
+      "utf8"
+    );
+    expect(source).toMatch(/from ["']\.\/motionPace(\.ts)?["']/);
+    expect(source).toContain("pace.duration");
+    expect(source).toContain("pace.ease");
+    // The old per-element hardcoded values must be gone.
+    expect(source).not.toMatch(/duration:\s*0\.6/);
+    expect(source).not.toMatch(/duration:\s*0\.5/);
+    expect(source).not.toContain('"easeOut"');
   });
 
   it("anchors the name/positioning copy to a left column on sm+ viewports, off the laptop's centered axis", () => {
