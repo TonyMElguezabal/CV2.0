@@ -2,6 +2,7 @@ import "../globals.css";
 import { getFaq, getProfile } from "@/lib/content/read.ts";
 import { resolveSiteUrl } from "@/lib/seo/siteUrl.ts";
 import { buildRootMetadata } from "@/lib/seo/metadata.ts";
+import { fontVariablesClassName } from "@/lib/fonts.ts";
 import { ChatWidgetProvider } from "@/components/ChatWidgetContext";
 import { ChatWidget } from "@/components/ChatWidget";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
@@ -25,7 +26,10 @@ export default function RootLayout({
   const { contact, chat, hero } = getProfile();
 
   return (
-    <html lang="en" className="h-full antialiased">
+    <html
+      lang="en"
+      className={`h-full antialiased ${fontVariablesClassName}`}
+    >
       <body className="min-h-full flex flex-col font-sans">
         <SkipToContentLink />
         {/* Fixed, whole-page background layer (z-index behind normal-flow

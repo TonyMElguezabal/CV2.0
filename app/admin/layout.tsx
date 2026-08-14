@@ -2,6 +2,7 @@ import "../globals.css";
 import type { Metadata } from "next";
 import { SkipToContentLink } from "@/components/SkipToContentLink";
 import { resolveSiteUrl } from "@/lib/seo/siteUrl.ts";
+import { fontVariablesClassName } from "@/lib/fonts.ts";
 
 export const metadata: Metadata = {
   metadataBase: new URL(resolveSiteUrl()),
@@ -20,7 +21,10 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html
+      lang="en"
+      className={`h-full antialiased ${fontVariablesClassName}`}
+    >
       <body className="min-h-full flex flex-col font-sans">
         <SkipToContentLink />
         {children}

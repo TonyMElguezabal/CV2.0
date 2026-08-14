@@ -12,11 +12,38 @@ import { focusRingClass } from "./a11yStyles.ts";
 export const heroWrapperClass =
   "relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center sm:items-start sm:justify-center sm:pl-16 sm:pr-16 sm:text-left md:pl-56";
 
+// Display role: clamp(34px, 6.2vw, 88px), Expanded 700, -0.035em tracking —
+// site-typography-and-palette design.md Decision 3's type scale table.
+// text-ink here also serves as the gradient fallback color for browsers
+// without background-clip:text support — see Task Group 5.
 export const heroNameClass =
-  "font-sans text-4xl font-semibold tracking-tight sm:text-6xl";
+  "font-display font-bold text-[clamp(34px,6.2vw,88px)] tracking-[-0.035em] text-balance text-ink";
 
+// Display gradient — site-typography-and-palette design.md Decision 6.
+// Applied only to the hero display's lead-text span (HeroFramer.tsx splits
+// the name into a lead span + an accent-word span), never merged into
+// heroNameClass itself: -webkit-text-fill-color inherits to children in
+// WebKit/Blink, so if this lived on a shared ancestor of both spans, the
+// accent word's own `color` would be silently overridden by the inherited
+// transparent fill. Deliberately not Tailwind's `text-transparent`
+// (unconditional `color:transparent`, no fallback) — `color` is left to
+// inherit from the outer heading's `text-ink`, which is what non-WebKit
+// browsers without bg-clip-text support actually render. The darkest
+// gradient stop (#6f6558, matching --hair) clears the 3:1 large-text
+// threshold but not 4.5:1 normal-text — this class must only ever be
+// applied to text at or above the WCAG large-text size.
+export const heroDisplayGradientClass =
+  "bg-clip-text [-webkit-text-fill-color:transparent] bg-[linear-gradient(180deg,#ffffff_0%,#ece7dd_38%,#9a8f7e_82%,#6f6558_100%)]";
+
+// The hero's accent word (the specimen the owner reviewed applied the
+// sapphire accent to one word, not the whole name) — a sibling of the
+// gradient span, never a descendant of it.
+export const heroAccentWordClass = "text-accent";
+
+// Body role: 17px/1.68, Regular 400 — one flat size, no responsive variant
+// (unlike display's fluid clamp()), per the same scale table.
 export const heroPositioningClass =
-  "mt-6 max-w-2xl text-lg text-zinc-400 sm:text-xl";
+  "mt-6 max-w-2xl text-[17px] leading-[1.68] text-ink-body";
 
 export const spacerSectionClass =
   "flex min-h-screen items-center justify-center text-zinc-400";
@@ -26,9 +53,9 @@ export const heroAnimatedTextClass = "hero-animated-text";
 export const ctaRowClass =
   "mt-10 flex flex-wrap items-center justify-center gap-4";
 
-export const ctaPrimaryClass = `text-sm font-medium text-zinc-200 underline underline-offset-4 hover:text-white ${focusRingClass}`;
+export const ctaPrimaryClass = `text-sm font-medium text-ink-body underline underline-offset-4 hover:text-ink ${focusRingClass}`;
 
-export const ctaSecondaryClass = `rounded-full border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-200 hover:border-zinc-500 hover:text-white ${focusRingClass}`;
+export const ctaSecondaryClass = `rounded-full border border-hair px-4 py-2 text-sm font-medium text-ink-body hover:border-ink-meta hover:text-ink ${focusRingClass}`;
 
 // The laptop is a fixed, whole-page background layer, kept behind page
 // content (negative z-index) and non-interactive (pointer-events none) —

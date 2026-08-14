@@ -3,12 +3,36 @@
 :root {
   --background: #0a0a0a;
   --foreground: #ededed;
+
+  /* Bounded palette — site-typography-and-palette design.md Decision 5.
+     Every value was measured (WCAG 2.1 relative luminance) against this
+     page's real #0a0a0a background before being written here, not after —
+     see components/palette.test.tsx. --hair is deliberately below the
+     4.5:1 normal-text threshold (3.47:1) and is restricted to borders and
+     rules; it must never be used as a text color. */
+  --ink: #ece7dd; /* headings, emphasis — 16.07:1 */
+  --ink-body: #b9b2a6; /* paragraphs — 9.41:1 */
+  --ink-meta: #8b8275; /* dates, labels, footer — 5.23:1 (floor for text) */
+  --hair: #6f6558; /* borders and rules ONLY — 3.47:1, fails normal text */
+  /* Must match components/HeroShellStyles.ts's heroLaptopAccentHex exactly
+     (JOS-105) — one accent, not two. Duplicated rather than shared because
+     globals.css can't `var()`-reference a JS constant, and Tailwind's JIT
+     can't compile an arbitrary-value class built from one (JOS-105 hit
+     this exact bug) — components/palette.test.tsx guards against drift. */
+  --accent: #4d82bd; /* 4.94:1 */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --color-ink: var(--ink);
+  --color-ink-body: var(--ink-body);
+  --color-ink-meta: var(--ink-meta);
+  --color-hair: var(--hair);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-archivo-body), -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  --font-display: var(--font-archivo-display), var(--font-sans);
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 

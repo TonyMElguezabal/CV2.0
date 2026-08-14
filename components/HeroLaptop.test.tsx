@@ -3,6 +3,7 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { HeroLaptop } from "./HeroLaptop";
 import { heroLaptopAccentHex } from "./HeroShellStyles";
+import { contrastRatio } from "@/lib/color/contrast.ts";
 
 // Same fake mediaQueryList pattern as HeroFramer.test.tsx: useReducedMotion
 // reads window.matchMedia lazily and re-reads only via the registered
@@ -255,31 +256,11 @@ describe("HeroLaptop", () => {
   });
 
   // WCAG 2.1 relative luminance / contrast ratio — pure arithmetic on two
-  // known hex values, unlike axe's "color-contrast" rule (disabled in
-  // accessibilityStructure.test.tsx) which needs real computed layout that
-  // jsdom cannot produce. Terminal text sits on a known #000 background
-  // (heroLaptopScreenClass's bg-black), so this is measurable exactly.
-  function srgbToLinear(channel255: number): number {
-    const c = channel255 / 255;
-    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  }
-  function relativeLuminance(hex: string): number {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return (
-      0.2126 * srgbToLinear(r) +
-      0.7152 * srgbToLinear(g) +
-      0.0722 * srgbToLinear(b)
-    );
-  }
-  function contrastRatio(hexA: string, hexB: string): number {
-    const lA = relativeLuminance(hexA);
-    const lB = relativeLuminance(hexB);
-    const lighter = Math.max(lA, lB);
-    const darker = Math.min(lA, lB);
-    return (lighter + 0.05) / (darker + 0.05);
-  }
+  // known hex values (lib/color/contrast.ts), unlike axe's "color-contrast"
+  // rule (disabled in accessibilityStructure.test.tsx) which needs real
+  // computed layout that jsdom cannot produce. Terminal text sits on a known
+  // #000 background (heroLaptopScreenClass's bg-black), so this is
+  // measurable exactly.
 
   it("meets the site's AA contrast requirement (4.5:1) for the terminal's text against its black screen background", () => {
     const ratio = contrastRatio(heroLaptopAccentHex, "#000000");

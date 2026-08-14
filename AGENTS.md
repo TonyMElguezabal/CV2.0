@@ -134,6 +134,26 @@ integrity matter beyond rendering.
   self-describing content (e.g. `content/meta.md`) gets model names injected
   from here at chunk-build time — never hardcoded — so it can't drift when
   `lib/rag/active-provider.ts`'s provider swap changes the active model.
+- `lib/fonts.ts` — the site's typeface, loaded via `next/font/local` (not
+  `next/font/google`: Google's typed API can't pin a specific width-axis
+  value, only the full variable range or the default width — see
+  `openspec/changes/site-typography-and-palette/design.md` Decision 2). Two
+  self-hosted static instances live in `fonts/` at the repo root. Applied to
+  `<html>` in **both** root layouts (`app/(marketing)/layout.tsx` and
+  `app/admin/layout.tsx`) from this one shared module — each layout is
+  independent and each imports `globals.css` separately, so the font
+  variable class must not be duplicated per layout.
+- `app/globals.css`'s `:root` block — single source of truth for the site's
+  bounded palette (`--ink`, `--ink-body`, `--ink-meta`, `--hair`, `--accent`)
+  and font-role tokens (`--font-sans`, `--font-display`). Every color was
+  measured (WCAG 2.1) against the real page background before being
+  written; `--hair` is deliberately below the normal-text AA threshold and
+  is restricted to borders/rules — never text (regression-tested in
+  `components/palette.test.tsx`). `--accent` is necessarily duplicated in
+  `components/HeroShellStyles.ts`'s `heroLaptopAccentHex` (JOS-105): CSS
+  can't `var()`-reference a JS constant, and Tailwind's JIT can't compile an
+  arbitrary-value class built from one — the same test file guards against
+  the two drifting apart.
 
 **Stack choices worth knowing before changing them:**
 - Framer Motion was selected over GSAP ScrollTrigger via a comparative spike

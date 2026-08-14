@@ -165,6 +165,17 @@ external validators are the test per the SEO story's acceptance criteria
 
 ## Performance budget
 
+> **Owner decision, 2026-08-13** (`openspec/changes/site-typography-and-palette`):
+> the figures below are recorded **for information only**, not as a merge
+> gate. This site is distributed by pasting its URL directly to recruiters
+> and via a printed résumé, not through search discovery — so Core Web
+> Vitals scoring and crawl-driven traffic carry little value here, and
+> current client hardware absorbs the added weight. The numbers stay in
+> this file because they're still useful signal (a page that got
+> *dramatically* heavier or slower is still worth knowing about), just not
+> a blocking one. `openspec/changes/narrow-performance-budget` formalizes
+> this at the spec level.
+
 The landing route's **First Load JS is ~123 KB gzip** (re-measured
 2026-07-24 after adding the whole-page `HeroLaptop` scroll motif — no
 regression from the ~128 KB baseline recorded 2026-07-23; the new component
@@ -247,6 +258,31 @@ requirements. 60fps: the laptop's animated style props (`rotateX`,
 construction, same compositor-only guarantee as the existing surfaces; a
 live DevTools recording has the same headless-environment limitation
 noted above.
+
+**Re-measured 2026-08-14** after `site-typography-and-palette` (self-hosted
+Archivo Expanded/Regular, ~28.4 KB combined woff2, ~28 KB gzip added to the
+First Load JS figure above — informational per this section's framing, not
+a regression per se):
+
+| | Performance | Accessibility | Best Practices | SEO | LCP |
+|---|---|---|---|---|---|
+| **Desktop** | 100 | 96 | 100 | 100 | 0.7s |
+| **Mobile** | 91 | 100 | 100 | 100 | 3.5s |
+
+Desktop's Accessibility 96 (down from 100) was investigated rather than
+left unexplained: two Lighthouse findings, both confirmed **pre-existing**,
+not introduced by this change. `label-content-name-mismatch` flags
+`CareerTimeline.tsx` nodes (visible text vs. `aria-label` phrasing) — markup
+this change never touched, only recolored. `target-size` flags the skill
+evidence links falling under the 24×24px touch-target minimum — computed
+that the *previous* size (`text-sm`, Tailwind's default 20px line-height)
+was already under that minimum before this change; the new `13px` size
+measures 19.5px, a 0.5px difference, not a newly-introduced failure. Neither
+blocks this change; the touch-target finding is a reasonable candidate for a
+small separate follow-up. Font `size-adjust`/`ascent-override`/
+`descent-override` fallback metrics were confirmed present in the built CSS
+(not merely assumed from using `next/font`), which is the mechanism
+preventing visible reflow as the self-hosted fonts swap in.
 
 ## Security & privacy
 
