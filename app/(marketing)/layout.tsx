@@ -15,6 +15,8 @@ import { HeroLaptop } from "@/components/HeroLaptop";
 import { AmbientSparkleLayer } from "@/components/AmbientSparkleLayer";
 import { MotionProvider } from "@/components/MotionProvider";
 import { revealNoscriptOverrideCss } from "@/components/RevealStyles";
+import { ArrivalSequenceProvider } from "@/components/ArrivalSequenceProvider";
+import { arrivalNoscriptOverrideCss } from "@/components/ArrivalStyles";
 
 export const metadata = buildRootMetadata(getProfile(), resolveSiteUrl());
 
@@ -49,43 +51,64 @@ export default function RootLayout({
         <noscript>
           <style>{revealNoscriptOverrideCss}</style>
         </noscript>
+        {/* One shared override for every page-load arrival-sequence
+            participant (the laptop, the ambient layer, the hero text and
+            CTAs), mirroring the scroll-reveal override immediately above
+            it — openspec/changes/arrival-sequence design.md Decision 5
+            (fail-visible). */}
+        <noscript>
+          <style>{arrivalNoscriptOverrideCss}</style>
+        </noscript>
         <SkipToContentLink />
         <SiteHeader brandName={name} />
-        {/* Fixed, whole-page background layer (z-index behind normal-flow
-            content) — the signature scroll-driven laptop, per
-            hero-signature-motion / openspec/changes/hero-laptop-scroll-motion. */}
-        <HeroLaptop terminalLines={hero.terminalLines} />
-        {/* Ambient particle field — mounted after HeroLaptop (and its
-            scrim) so it paints above them, not beneath: placing it inside
-            the hero layer would cut its contribution by ~80% (measured —
-            ambient-sparkle-layer design.md Decision 2). `-z-10`, same
-            stacking approach as the layers around it, so it still stays
-            behind all normal content regardless of DOM order. */}
-        <AmbientSparkleLayer />
-        {/* Decorative grid — vertical hairlines plus the rule under the
-            header, both drawn from --hair. `-z-10`, same stacking
-            approach as HeroLaptop above, mounted after it so the grid
-            paints on top of the laptop layer while both stay behind all
-            normal content — editorial-frame design.md Decision 6. */}
-        <GridOverlay />
-        <StructuredData />
-        <ChatWidgetProvider>
-          {/* Scroll-reveal components below <main> (SectionReveal,
-              RevealHeading) use framer-motion's `m.*` components, which
-              require a LazyMotion boundary — HeroFramer.tsx/HeroLaptop.tsx
-              already provide their own for their own subtrees, but
-              {children} (everything below the hero) has none. Nested
-              LazyMotion providers are safe (the same domAnimation feature
-              set loads once, cached) — see MotionProvider.tsx. */}
-          <MotionProvider>{children}</MotionProvider>
-          <SiteFooter />
-          <ChatWidget
-            starterQuestions={starterQuestions}
-            contact={contact}
-            tooltipLabel={chat.tooltipLabel}
-            greeting={chat.greeting}
-          />
-        </ChatWidgetProvider>
+        {/* Wraps every arrival-sequence participant (HeroLaptop,
+            AmbientSparkleLayer, and — inside {children} — HeroFramer/
+            HeroCtas) so they all read from one shared `arrived`/`skip`
+            state rather than each independently detecting the deep-link
+            fragment on its own tick. GridOverlay and StructuredData fall
+            inside this boundary incidentally (they don't consume the
+            context) rather than being deliberately excluded from it. */}
+        <ArrivalSequenceProvider>
+          {/* Fixed, whole-page background layer (z-index behind normal-flow
+              content) — the signature scroll-driven laptop, per
+              hero-signature-motion / openspec/changes/hero-laptop-scroll-motion. */}
+          <HeroLaptop terminalLines={hero.terminalLines} />
+          {/* Ambient particle field — mounted after HeroLaptop (and its
+              scrim) so it paints above them, not beneath: placing it inside
+              the hero layer would cut its contribution by ~80% (measured —
+              ambient-sparkle-layer design.md Decision 2). `-z-10`, same
+              stacking approach as the layers around it, so it still stays
+              behind all normal content regardless of DOM order. */}
+          <AmbientSparkleLayer />
+          {/* Decorative grid — vertical hairlines plus the rule under the
+              header, both drawn from --hair. `-z-10`, same stacking
+              approach as HeroLaptop above, mounted after it so the grid
+              paints on top of the laptop layer while both stay behind all
+              normal content — editorial-frame design.md Decision 6.
+              Deliberately not an arrival-sequence participant — see
+              openspec/changes/arrival-sequence tasks.md task 6.4: the grid
+              is slated for removal (JOS-113), so this change does not
+              choreograph a component already known to be going away. */}
+          <GridOverlay />
+          <StructuredData />
+          <ChatWidgetProvider>
+            {/* Scroll-reveal components below <main> (SectionReveal,
+                RevealHeading) use framer-motion's `m.*` components, which
+                require a LazyMotion boundary — HeroFramer.tsx/HeroLaptop.tsx
+                already provide their own for their own subtrees, but
+                {children} (everything below the hero) has none. Nested
+                LazyMotion providers are safe (the same domAnimation feature
+                set loads once, cached) — see MotionProvider.tsx. */}
+            <MotionProvider>{children}</MotionProvider>
+            <SiteFooter />
+            <ChatWidget
+              starterQuestions={starterQuestions}
+              contact={contact}
+              tooltipLabel={chat.tooltipLabel}
+              greeting={chat.greeting}
+            />
+          </ChatWidgetProvider>
+        </ArrivalSequenceProvider>
         <AnalyticsTracker />
       </body>
     </html>

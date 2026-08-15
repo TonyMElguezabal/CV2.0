@@ -219,8 +219,9 @@ integrity matter beyond rendering.
   entrances, never to substantive content** — chapter body text, dates,
   role descriptions, metrics, and skill evidence links are never
   individually gated, so in-page find and a fast scroll both still work
-  (`openspec/changes/scroll-reveal-motion/design.md` Decision 3, pending
-  post-merge archive/sync into `openspec/specs/`). Fail-visible by construction: SSR/default
+  (`openspec/specs/site-scroll-reveal/spec.md`, synced from
+  `openspec/changes/archive/2026-08-15-scroll-reveal-motion/design.md`
+  Decision 3). Fail-visible by construction: SSR/default
   state is fully visible (`opacity:0` is only ever an *animated* starting
   point, never a conditional render), and one shared `<noscript>` override
   (`RevealStyles.ts`'s `revealNoscriptOverrideCss`, wired into
@@ -231,6 +232,35 @@ integrity matter beyond rendering.
   word-selection on the revealed heading; the ghost layer lives in its own
   separate absolutely-positioned overlay instead, layered behind an
   uninterrupted run of sharp-copy character spans.
+- **Page-load arrival sequence** (JOS-112) — `components/ArrivalSequenceProvider.tsx`
+  (`ArrivalSequenceProvider` + `useArrivalStep`) orchestrates the hero's
+  first ~2s: elements enter in a defined order with overlapping timing
+  (`components/arrivalSequence.ts`'s `ARRIVAL_STEP_DELAYS`, each a fraction
+  of the shared `pace.duration` token, non-text steps before text steps)
+  rather than each fading in independently on its own schedule. `arrived`
+  starts `false` (matching SSR) and is flipped once by a mount effect —
+  same starts-false-flips-once shape as `useRevealOnScroll`, on a timer
+  rather than an `IntersectionObserver`, since an arrival sequence has
+  nothing to observe. **One owner per element's entrance**: an element
+  choreographed by this sequence must not also be claimed by the
+  scroll-reveal system (`SectionReveal`/`RevealHeading`) — checked before
+  adding a new motion system to a hero element
+  (`openspec/specs/site-arrival-sequence/spec.md`, "Each element's entrance
+  is owned by exactly one motion system"). Deep-linked loads (a URL
+  fragment targeting a real element) skip the full choreography and render
+  directly in final state (`arrivalSequence.ts`'s `detectDeepLinkSkip`) —
+  the browser's native anchor scroll is never touched, so this can't fight
+  scroll restoration. Plays on every load and persists nothing (no cookie,
+  no `localStorage`/`sessionStorage`), matching `lib/session.ts`'s own
+  deliberate in-memory-only convention. Fail-visible: the mount effect's
+  risky call is wrapped in `try/catch`, not `try/finally` — a `finally`
+  block runs its cleanup but does not stop the original exception from
+  propagating, which real-browser testing confirmed React then surfaces as
+  an uncaught error rather than the page simply rendering visible.
+  Deliberately does **not** choreograph `GridOverlay` — it was slated for
+  removal (JOS-113) at the time this sequence was built, so treating it as
+  already absent avoided writing a choreography step for a component known
+  to be going away.
 
 **Stack choices worth knowing before changing them:**
 - Framer Motion was selected over GSAP ScrollTrigger via a comparative spike

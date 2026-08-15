@@ -1,22 +1,18 @@
 "use client";
 
 import { useRef } from "react";
-import {
-  m,
-  useScroll,
-  useTransform,
-  useReducedMotion,
-} from "framer-motion";
+import { m, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { HeroCtas } from "./HeroCtas";
 import { MotionProvider } from "./MotionProvider";
-import { pace } from "./motionPace";
+import { useArrivalStep } from "./ArrivalSequenceProvider";
+import { ARRIVAL_STEP_DELAYS } from "./arrivalSequence";
+import { arrivalAnimatedClass } from "./ArrivalStyles";
 import {
   heroWrapperClass,
   heroNameClass,
   heroDisplayGradientClass,
   heroAccentWordClass,
   heroPositioningClass,
-  heroAnimatedTextClass,
   spacerSectionClass,
 } from "./HeroShellStyles";
 
@@ -55,27 +51,17 @@ export function HeroFramer({ name, positioning }: HeroProps) {
   // decision 3 in openspec/changes/hero-reduced-motion-alternative.
   const prefersReducedMotion = useReducedMotion() === true;
 
-  const nameInitial = prefersReducedMotion
-    ? { opacity: 0 }
-    : { opacity: 0, y: pace.offsetY };
-  const nameAnimate = prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 };
-  const positioningInitial = prefersReducedMotion
-    ? { opacity: 0 }
-    : { opacity: 0, y: pace.offsetY };
-  const positioningAnimate = prefersReducedMotion
-    ? { opacity: 1 }
-    : { opacity: 1, y: 0 };
+  // The hero's own mount entrance is owned by the page-load arrival
+  // sequence, not by HeroFramer itself — openspec/changes/arrival-sequence
+  // design.md Decision 6 ("one owner per element's entrance"). The
+  // scroll-linked fade-away above (`opacity`/`y` from `scrollYProgress`) is
+  // a separate, unrelated concern — the wrapper leaves the hero as the
+  // visitor scrolls past it — and stays exactly as it was.
+  const nameStep = useArrivalStep(ARRIVAL_STEP_DELAYS.heroName);
+  const positioningStep = useArrivalStep(ARRIVAL_STEP_DELAYS.heroPositioning);
 
   return (
     <MotionProvider>
-      {/* Framer Motion's `initial` props render as inline opacity:0 in the
-          SSR HTML; without JS, that state never animates away. This
-          <noscript> override guarantees the hero text stays readable when
-          JavaScript is disabled — see design.md decision 1 in
-          openspec/changes/hero-content-and-ctas. */}
-      <noscript>
-        <style>{`.${heroAnimatedTextClass} { opacity: 1 !important; transform: none !important; }`}</style>
-      </noscript>
       <m.div
         ref={wrapperRef}
         className={heroWrapperClass}
@@ -85,10 +71,10 @@ export function HeroFramer({ name, positioning }: HeroProps) {
         data-testid="hero-wrapper"
       >
         <m.h1
-          className={`${heroNameClass} ${heroAnimatedTextClass}`}
-          initial={nameInitial}
-          animate={nameAnimate}
-          transition={{ duration: pace.duration, ease: pace.ease }}
+          className={`${heroNameClass} ${arrivalAnimatedClass}`}
+          initial={nameStep.initial}
+          animate={nameStep.animate}
+          transition={nameStep.transition}
         >
           <span className={heroDisplayGradientClass}>{lead}</span>
           {accent && (
@@ -99,14 +85,10 @@ export function HeroFramer({ name, positioning }: HeroProps) {
           )}
         </m.h1>
         <m.p
-          className={`${heroPositioningClass} ${heroAnimatedTextClass}`}
-          initial={positioningInitial}
-          animate={positioningAnimate}
-          transition={{
-            duration: pace.duration,
-            ease: pace.ease,
-            delay: 0.3,
-          }}
+          className={`${heroPositioningClass} ${arrivalAnimatedClass}`}
+          initial={positioningStep.initial}
+          animate={positioningStep.animate}
+          transition={positioningStep.transition}
         >
           {positioning}
         </m.p>
