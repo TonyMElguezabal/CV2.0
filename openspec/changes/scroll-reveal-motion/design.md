@@ -40,7 +40,9 @@ deleting four neighbouring requirements, and JOS-110 broadened it to cover
 canvas. Amending it to permit exactly the property JOS-105 worked hardest to
 avoid would be a meaningful reversal.
 
-The chosen construction sidesteps it. Each character renders twice:
+The chosen construction sidesteps it. Each character renders twice, but — see
+the amendment at the end of this decision — the two copies do **not** sit as
+DOM siblings within one small per-character box:
 
 ```
   <span class="char">
@@ -56,6 +58,34 @@ The chosen construction sidesteps it. Each character renders twice:
 The blur is a static property: rendered once, cached as a compositing layer,
 never recomputed. Only opacity and transform animate. Per-frame cost is a
 compositor blend rather than fifteen simultaneous convolutions.
+
+**Amendment (found during Task Group 9 real-browser verification):** the
+diagram above — ghost and sharp as siblings inside one tiny per-character
+box — is the literal shape Task Group 2 originally built. Real-browser
+testing found that this shape breaks native double-click/triple-click
+word-selection: double-clicking "Skills" selected only `"Sk"`; hiding the
+ghost restored full-word selection. Root cause, isolated experimentally
+(see the Step 9 browser report): two overlapping text-bearing boxes stacked
+at the *same* small per-character wrapper — regardless of whether the
+overlap is done via `position: absolute` or CSS Grid stacking — collapses
+Chromium's word-boundary expansion to near single-character granularity.
+Removing the ghost from that per-character box (leaving the sharp copy
+alone in its wrapper) was sufficient to restore correct selection on its
+own, isolating the interleaving itself — not the blur, not the cross-fade,
+not `inline-block` — as the cause.
+
+The fix keeps the same two-copies-per-character *visual* construction but
+changes the *DOM shape*: all ghost characters move into one separate,
+absolutely-positioned overlay span (`position: absolute; inset: 0`,
+`aria-hidden`, `pointer-events-none`) layered behind the sharp text, rather
+than each ghost being a sibling inside its matching sharp character's own
+wrapper. The sharp text is left as a clean, uninterrupted run of
+per-character wrapper spans — the same shape that was proven, experimentally,
+to preserve native word-selection. Each ghost character keeps its own
+per-character stagger `delay`, so the two layers still cross-fade in
+lockstep even though they are no longer DOM siblings; only the *mechanism*
+for keeping them visually synchronized changed (twin independently-staggered
+elements instead of one shared parent wrapper), not the timing itself.
 
 It is not a pixel-identical match for a true radius ramp — a cross-fade shows a
 blurred ghost dissolving under a sharpening copy rather than one image
@@ -108,6 +138,18 @@ unchanged, because it lives in the headings and the section transitions.
 heading yields `JJoossee  MMuuññoozz`. On a CV — where a recruiter copies a name
 into an ATS or an email — that is a real defect, and it is completely invisible
 to visual review. The ghost layer must be excluded from selection.
+
+A second, related trap surfaced only in real-browser verification (Decision 1's
+amendment above has the full account): excluding the ghost from selection via
+`user-select: none` is necessary but not sufficient. As originally built, the
+ghost sat as a DOM sibling of the sharp copy inside each character's own small
+wrapper, and that adjacency — independent of `user-select` — was enough to
+collapse the browser's native double-click/triple-click word-selection to
+near single-character granularity. A manual click-and-drag selection still
+copied the correct text once, but the far more common "double-click a short
+word to select it" gesture did not. The fix moved the ghost into its own
+separate overlay layer, away from the sharp copy's per-character DOM, so the
+sharp text now selects the same way ordinary text does.
 
 **The accessible name fragments.** Wrapping each character in its own element can
 cause assistive technology to announce a heading letter by letter. The fix is to

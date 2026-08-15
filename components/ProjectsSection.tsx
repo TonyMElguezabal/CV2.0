@@ -1,4 +1,6 @@
 import type { ProjectWithId } from "@/lib/content/read.ts";
+import { RevealHeading } from "./RevealHeading";
+import { SectionReveal } from "./SectionReveal";
 import {
   projectsSectionClass,
   projectsHeadingClass,
@@ -20,10 +22,15 @@ export interface ProjectsSectionProps {
 export function ProjectsSection({ projects }: ProjectsSectionProps) {
   return (
     <section id="projects" className={projectsSectionClass}>
-      <h2 className={projectsHeadingClass}>Projects</h2>
+      <RevealHeading as="h2" className={projectsHeadingClass} text="Projects" />
       <div className={projectsListClass}>
         {projects.map((project) => (
-          <article key={project.id} id={project.id} className={projectCardClass}>
+          <SectionReveal
+            as="article"
+            key={project.id}
+            id={project.id}
+            className={projectCardClass}
+          >
             <div>
               <h3 className={projectTitleClass}>{project.title}</h3>
               <p className={projectCompanyClass}>{project.company}</p>
@@ -55,7 +62,7 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
                 ))}
               </ul>
             </section>
-          </article>
+          </SectionReveal>
         ))}
       </div>
     </section>

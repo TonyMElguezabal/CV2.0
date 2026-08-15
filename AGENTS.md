@@ -206,6 +206,31 @@ integrity matter beyond rendering.
   and on unmount — this is the first continuously-running surface on the
   site, so those three stop conditions are the substance of the component,
   not polish (`components/AmbientSparkleLayer.test.tsx`).
+- **Scroll-triggered content reveals** (JOS-111) — `components/useRevealOnScroll.ts`
+  is the shared one-shot reveal hook (`IntersectionObserver` + a scroll-listener
+  fallback, mirroring `CareerTimeline.tsx`'s own dual-trigger pattern):
+  `revealed` starts `false` and only ever transitions to `true`, once, never
+  back. Two consuming components build on it: `SectionReveal.tsx` (a
+  polymorphic whole-block fade+rise — `as="div"|"details"|"li"|"article"`, so
+  it never inserts an extra wrapper element that would break sibling-position
+  CSS like `first:`/`last:`) and `RevealHeading.tsx` (a per-character
+  blur-up cross-fade, restricted to short section headings only — Skills,
+  Projects, Contact). **Reveals are scoped to headings and section
+  entrances, never to substantive content** — chapter body text, dates,
+  role descriptions, metrics, and skill evidence links are never
+  individually gated, so in-page find and a fast scroll both still work
+  (`openspec/changes/scroll-reveal-motion/design.md` Decision 3, pending
+  post-merge archive/sync into `openspec/specs/`). Fail-visible by construction: SSR/default
+  state is fully visible (`opacity:0` is only ever an *animated* starting
+  point, never a conditional render), and one shared `<noscript>` override
+  (`RevealStyles.ts`'s `revealNoscriptOverrideCss`, wired into
+  `app/(marketing)/layout.tsx`) forces full visibility when JavaScript never
+  runs. `RevealHeading.tsx`'s ghost (blurred) and sharp copies are
+  deliberately **not** DOM siblings within one shared per-character wrapper —
+  real-browser testing found that shape breaks native double-click/triple-click
+  word-selection on the revealed heading; the ghost layer lives in its own
+  separate absolutely-positioned overlay instead, layered behind an
+  uninterrupted run of sharp-copy character spans.
 
 **Stack choices worth knowing before changing them:**
 - Framer Motion was selected over GSAP ScrollTrigger via a comparative spike

@@ -13,6 +13,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { GridOverlay } from "@/components/GridOverlay";
 import { HeroLaptop } from "@/components/HeroLaptop";
 import { AmbientSparkleLayer } from "@/components/AmbientSparkleLayer";
+import { MotionProvider } from "@/components/MotionProvider";
+import { revealNoscriptOverrideCss } from "@/components/RevealStyles";
 
 export const metadata = buildRootMetadata(getProfile(), resolveSiteUrl());
 
@@ -34,6 +36,19 @@ export default function RootLayout({
       className={`h-full antialiased ${fontVariablesClassName}`}
     >
       <body className="min-h-full flex flex-col font-sans">
+        {/* One shared override for every scroll-reveal instance on the
+            page (SectionReveal, RevealHeading), rather than duplicating a
+            per-instance <noscript> block the way HeroFramer.tsx does for
+            its own single entrance — framer-motion's `initial` prop bakes
+            opacity:0 into the SSR HTML for every reveal target, so without
+            this, a no-JS visitor would see a page of invisible sections.
+            The ghost (ambient blur copy inside RevealHeading) is forced
+            the opposite way — hidden, not shown — or a no-JS visitor would
+            see permanently blurred text behind the sharp copy. See
+            openspec/changes/scroll-reveal-motion design.md Decision 2. */}
+        <noscript>
+          <style>{revealNoscriptOverrideCss}</style>
+        </noscript>
         <SkipToContentLink />
         <SiteHeader brandName={name} />
         {/* Fixed, whole-page background layer (z-index behind normal-flow
@@ -55,7 +70,14 @@ export default function RootLayout({
         <GridOverlay />
         <StructuredData />
         <ChatWidgetProvider>
-          {children}
+          {/* Scroll-reveal components below <main> (SectionReveal,
+              RevealHeading) use framer-motion's `m.*` components, which
+              require a LazyMotion boundary — HeroFramer.tsx/HeroLaptop.tsx
+              already provide their own for their own subtrees, but
+              {children} (everything below the hero) has none. Nested
+              LazyMotion providers are safe (the same domAnimation feature
+              set loads once, cached) — see MotionProvider.tsx. */}
+          <MotionProvider>{children}</MotionProvider>
           <SiteFooter />
           <ChatWidget
             starterQuestions={starterQuestions}

@@ -1,5 +1,7 @@
 import type { ExperienceWithId } from "@/lib/content/read.ts";
 import type { Skill } from "@/lib/content/types.ts";
+import { RevealHeading } from "./RevealHeading";
+import { SectionReveal } from "./SectionReveal";
 import {
   skillsSectionClass,
   skillsHeadingClass,
@@ -22,10 +24,10 @@ export function SkillsSection({ skills, experiences }: SkillsSectionProps) {
 
   return (
     <section id="skills" className={skillsSectionClass}>
-      <h2 className={skillsHeadingClass}>Skills</h2>
+      <RevealHeading as="h2" className={skillsHeadingClass} text="Skills" />
       <ul className={skillsListClass}>
         {skills.map((skill) => (
-          <li key={skill.name} className={skillItemClass}>
+          <SectionReveal as="li" key={skill.name} className={skillItemClass}>
             <span className={skillNameClass}>{skill.name}</span>
             <span className={skillEvidenceListClass}>
               {skill.evidence.map((evidenceId) => {
@@ -45,7 +47,7 @@ export function SkillsSection({ skills, experiences }: SkillsSectionProps) {
                 );
               })}
             </span>
-          </li>
+          </SectionReveal>
         ))}
       </ul>
     </section>
