@@ -9,6 +9,7 @@ import { CareerChapters } from "./CareerChapters";
 import { CareerTimeline } from "./CareerTimeline";
 import { ContactSection } from "./ContactSection";
 import { SiteHeader } from "./SiteHeader";
+import { AmbientSparkleLayer } from "./AmbientSparkleLayer";
 import type { ExperienceWithId } from "@/lib/content/read.ts";
 import type { Profile } from "@/lib/content/types.ts";
 
@@ -127,6 +128,7 @@ describe("Automated accessibility structure checks", () => {
         </a>
         <SiteHeader brandName="Fixture Person" />
         <HeroLaptop terminalLines={["$ whoami", "fixture_person"]} />
+        <AmbientSparkleLayer />
         <CareerTimeline experiences={[FIXTURE_EXPERIENCE]} />
         <main id="main">
           <HeroFramer name="Fixture Person" positioning="Fixture Positioning" />
@@ -156,5 +158,9 @@ describe("Automated accessibility structure checks", () => {
         '[data-testid="hero-laptop-layer"] button, [data-testid="hero-laptop-layer"] a, [data-testid="hero-laptop-layer"] [tabindex]'
       )
     ).toHaveLength(0);
+
+    expect(
+      container.querySelector('[data-testid="ambient-sparkle-layer"]')
+    ).toHaveAttribute("aria-hidden", "true");
   });
 });
