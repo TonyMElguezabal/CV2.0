@@ -48,8 +48,6 @@ export const heroPositioningClass =
 export const spacerSectionClass =
   "flex min-h-screen items-center justify-center text-zinc-400";
 
-export const heroAnimatedTextClass = "hero-animated-text";
-
 export const ctaRowClass =
   "mt-10 flex flex-wrap items-center justify-center gap-4";
 
@@ -73,8 +71,7 @@ export const heroLaptopScrimClass =
 
 // `hero-laptop-scene`/`-lid`/`-screen` are dedicated marker classes (not
 // Tailwind utilities) so the `<noscript>` override in HeroLaptop.tsx can
-// force the no-JS static state without depending on test-only attributes —
-// mirrors `heroAnimatedTextClass`'s role for HeroFramer's noscript override.
+// force the no-JS static state without depending on test-only attributes.
 // The negative margin is a static layout offset (not animated, not
 // transform — so it doesn't collide with framer-motion's inline `transform`
 // on this same element, which manages rotateY/rotateZ via sceneStyle) that

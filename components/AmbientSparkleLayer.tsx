@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useReducedMotion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 import { createParticles, stepParticles } from "@/lib/particles/simulation.ts";
 import type { Particle } from "@/lib/particles/simulation.ts";
 import { hexToRgb } from "@/lib/color/contrast.ts";
 import { heroLaptopAccentHex } from "./HeroShellStyles";
+import { MotionProvider } from "./MotionProvider";
+import { useArrivalStep } from "./ArrivalSequenceProvider";
+import { ARRIVAL_STEP_DELAYS } from "./arrivalSequence";
+import { arrivalAnimatedClass } from "./ArrivalStyles";
 import {
   ambientSparkleLayerClass,
   ambientSparkleCanvasClass,
@@ -18,6 +22,13 @@ export function AmbientSparkleLayer() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const prefersReducedMotion = useReducedMotion() === true;
+
+  // Fades up as an arrival-sequence step (openspec/changes/arrival-sequence
+  // design.md Decision 6: "the ambient layer enters as a step of the
+  // sequence rather than appearing abruptly alongside it") rather than
+  // simply being present the instant it mounts. Opacity only — a
+  // full-viewport atmosphere layer has no sensible "rise into place".
+  const entranceStep = useArrivalStep(ARRIVAL_STEP_DELAYS.ambient, false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -145,13 +156,18 @@ export function AmbientSparkleLayer() {
   }, [prefersReducedMotion]);
 
   return (
-    <div
-      ref={containerRef}
-      aria-hidden="true"
-      className={ambientSparkleLayerClass}
-      data-testid="ambient-sparkle-layer"
-    >
-      <canvas ref={canvasRef} className={ambientSparkleCanvasClass} />
-    </div>
+    <MotionProvider>
+      <m.div
+        ref={containerRef}
+        className={`${ambientSparkleLayerClass} ${arrivalAnimatedClass}`}
+        initial={entranceStep.initial}
+        animate={entranceStep.animate}
+        transition={entranceStep.transition}
+        aria-hidden="true"
+        data-testid="ambient-sparkle-layer"
+      >
+        <canvas ref={canvasRef} className={ambientSparkleCanvasClass} />
+      </m.div>
+    </MotionProvider>
   );
 }

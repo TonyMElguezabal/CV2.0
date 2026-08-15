@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { HeroLaptop } from "./HeroLaptop";
 import { heroLaptopAccentHex } from "./HeroShellStyles";
 import { contrastRatio } from "@/lib/color/contrast.ts";
+import { ArrivalSequenceProvider } from "./ArrivalSequenceProvider";
 
 // Same fake mediaQueryList pattern as HeroFramer.test.tsx: useReducedMotion
 // reads window.matchMedia lazily and re-reads only via the registered
@@ -315,6 +317,62 @@ describe("HeroLaptop", () => {
     // have zero visual effect over the laptop itself.
     const children = Array.from(layer.children);
     expect(children.indexOf(scrim)).toBeGreaterThan(children.indexOf(scene));
+  });
+});
+
+// The layer's own mount entrance is owned by the page-load arrival
+// sequence (JOS-112), not by HeroLaptop itself. Rendered without an
+// ArrivalSequenceProvider ancestor (every test above this point), the hook
+// falls back to its fail-visible context default — already visible, no
+// transition — which is why none of those existing assertions needed to
+// change: the new entrance is a no-op without a real provider, exactly as
+// intended.
+describe("HeroLaptop — arrival-sequence entrance", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("starts hidden (opacity 0) in the raw SSR HTML, before any effect can run", () => {
+    // renderToStaticMarkup runs no effects at all — this is what a
+    // no-JS visitor's browser actually receives, and exactly why the
+    // shared <noscript> override exists.
+    const html = renderToStaticMarkup(
+      <ArrivalSequenceProvider>
+        <HeroLaptop terminalLines={["$ whoami"]} />
+      </ArrivalSequenceProvider>
+    );
+    expect(html).toContain("hero-laptop-layer");
+    expect(html).toContain("opacity:0");
+  });
+
+  it("reaches full opacity once the sequence has run, with no y-offset", async () => {
+    setPrefersReducedMotion(false);
+    render(
+      <ArrivalSequenceProvider>
+        <HeroLaptop terminalLines={["$ whoami"]} />
+      </ArrivalSequenceProvider>
+    );
+    const layer = screen.getByTestId("hero-laptop-layer");
+    // pace.duration is 1.4s — the default waitFor timeout (1s) is shorter
+    // than a real settle, so this needs its own longer timeout (same
+    // characteristic documented in SectionReveal.test.tsx/HeroFramer.test.tsx).
+    await waitFor(() => expect(layer.style.opacity).toBe("1"), {
+      timeout: 2000,
+    });
+    // Opacity-only by design (design.md: its own scroll-driven rotation
+    // already supplies all positional motion) — never a translateY.
+    expect(layer.style.transform ?? "").not.toContain("px");
+  }, 3000);
+
+  it("carries the shared no-JS override marker class", () => {
+    render(
+      <ArrivalSequenceProvider>
+        <HeroLaptop terminalLines={["$ whoami"]} />
+      </ArrivalSequenceProvider>
+    );
+    expect(screen.getByTestId("hero-laptop-layer").className).toMatch(
+      /\barrival-animated\b/
+    );
   });
 });
 

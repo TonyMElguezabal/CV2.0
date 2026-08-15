@@ -2,6 +2,9 @@
 
 import { m, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { MotionProvider } from "./MotionProvider";
+import { useArrivalStep } from "./ArrivalSequenceProvider";
+import { ARRIVAL_STEP_DELAYS } from "./arrivalSequence";
+import { arrivalAnimatedClass } from "./ArrivalStyles";
 import { Terminal } from "./Terminal";
 import {
   heroLaptopLayerClass,
@@ -69,6 +72,13 @@ export function HeroLaptop({ terminalLines }: HeroLaptopProps) {
   // `null` (SSR / not-yet-resolved) is treated as "not reduced" — matches
   // HeroFramer's convention.
   const prefersReducedMotion = useReducedMotion() === true;
+
+  // The laptop layer's entrance ("the ground establishes") is the arrival
+  // sequence's first step (openspec/changes/arrival-sequence, delay 0) —
+  // opacity only (`withOffset=false`): its own scroll-driven rotation
+  // above already supplies all positional motion, so this never stacks a
+  // second, independently-timed translateY onto the same layer.
+  const entranceStep = useArrivalStep(ARRIVAL_STEP_DELAYS.laptop, false);
 
   const lidRotateX = useTransform(
     scrollYProgress,
@@ -173,8 +183,11 @@ export function HeroLaptop({ terminalLines }: HeroLaptopProps) {
           .hero-laptop-specular { opacity: ${STATIC_SPECULAR_OPACITY} !important; transform: translateX(${STATIC_SPECULAR_X}) !important; }
         `}</style>
       </noscript>
-      <div
-        className={heroLaptopLayerClass}
+      <m.div
+        className={`${heroLaptopLayerClass} ${arrivalAnimatedClass}`}
+        initial={entranceStep.initial}
+        animate={entranceStep.animate}
+        transition={entranceStep.transition}
         aria-hidden="true"
         data-testid="hero-laptop-layer"
       >
@@ -296,7 +309,7 @@ export function HeroLaptop({ terminalLines }: HeroLaptopProps) {
           className={heroLaptopScrimClass}
           data-testid="hero-laptop-scrim"
         />
-      </div>
+      </m.div>
     </MotionProvider>
   );
 }

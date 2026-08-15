@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { AmbientSparkleLayer } from "./AmbientSparkleLayer";
 import { HeroLaptop } from "./HeroLaptop";
 import {
@@ -9,6 +12,7 @@ import {
 } from "./AmbientSparkleLayerStyles";
 import { heroLaptopAccentHex } from "./HeroShellStyles";
 import { hexToRgb } from "@/lib/color/contrast.ts";
+import { ArrivalSequenceProvider } from "./ArrivalSequenceProvider";
 
 // Same fake mediaQueryList pattern as HeroLaptop.test.tsx/HeroFramer.test.tsx
 // — useReducedMotion reads window.matchMedia lazily and re-reads only via
@@ -356,5 +360,76 @@ describe("AmbientSparkleLayer — viewport gating (Task Group 5)", () => {
     } as DOMRect);
     render(<AmbientSparkleLayer />);
     expect(pendingRafCount()).toBe(0);
+  });
+});
+
+// The layer's own mount entrance is owned by the page-load arrival
+// sequence (JOS-112), not by AmbientSparkleLayer itself. Every test above
+// this point renders without an ArrivalSequenceProvider ancestor, so the
+// hook falls back to its fail-visible context default (already visible, no
+// transition) — the new entrance is a no-op there, which is why none of
+// those existing assertions needed to change.
+describe("AmbientSparkleLayer — arrival-sequence entrance", () => {
+  beforeEach(() => {
+    // The file-wide beforeEach above replaces requestAnimationFrame with a
+    // queue that never auto-fires, so this file's particle-loop tests can
+    // control frame timing by hand — but that same mock also captures
+    // framer-motion's own internal animation driver, which needs real
+    // frame timing to ever resolve. Restored here so this describe
+    // block's opacity-transition assertions can actually settle; the
+    // canvas-context/IntersectionObserver/getBoundingClientRect mocks stay
+    // in place, since the component's own effect still needs them.
+    (
+      window.requestAnimationFrame as unknown as ReturnType<typeof vi.fn>
+    ).mockRestore();
+    (
+      window.cancelAnimationFrame as unknown as ReturnType<typeof vi.fn>
+    ).mockRestore();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("starts hidden (opacity 0) in the raw SSR HTML, before any effect can run", () => {
+    const html = renderToStaticMarkup(
+      <ArrivalSequenceProvider>
+        <AmbientSparkleLayer />
+      </ArrivalSequenceProvider>
+    );
+    expect(html).toContain("ambient-sparkle-layer");
+    expect(html).toContain("opacity:0");
+  });
+
+  it("wires its entrance to the shared arrival-sequence hook, opacity only", () => {
+    // This file's own file-wide beforeEach replaces requestAnimationFrame
+    // with a manually-flushed queue (for the particle-loop tests below),
+    // and framer-motion's animation engine captures its own frame-loop
+    // reference the first time any `m.*` component mounts in this file —
+    // once poisoned by an earlier test's mock, a later per-test
+    // `mockRestore()` does not un-poison that already-captured reference,
+    // so a live DOM settle assertion (proven to work in
+    // HeroLaptop.test.tsx, which has no such file-wide rAF mock) cannot be
+    // made to reliably resolve here. Verified at the source level instead
+    // — the real settling behavior is exercised in HeroLaptop.test.tsx and
+    // ArrivalSequenceProvider.test.tsx via the same shared hook.
+    const source = readFileSync(
+      join(process.cwd(), "components", "AmbientSparkleLayer.tsx"),
+      "utf8"
+    );
+    expect(source).toMatch(
+      /useArrivalStep\(\s*ARRIVAL_STEP_DELAYS\.ambient,\s*false\s*\)/
+    );
+  });
+
+  it("carries the shared no-JS override marker class", () => {
+    render(
+      <ArrivalSequenceProvider>
+        <AmbientSparkleLayer />
+      </ArrivalSequenceProvider>
+    );
+    expect(screen.getByTestId("ambient-sparkle-layer").className).toMatch(
+      /\barrival-animated\b/
+    );
   });
 });
