@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, screen } from "@testing-library/react";
 import { axe } from "vitest-axe";
 import { HeroFramer } from "./HeroFramer";
 import { HeroLaptop } from "./HeroLaptop";
@@ -8,10 +8,13 @@ import { ChatWidget } from "./ChatWidget";
 import { CareerChapters } from "./CareerChapters";
 import { CareerTimeline } from "./CareerTimeline";
 import { ContactSection } from "./ContactSection";
+import { SkillsSection } from "./SkillsSection";
+import { ProjectsSection } from "./ProjectsSection";
 import { SiteHeader } from "./SiteHeader";
 import { AmbientSparkleLayer } from "./AmbientSparkleLayer";
-import type { ExperienceWithId } from "@/lib/content/read.ts";
-import type { Profile } from "@/lib/content/types.ts";
+import { MotionProvider } from "./MotionProvider";
+import type { ExperienceWithId, ProjectWithId } from "@/lib/content/read.ts";
+import type { Profile, Skill } from "@/lib/content/types.ts";
 
 // jsdom has no IntersectionObserver implementation (same gap documented in
 // CareerTimeline.activeState.test.tsx) — this test only needs CareerTimeline
@@ -61,6 +64,23 @@ const FIXTURE_CONTACT: Pick<Profile, "contact" | "links"> = {
     scheduling: "https://cal.com/fixture",
   },
   links: { linkedin: "https://www.linkedin.com/in/fixture" },
+};
+
+const FIXTURE_SKILL: Skill = {
+  name: "Fixture Skill",
+  evidence: ["acme"],
+  summary: "Fixture summary.",
+};
+
+const FIXTURE_PROJECT: ProjectWithId = {
+  id: "fixture-project",
+  title: "Fixture Project",
+  company: "Acme",
+  skills: ["Fixture Skill"],
+  metrics: ["Fixture metric"],
+  problem: "Fixture problem.",
+  approach: "Fixture approach.",
+  outcome: "Fixture outcome.",
 };
 
 afterEach(() => {
@@ -132,8 +152,15 @@ describe("Automated accessibility structure checks", () => {
         <CareerTimeline experiences={[FIXTURE_EXPERIENCE]} />
         <main id="main">
           <HeroFramer name="Fixture Person" positioning="Fixture Positioning" />
-          <CareerChapters experiences={[FIXTURE_EXPERIENCE]} />
-          <ContactSection {...FIXTURE_CONTACT} />
+          <MotionProvider>
+            <CareerChapters experiences={[FIXTURE_EXPERIENCE]} />
+            <SkillsSection
+              skills={[FIXTURE_SKILL]}
+              experiences={[FIXTURE_EXPERIENCE]}
+            />
+            <ProjectsSection projects={[FIXTURE_PROJECT]} />
+            <ContactSection {...FIXTURE_CONTACT} />
+          </MotionProvider>
         </main>
         <ChatWidget
           starterQuestions={["Who is Jose?"]}
@@ -162,5 +189,22 @@ describe("Automated accessibility structure checks", () => {
     expect(
       container.querySelector('[data-testid="ambient-sparkle-layer"]')
     ).toHaveAttribute("aria-hidden", "true");
+
+    // Task Group 3.6: the per-character split in RevealHeading must not
+    // introduce any additional headings — each split heading still
+    // registers as exactly one heading with its full, unbroken accessible
+    // name, not a fragmented sequence of per-character nodes. Matched at
+    // level 2 specifically: CareerChapter's own body also has an h4
+    // literally titled "Projects" (one of its fixed subheadings), so an
+    // unqualified name match would ambiguously hit both.
+    expect(
+      screen.getByRole("heading", { name: "Skills", level: 2 })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Projects", level: 2 })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Contact", level: 2 })
+    ).toBeInTheDocument();
   });
 });

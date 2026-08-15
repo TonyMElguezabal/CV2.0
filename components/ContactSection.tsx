@@ -1,4 +1,6 @@
 import type { Profile } from "@/lib/content/types.ts";
+import { RevealHeading } from "./RevealHeading";
+import { SectionReveal } from "./SectionReveal";
 import {
   contactSectionClass,
   contactHeadingClass,
@@ -11,8 +13,8 @@ export type ContactSectionProps = Pick<Profile, "contact" | "links">;
 export function ContactSection({ contact, links }: ContactSectionProps) {
   return (
     <section id="contact" className={contactSectionClass}>
-      <h2 className={contactHeadingClass}>Contact</h2>
-      <div className={contactLinksListClass}>
+      <RevealHeading as="h2" className={contactHeadingClass} text="Contact" />
+      <SectionReveal className={contactLinksListClass}>
         <a
           href={contact.scheduling}
           target="_blank"
@@ -41,7 +43,7 @@ export function ContactSection({ contact, links }: ContactSectionProps) {
         >
           LinkedIn
         </a>
-      </div>
+      </SectionReveal>
     </section>
   );
 }

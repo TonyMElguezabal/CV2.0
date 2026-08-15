@@ -1,4 +1,5 @@
 import type { ExperienceWithId } from "@/lib/content/read.ts";
+import { SectionReveal } from "./SectionReveal";
 import {
   chapterDetailsClass,
   chapterSummaryClass,
@@ -22,7 +23,7 @@ export interface CareerChapterProps {
 
 export function CareerChapter({ experience }: CareerChapterProps) {
   return (
-    <details id={experience.id} className={chapterDetailsClass}>
+    <SectionReveal as="details" id={experience.id} className={chapterDetailsClass}>
       <summary className={chapterSummaryClass}>
         <h3 className={chapterHeadingClass}>
           <span aria-hidden="true" className={chapterChevronClass}>
@@ -101,6 +102,6 @@ export function CareerChapter({ experience }: CareerChapterProps) {
           <p className={chapterParagraphClass}>{experience.lessons}</p>
         </section>
       </div>
-    </details>
+    </SectionReveal>
   );
 }
