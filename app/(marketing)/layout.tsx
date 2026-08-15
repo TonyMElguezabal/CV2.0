@@ -12,6 +12,7 @@ import { SkipToContentLink } from "@/components/SkipToContentLink";
 import { SiteHeader } from "@/components/SiteHeader";
 import { GridOverlay } from "@/components/GridOverlay";
 import { HeroLaptop } from "@/components/HeroLaptop";
+import { AmbientSparkleLayer } from "@/components/AmbientSparkleLayer";
 
 export const metadata = buildRootMetadata(getProfile(), resolveSiteUrl());
 
@@ -39,6 +40,13 @@ export default function RootLayout({
             content) — the signature scroll-driven laptop, per
             hero-signature-motion / openspec/changes/hero-laptop-scroll-motion. */}
         <HeroLaptop terminalLines={hero.terminalLines} />
+        {/* Ambient particle field — mounted after HeroLaptop (and its
+            scrim) so it paints above them, not beneath: placing it inside
+            the hero layer would cut its contribution by ~80% (measured —
+            ambient-sparkle-layer design.md Decision 2). `-z-10`, same
+            stacking approach as the layers around it, so it still stays
+            behind all normal content regardless of DOM order. */}
+        <AmbientSparkleLayer />
         {/* Decorative grid — vertical hairlines plus the rule under the
             header, both drawn from --hair. `-z-10`, same stacking
             approach as HeroLaptop above, mounted after it so the grid

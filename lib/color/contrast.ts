@@ -10,14 +10,24 @@ export function srgbToLinear(channel255: number): number {
 }
 
 export function relativeLuminance(hex: string): number {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
+  const [r, g, b] = hexToRgb(hex);
   return (
     0.2126 * srgbToLinear(r) +
     0.7152 * srgbToLinear(g) +
     0.0722 * srgbToLinear(b)
   );
+}
+
+// Shared with ambient-sparkle-layer (JOS-110): the particle field's fill
+// color derives from `heroLaptopAccentHex` via this same parse, rather than
+// hard-coding a second rgb triplet — see design.md Decision 7 in
+// openspec/changes/ambient-sparkle-layer.
+export function hexToRgb(hex: string): [number, number, number] {
+  return [
+    parseInt(hex.slice(1, 3), 16),
+    parseInt(hex.slice(3, 5), 16),
+    parseInt(hex.slice(5, 7), 16),
+  ];
 }
 
 export function contrastRatio(hexA: string, hexB: string): number {

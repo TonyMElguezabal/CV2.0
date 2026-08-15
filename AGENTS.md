@@ -169,6 +169,22 @@ integrity matter beyond rendering.
   and the amended `career-timeline-navigation` requirement, pending
   post-merge sync into `openspec/specs/`), not just remembered, and
   regression-tested in `components/oneScrollIndicator.test.tsx`.
+- `components/AmbientSparkleLayer.tsx` — the ambient particle field (JOS-110),
+  a single `<canvas>` with `globalCompositeOperation = "lighter"` for
+  additive glow, mounted in `app/(marketing)/layout.tsx` **between**
+  `HeroLaptop` and `GridOverlay`. **Must stay above the hero laptop layer
+  and its scrim, never inside it or beneath it** — placing it under the
+  scrim was measured to cut its visible contribution by ~80% (+221 → +43
+  levels over the background), which is exactly the reasoning that got
+  JOS-105's light ⑤ removed for being indistinguishable from nothing;
+  see `openspec/changes/ambient-sparkle-layer/design.md` Decision 2 before
+  moving this component. Pure simulation logic lives separately in
+  `lib/particles/simulation.ts` (no canvas dependency, directly testable).
+  The loop stops on tab-hidden, on scrolling out of view
+  (`IntersectionObserver`, same pattern `CareerTimeline.tsx` established),
+  and on unmount — this is the first continuously-running surface on the
+  site, so those three stop conditions are the substance of the component,
+  not polish (`components/AmbientSparkleLayer.test.tsx`).
 
 **Stack choices worth knowing before changing them:**
 - Framer Motion was selected over GSAP ScrollTrigger via a comparative spike

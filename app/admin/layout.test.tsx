@@ -37,6 +37,12 @@ describe("AdminLayout", () => {
     // app/(marketing)/layout.tsx — /admin has its own independent root
     // layout and must never inherit them.
     expect(screen.queryByRole("banner")).not.toBeInTheDocument();
+    // Same for the ambient sparkle layer (ambient-sparkle-layer) — a
+    // continuously-running canvas loop has no reason to exist on an
+    // owner-only internal dashboard.
+    expect(
+      screen.queryByTestId("ambient-sparkle-layer"),
+    ).not.toBeInTheDocument();
   });
 
   it("applies the shared font-variable classes from lib/fonts to <html>, proving real end-to-end wiring", async () => {

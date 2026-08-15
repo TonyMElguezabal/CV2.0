@@ -7,83 +7,83 @@
 
 ## 1. The canvas layer and its stacking position (AC: "renders above the hero scrim")
 
-- [ ] 1.1 Add failing tests: the ambient layer exists, is `aria-hidden`, is not focusable, does not intercept pointer events, and contains no text
-- [ ] 1.2 Add a failing test asserting the layer paints **after** the hero scrim and **before** page content — the same DOM-order/stacking check used for the scrim fix in JOS-105
-- [ ] 1.3 Build the layer as its own fixed element between the hero laptop layer and the page content — **not** inside the hero layer. Placing it under the scrim cuts its contribution from +221 to +43 levels over the background (design.md Decision 2)
-- [ ] 1.4 Mount it in `app/(marketing)/layout.tsx` only. **Not** in `app/admin/layout.tsx` — `app/admin/layout.test.tsx` asserts the admin area is free of marketing chrome
+- [x] 1.1 Added `components/AmbientSparkleLayer.test.tsx` (failing first — module didn't exist): `aria-hidden="true"`, no focusable descendants, `pointer-events-none` present, `container.textContent === ""`
+- [x] 1.2 Added a DOM-order stacking test rendering `<HeroLaptop />` then `<AmbientSparkleLayer />` together (mirroring how they're actually mounted in layout.tsx) and asserting `compareDocumentPosition` shows the sparkle layer *following* the laptop layer — same technique as `HeroLaptop.test.tsx`'s own scrim-order assertion. Also asserts `-z-10` is present (matching `heroLaptopLayerClass`/`gridOverlayClass`'s convention), which is what actually guarantees normal content paints above it regardless of DOM order
+- [x] 1.3 Built `AmbientSparkleLayer.tsx` + `AmbientSparkleLayerStyles.ts` as its own fixed `-z-10` element (`ambientSparkleLayerClass`), never rendered inside `HeroLaptop`
+- [x] 1.4 Mounted in `app/(marketing)/layout.tsx` between `HeroLaptop` and `GridOverlay`. Confirmed `app/admin/layout.test.tsx` (which asserts marketing chrome absence) still passes unmodified — the admin layout never imports this component
 
 ## 2. Particle simulation (AC: "An ambient decorative motion layer runs behind the page content")
 
-- [ ] 2.1 Add failing tests for the simulation module's pure logic — particle initialisation and per-step position update — kept separate from the rendering so it is testable without a canvas
-- [ ] 2.2 Implement the field on a single `<canvas>` with `globalCompositeOperation = "lighter"` for additive glow. **One canvas, not N DOM nodes** — 200 animated elements would mean 200 style recalcs per frame, the exact layout-thrash the 60fps requirement exists to prevent (design.md Decision 1)
-- [ ] 2.3 Derive the particle colour from the shared accent token; do not introduce a second colour value (design.md Decision 7 — JOS-105 shipped a duplicated accent that silently rendered nothing)
-- [ ] 2.4 Handle canvas sizing and `devicePixelRatio` so the field is not blurry on high-DPI displays, and re-size on viewport resize
+- [x] 2.1 Added `lib/particles/simulation.ts` (`createParticles`/`stepParticles`, normalized `[0,1)` coordinates, no canvas dependency) and `lib/particles/simulation.test.ts` (9 tests: count, bounds, determinism, velocity-based advancement, boundary wrap, immutability, deltaSeconds=0 no-op). **Caught a real bug via the tests, not written after them**: the deltaSeconds=0 no-op test failed on first run — `%` is not an exact floating-point identity even for already-in-range values, so a stationary particle drifted by a float-epsilon every step. Fixed `wrap()` to skip the modulo entirely when the value is already in `[0,1)`
+- [x] 2.2 Implemented on a single `<canvas>` in `AmbientSparkleLayer.tsx` with `ctx.globalCompositeOperation = "lighter"`. Verified via `AmbientSparkleLayer.test.tsx`: exactly one `<canvas>` element rendered, `fakeCtx.globalCompositeOperation === "lighter"` after mount
+- [x] 2.3 Particle color derives from `heroLaptopAccentHex` via a new `hexToRgb` export added to `lib/color/contrast.ts` (extending the existing shared color module rather than duplicating the hex-parse logic) — verified by a test asserting the canvas fill call's rgba string matches `hexToRgb(heroLaptopAccentHex)` exactly, not a second hard-coded triplet
+- [x] 2.4 `resizeCanvas()` reads the container's real `getBoundingClientRect()` and `window.devicePixelRatio`, sets the canvas backing-store size and `ctx.setTransform` accordingly; re-run on a `resize` listener
 
 ## 3. Reduced motion — static, not slower (AC: "does not move under reduced motion")
 
-- [ ] 3.1 Add failing tests: under `prefers-reduced-motion: reduce` no positional update occurs and no animation loop is started
-- [ ] 3.2 Implement the static branch — render the field once, optionally fade in, never update positions. Use the existing `prefersReducedMotion ? … : …` pattern from `HeroLaptop.tsx`/`HeroFramer.tsx`
-- [ ] 3.3 Confirm the still field is rendered rather than nothing at all — "renders nothing" and "failed to initialise" are indistinguishable, which makes the compliant state look like a bug (design.md Decision 3)
-- [ ] 3.4 Verify this satisfies `accessibility-compliance`'s site-wide rule: "no movement-based animation plays; only opacity/fade transitions remain"
+- [x] 3.1 Added tests in `AmbientSparkleLayer.test.tsx`'s "reduced motion" describe block: under `prefers-reduced-motion: reduce`, exactly one `clearRect` call ever happens (one static frame, never a second) and `requestAnimationFrame` is never scheduled. **Real, non-trivial bug caught here, not written after the fact**: these two tests genuinely failed on first run — traced to a framer-motion internal detail (`useReducedMotion`'s state lives in a `motion-dom` module-level singleton, initialized exactly once per process); my test file's `beforeEach` was clearing the fake `matchMedia` change-listener array, which orphaned framer-motion's own one-time-registered listener and froze reduced-motion state at whatever the very first test in the file observed. Fixed by not clearing that array (matching `HeroLaptop.test.tsx`/`HeroFramer.test.tsx`'s own setup, which never clears it either) — documented inline in the test file so a future reader doesn't reintroduce it
+- [x] 3.2 Implemented the static branch in `AmbientSparkleLayer.tsx`: `shouldRun()` gates on `!prefersReducedMotion` (from framer-motion's `useReducedMotion()`, the same hook `HeroLaptop.tsx`/`HeroFramer.tsx` use), and the effect always draws one frame immediately regardless of motion preference, only conditionally scheduling the rAF loop. No fade-in implemented — design.md marks it explicitly optional
+- [x] 3.3 Verified: a dedicated test confirms particles are still drawn (`fill:` calls present) under reduced motion, not an empty canvas
+- [x] 3.4 Satisfied by construction: under reduced motion, positions never update after the first frame (task 3.1's assertion) — no movement-based animation plays, matching the site-wide rule verbatim
 
 ## 4. Lifecycle — the substance of this change (AC: "stops when it is not visible")
 
-- [ ] 4.1 Add failing tests for all three stop conditions: document hidden, layer scrolled out of view, component unmounted
-- [ ] 4.2 Stop the loop on `visibilitychange` when the document is hidden; resume when visible
-- [ ] 4.3 Stop the loop when the layer leaves the viewport (an `IntersectionObserver` is the natural fit — `CareerTimeline` already establishes the pattern in this codebase); resume on re-entry. **Browser rAF throttling does not cover this case** — a layer three screens up is fully visible to the browser's heuristics while invisible to the visitor (design.md Decision 4)
-- [ ] 4.4 Cancel the animation frame and remove every registered listener on unmount; assert no callback or listener survives
-- [ ] 4.5 Confirm "throttled" is not mistaken for "stopped" — the requirement is that the loop stops
+- [x] 4.1 Added tests in `AmbientSparkleLayer.test.tsx`'s "lifecycle" describe block for all three stop conditions plus their resume counterparts, using a controllable `requestAnimationFrame` mock (`pendingRafCount()`/`flushRaf()`) so "scheduled vs. not scheduled" is asserted directly rather than inferred
+- [x] 4.2 Implemented via a `visibilitychange` listener toggling an `isTabVisible` flag consulted by `shouldRun()`; resumes by calling `startLoopIfNeeded()` on the same event
+- [x] 4.3 Implemented via `IntersectionObserver` (same pattern `CareerTimeline.tsx` already establishes in this codebase — its own `ACTIVE_CHAPTER_ROOT_MARGIN` observer was the direct precedent), toggling `isInView`; resumes the same way on re-entry
+- [x] 4.4 Effect cleanup calls `cancelAnimationFrame` (if a frame is pending), removes the `resize` and `visibilitychange` listeners, and disconnects the `IntersectionObserver`. A dedicated unmount test spies on `removeEventListener` (both `window` and `document`) and the observer's own `disconnect`, and confirms `pendingRafCount()` drops to 0
+- [x] 4.5 A dedicated test asserts the loop keeps re-scheduling itself across multiple flushes while no stop condition has fired — "still scheduled" is the observable proxy for "not stopped"; the three stop-condition tests (4.1) are what prove it actually reaches 0 pending frames, not merely a longer gap between them
 
 ## 5. Viewport and no-JS gating (AC: "omitted on small viewports and without JavaScript")
 
-- [ ] 5.1 Add failing tests: the layer does not render below the `sm` breakpoint and starts no loop there
-- [ ] 5.2 Gate the layer to `sm` and up, matching the hero laptop's existing `hidden sm:flex` (design.md Decision 5)
-- [ ] 5.3 Confirm no-JS behaviour: the canvas renders nothing and every piece of page content remains readable and complete without it
+- [x] 5.1 Added tests in `AmbientSparkleLayer.test.tsx`'s "viewport gating" describe block: `ambientSparkleLayerClass` contains `hidden`/`sm:block`, and — the behavioral half — no `requestAnimationFrame` is ever scheduled when the container reports zero size (mocked `getBoundingClientRect` returning `0x0`, simulating the `hidden` collapsed state)
+- [x] 5.2 `ambientSparkleLayerClass = "fixed inset-0 -z-10 hidden pointer-events-none sm:block"` — matches `heroLaptopLayerClass`'s own `hidden sm:flex` gate. The component additionally derives its "gated off" check from the container's *real measured size* (`isGatedOff()`) rather than hardcoding the `640px` breakpoint a second time in JS — one source of truth (the CSS class) for both the visual gate and the loop-start gate, so they cannot drift apart
+- [x] 5.3 Added `components/AmbientSparkleLayer.ssr.test.tsx` (`renderToStaticMarkup`, no hydration): confirms the server-rendered output is an empty, `aria-hidden` canvas with no text content. Unlike `HeroLaptop.tsx`, this component has no `<noscript>` override, because it has no real content that needs one — a blank canvas *is* the fully correct no-JS state for a purely decorative layer, not a degraded fallback
 
 ## 6. Review and Update Existing Unit Tests (MANDATORY)
 
-- [ ] 6.1 Review `accessibilityStructure.test.tsx` — a new always-present layer must not affect landmark or heading structure
-- [ ] 6.2 Review `app/admin/layout.test.tsx` — confirm the ambient layer does not leak into `/admin`
-- [ ] 6.3 Review `HeroLaptop.test.tsx`'s scrim stacking assertion — the new layer sits adjacent to that stack and must not disturb the scrim-above-scene ordering it locks in
-- [ ] 6.4 Confirm no test was weakened to pass
+- [x] 6.1 Extended `accessibilityStructure.test.tsx`'s composed-surfaces test to render `AmbientSparkleLayer` alongside `SiteHeader`/`HeroLaptop`/`CareerTimeline` — `axe` reports no violations (the layer is `aria-hidden` and carries no landmarks/headings, so it can't affect heading order or landmark uniqueness), and added an explicit `aria-hidden="true"` assertion on it, mirroring the existing laptop-layer check
+- [x] 6.2 Added an explicit `queryByTestId("ambient-sparkle-layer")` absence assertion to `app/admin/layout.test.tsx`'s existing "no public marketing chrome" test, alongside the equivalent JOS-109 assertion for the header — locked in by a test, not left implicit
+- [x] 6.3 Confirmed — `HeroLaptop.tsx` was never touched by this change; `HeroLaptop.test.tsx`'s scrim-stacking assertion (scrim paints after the scene in DOM order) passes unmodified, and this change's own stacking test (Task 1.2) only asserts the *sibling* relationship between `HeroLaptop` and `AmbientSparkleLayer`, not anything inside the laptop's own layer
+- [x] 6.4 Confirmed — every change in this group added a new assertion; nothing was loosened or removed
 
 ## 7. Run Unit Tests and Verify State (MANDATORY)
 
-- [ ] 7.1 Run targeted tests for the changed modules
-- [ ] 7.2 Run the full suite: `npx vitest run`
-- [ ] 7.3 Run `npx tsc --noEmit` clean
-- [ ] 7.4 Run `npm run validate:content` clean
-- [ ] 7.5 Run `npm run lint` (pre-existing repo-wide ESLint config failure — no `eslint.config.js`; skip with the same rationale as prior stories)
-- [ ] 7.6 Database state verification: **N/A** — no backend/database in this repo (CLAUDE.md §9). Record the rationale in the report
-- [ ] 7.7 Create report `openspec/changes/ambient-sparkle-layer/reports/YYYY-MM-DD-step-7-unit-test-and-state-verification.md`
+- [x] 7.1 Ran targeted tests for every changed module throughout implementation (per task group), not only at the end
+- [x] 7.2 Full suite: `npx vitest run` — **90 files / 463 tests passed** on the cleanest run. `ChatWidget.test.tsx`'s pre-existing `waitFor`-timing test (unrelated file, untouched by this change) flaked repeatedly across later runs; root-caused to host machine CPU contention (`uptime` showed load average 20.95, from long-running `wrangler dev`/`workerd` processes already running before this session, not started here) rather than anything in this change — full investigation in the report
+- [x] 7.3 `npx tsc --noEmit` — clean
+- [x] 7.4 `npm run validate:content` — clean
+- [x] 7.5 `npm run lint` — same pre-existing repo-wide `eslint.config.js` gap as prior stories; skipped with the same rationale
+- [x] 7.6 Database state verification: **N/A** — no backend/database in this repo (`AGENTS.md`/`CLAUDE.md` §9). Rationale recorded in the report
+- [x] 7.7 Report created: `openspec/changes/ambient-sparkle-layer/reports/2026-08-14-step-7-unit-test-and-state-verification.md`
 
 ## 8. Manual Endpoint Testing with curl (MANDATORY if applicable)
 
-- [ ] 8.1 **N/A** — no endpoint or API route is touched. Record the rationale in the Step 9 report
+- [x] 8.1 **N/A** — no endpoint or API route is touched (a canvas particle field and a pure simulation module are all client/static). Rationale recorded in `reports/2026-08-14-step-9-browser-verification.md`
 
 ## 9. Browser Verification (MANDATORY - AGENT MUST EXECUTE)
 
-- [ ] 9.1 Start the dev server and drive a real browser — this effect cannot be judged from unit tests at all
-- [ ] 9.2 **Verify the particles read as light, not grey dust.** This is the whole point of the layer, and the JOS-105 precedent is directly relevant: light ⑤ was removed after an A/B toggle showed it invisible under the scrim. Do the same A/B here — toggle the layer's opacity to 0 and back, and confirm the difference is obvious
-- [ ] 9.3 Verify the field reads as atmosphere rather than noise over text-heavy sections; be willing to reduce count and brightness well below what looks good in isolation (design.md Risk 1)
-- [ ] 9.4 Verify the particles do not fight the hero laptop for attention (design.md Risk 2)
-- [ ] 9.5 Verify the loop actually stops: hide the tab and confirm no frames are drawn; scroll the layer out of view and confirm the same. **Verify it is stopped, not merely throttled**
-- [ ] 9.6 Verify at a small viewport that the layer is absent and no loop runs
-- [ ] 9.7 Verify under `prefers-reduced-motion` if achievable with the available tooling; if not, document the limitation and the substitute unit-test coverage, per the precedent in JOS-105's Step 11 report
-- [ ] 9.8 Profile the animation and confirm per-frame work stays within a 60fps budget, or document why a representative profiling run was not achievable
-- [ ] 9.9 Capture before/after screenshots and, if possible, a short capture — a still image cannot show ambient motion
-- [ ] 9.10 Create report `openspec/changes/ambient-sparkle-layer/reports/YYYY-MM-DD-step-9-browser-verification.md`, including the curl N/A rationale
+- [x] 9.1 Started `npm run dev` and drove real Chrome via `mcp__claude-in-chrome`
+- [x] 9.2 A/B opacity toggle: obvious, immediate difference (sapphire points vs. nothing) — opposite finding from JOS-105's removed light ⑤, exactly as design.md predicted
+- [x] 9.3 Verified over the career-chapters (text-heavy) section: particles stay dim, sit mostly in gutters, text always paints above the `-z-10` layer — atmosphere, not noise
+- [x] 9.4 Verified: the laptop remains the visually dominant background element; particles are clearly subordinate
+- [x] 9.5 **Genuine tooling limitation found and documented in depth** (report Scenario 4): this automation environment's `document.visibilityState` is permanently `"hidden"`, and — root cause — `requestAnimationFrame` never fires at all, confirmed with a bare unrelated loop (0 callbacks in 500ms). Live "stops when hidden" verification isn't achievable in the direction that matters here. Substitute: `AmbientSparkleLayer.test.tsx`'s lifecycle tests (Task Group 4), more precise than a real-browser check would be
+- [x] 9.6 Verified at a real ~500×667 viewport: `display:none`, `0×0` rect, no particles rendered
+- [x] 9.7 Not achievable (same root cause as 9.5 — no rAF, no media-feature emulation exposed). Substitute: `AmbientSparkleLayer.test.tsx`'s reduced-motion tests (Task Group 3)
+- [x] 9.8 Real rAF profiling not achievable (same cause); worked around by timing the actual per-frame draw work synchronously 300× against the real mounted canvas: **0.343ms average, ~2% of the 16.67ms/60fps budget**
+- [x] 9.9 Captured screenshots (desktop hero, A/B toggle, text-heavy scroll, small viewport) in-conversation. No GIF captured — an accurate one would show a static field given this environment's rAF suspension, which would misrepresent rather than demonstrate the feature
+- [x] 9.10 Report created: `openspec/changes/ambient-sparkle-layer/reports/2026-08-14-step-9-browser-verification.md`, including the curl N/A rationale
 
 ## 10. Build sanity (NOT a performance gate — owner decision 2026-08-13)
 
-- [ ] 10.1 Run `npm run build` and confirm it succeeds
-- [ ] 10.2 Confirm no new dependency and no new network origin
-- [ ] 10.3 Confirm nothing was added to the Cloudflare Worker bundle — this is client code and ships as a static asset, but re-measure given JOS-106's tight ceiling
+- [x] 10.1 `npm run build` succeeds cleanly (Turbopack, TypeScript, static generation all pass; the only warning — missing `metadataBase` — is pre-existing and unrelated)
+- [x] 10.2 `git diff main -- package.json package-lock.json` is empty — no new dependency. No new network origin (Canvas 2D is a browser built-in, no fetches, no assets)
+- [x] 10.3 Re-measured rigorously rather than assumed: `npx wrangler deploy --dry-run` on this branch reports **Total Upload: 12728.49 KiB / gzip: 3006.83 KiB**. Stashed this change, ran the identical measurement against baseline `main` (post-JOS-109), got the **exact same figure, byte-for-byte**. Confirms zero bytes added to the Worker bundle — this change is 100% client code shipped as a static asset, exactly as proposal.md claimed. (The gap between this figure and README's earlier-recorded ~2.86 MiB is pre-existing JOS-108/109 growth, not attributable to this change — noted for whoever next re-measures, not corrected here since it's out of this change's scope)
 
 ## 11. Update Technical Documentation (MANDATORY)
 
-- [ ] 11.1 Update `CLAUDE.md` §9 if the architecture description needs the ambient layer
-- [ ] 11.2 Record the "above the scrim, never below" constraint somewhere a future implementer will encounter it before repeating the mistake
+- [x] 11.1 `CLAUDE.md` is a symlink to `AGENTS.md` (per §6) — edited the canonical `AGENTS.md` directly. Added a bullet documenting `AmbientSparkleLayer.tsx`, its mount position, and the lifecycle rationale. Verified via `grep -c "AmbientSparkleLayer" CLAUDE.md` that the symlink correctly reflects the change
+- [x] 11.2 Recorded directly in the same `AGENTS.md` bullet, in bold, with the measured numbers (+221 vs. +43) and the direct JOS-105 precedent (light ⑤ removed for being indistinguishable under the scrim) — a future implementer moving this component will encounter the constraint and the reason for it in the same place they'd look for the component's own description, not just in `design.md`
 
 ## 12. OpenSpec sync
 
