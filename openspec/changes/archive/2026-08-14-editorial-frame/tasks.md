@@ -94,4 +94,4 @@
 
 ## 14. OpenSpec sync
 
-- [ ] 14.1 After merge, sync `specs/site-editorial-frame/` and `specs/career-timeline-navigation/` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 14.1 Done, 2026-08-14. Confirmed PR #45 merged into `main` first. Synced via a dedicated agent invoking `openspec-sync-specs`: created new `openspec/specs/site-editorial-frame/spec.md` (7 requirements from the delta's ADDED requirements, plus a synthesized `## Purpose` section matching the existing spec-file convention) and merged the `career-timeline-navigation` delta into `openspec/specs/career-timeline-navigation/spec.md` — verified via `git diff` that the change is confined to exactly the "Timeline indicates the chapter currently in view" requirement (new description paragraph + 2 new scenarios), with all 6 other requirements byte-for-byte unchanged. `openspec validate` passed on both. Archived this change to `openspec/changes/archive/2026-08-14-editorial-frame/` via `opsx:archive`
