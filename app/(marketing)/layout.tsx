@@ -10,7 +10,6 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { StructuredData } from "@/components/StructuredData";
 import { SkipToContentLink } from "@/components/SkipToContentLink";
 import { SiteHeader } from "@/components/SiteHeader";
-import { GridOverlay } from "@/components/GridOverlay";
 import { HeroLaptop } from "@/components/HeroLaptop";
 import { AmbientSparkleLayer } from "@/components/AmbientSparkleLayer";
 import { MotionProvider } from "@/components/MotionProvider";
@@ -65,9 +64,9 @@ export default function RootLayout({
             AmbientSparkleLayer, and — inside {children} — HeroFramer/
             HeroCtas) so they all read from one shared `arrived`/`skip`
             state rather than each independently detecting the deep-link
-            fragment on its own tick. GridOverlay and StructuredData fall
-            inside this boundary incidentally (they don't consume the
-            context) rather than being deliberately excluded from it. */}
+            fragment on its own tick. StructuredData falls inside this
+            boundary incidentally (it doesn't consume the context) rather
+            than being deliberately excluded from it. */}
         <ArrivalSequenceProvider>
           {/* Fixed, whole-page background layer (z-index behind normal-flow
               content) — the signature scroll-driven laptop, per
@@ -80,16 +79,6 @@ export default function RootLayout({
               stacking approach as the layers around it, so it still stays
               behind all normal content regardless of DOM order. */}
           <AmbientSparkleLayer />
-          {/* Decorative grid — vertical hairlines plus the rule under the
-              header, both drawn from --hair. `-z-10`, same stacking
-              approach as HeroLaptop above, mounted after it so the grid
-              paints on top of the laptop layer while both stay behind all
-              normal content — editorial-frame design.md Decision 6.
-              Deliberately not an arrival-sequence participant — see
-              openspec/changes/arrival-sequence tasks.md task 6.4: the grid
-              is slated for removal (JOS-113), so this change does not
-              choreograph a component already known to be going away. */}
-          <GridOverlay />
           <StructuredData />
           <ChatWidgetProvider>
             {/* Scroll-reveal components below <main> (SectionReveal,

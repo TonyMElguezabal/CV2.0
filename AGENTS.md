@@ -183,18 +183,21 @@ integrity matter beyond rendering.
   `app/(marketing)/layout.tsx` (never `/admin`). `siteNavigation.ts` is the
   single source of the header's nav items, consumed by both the header and
   its own anchor-resolution test. **`CareerTimeline` is the site's one and
-  only scroll-position indicator** — `GridOverlay` (the decorative,
-  `aria-hidden`, `-z-10` hairline grid) and the header never introduce a
-  second one; this is enforced in spec
-  (`openspec/changes/editorial-frame/specs/site-editorial-frame/spec.md`
-  and the amended `career-timeline-navigation` requirement, pending
-  post-merge sync into `openspec/specs/`), not just remembered, and
-  regression-tested in `components/oneScrollIndicator.test.tsx`.
+  only scroll-position indicator** — the header never introduces a second
+  one; this is enforced in spec (`openspec/specs/site-editorial-frame/spec.md`,
+  the `Requirement: The frame introduces no second scroll-position indicator`),
+  not just remembered, and regression-tested in
+  `components/oneScrollIndicator.test.tsx`. The frame's decorative grid
+  overlay (`GridOverlay`, two vertical hairlines plus a rule under the
+  header) was removed outright (`openspec/changes/remove-grid-overlay`,
+  JOS-113) — the header is now deliberately edgeless, relying on
+  `bg-background/90 backdrop-blur-sm` alone to stay legible over content
+  scrolling beneath it; nothing replaces the removed rule.
 - `components/AmbientSparkleLayer.tsx` — the ambient particle field (JOS-110),
   a single `<canvas>` with `globalCompositeOperation = "lighter"` for
-  additive glow, mounted in `app/(marketing)/layout.tsx` **between**
-  `HeroLaptop` and `GridOverlay`. **Must stay above the hero laptop layer
-  and its scrim, never inside it or beneath it** — placing it under the
+  additive glow, mounted in `app/(marketing)/layout.tsx` after `HeroLaptop`.
+  **Must stay above the hero laptop layer and its scrim, never inside it or
+  beneath it** — placing it under the
   scrim was measured to cut its visible contribution by ~80% (+221 → +43
   levels over the background), which is exactly the reasoning that got
   JOS-105's light ⑤ removed for being indistinguishable from nothing;
