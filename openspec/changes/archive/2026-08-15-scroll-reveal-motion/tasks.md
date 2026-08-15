@@ -95,4 +95,4 @@ Neither of these is visible on screen. Both would ship silently.
 
 ## 12. OpenSpec sync
 
-- [ ] 12.1 After merge, sync `specs/site-scroll-reveal/` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 12.1 Synced `specs/site-scroll-reveal/` into `openspec/specs/site-scroll-reveal/spec.md` (new capability, all 6 requirements, verified verbatim against the delta before archiving) and archived this change to `openspec/changes/archive/2026-08-15-scroll-reveal-motion/`
