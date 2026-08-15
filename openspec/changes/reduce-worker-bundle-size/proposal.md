@@ -42,10 +42,42 @@ Neither fix degrades the product. This is deleting things that do not run.
 
 ## What Changes
 
-- **Exclude the traced-in duplicate index** using Next's
+> **Amended during implementation (found during task 1.4's mandatory
+> real-deploy-path verification — see design.md Decisions 5-6):** the
+> `outputFileTracingExcludes` lever below was implemented and verified to
+> work exactly as described, but real measurement against
+> `wrangler deploy --dry-run` showed it does not reduce the actual uploaded
+> bundle size — the loose file it excludes was never part of what `wrangler`
+> bundles in the first place. Ranking every module inside the real bundled
+> output found the true cost: the retrieval index's own (non-duplicated,
+> necessary) compiled chunk is ~30% of the entire bundle by itself, because
+> embeddings compress poorly. There was no ~681 KiB of reclaimable
+> duplication to begin with. **The index is now moved to the Workers Static
+> Assets binding instead** (a genuinely different, larger lever than the one
+> originally scoped) — the paragraph below is kept for its still-accurate
+> diagnosis of *why* the index is expensive, but the fix it describes is
+> superseded.
+
+- ~~**Exclude the traced-in duplicate index** using Next's
   `outputFileTracingExcludes` (confirmed available at top level in Next 16.2.11)
   so `lib/rag/index.json` is not copied into the server-function bundle. The
-  compiled chunk that retrieval actually uses is unaffected.
+  compiled chunk that retrieval actually uses is unaffected.~~ **Superseded** —
+  see the amendment above. `retrieve.ts` no longer imports the index at build
+  time at all, so there is nothing left for the tracer to duplicate;
+  `outputFileTracingExcludes` was added, verified moot, and removed.
+
+- **Move the retrieval index to the Workers Static Assets binding.**
+  `embed.ts` still writes the canonical index to `lib/rag/index.json`
+  exactly as before; `prebuild` gains one step copying it to
+  `public/rag-index.json` so it ships as a static asset (Static Assets has
+  its own allowance, separate from and far larger than the 3072 KiB Worker
+  script limit). `retrieve.ts`'s `loadIndex()` fetches it at request time via
+  `getCloudflareContext().env.ASSETS` — a Workers-native binding fetch, not a
+  `node:fs` read, so it satisfies `cloudflare-deployment-compat`'s
+  "no request-time filesystem reads" intent even though it no longer matches
+  that requirement's old literal wording ("a build-time-resolved import"),
+  which is amended accordingly. This removes the index's entire weight from
+  the Worker's own size ledger, rather than merely shrinking it in place.
 
 - **Remove `next/og` from the Worker's import graph** by moving OpenGraph image
   production out of the Next route. Three approaches, in preference order —
@@ -74,11 +106,13 @@ Neither fix degrades the product. This is deleting things that do not run.
   Cloudflare build pipeline, and the whole premise of ① rests on that trace.
 
 - **Out of scope, documented as follow-ups:** quantizing embeddings to int8 +
-  base64 (~500 KiB more), requesting 512 instead of 1536 dimensions (~⅔ of the
-  index), and moving the index to the `ASSETS` binding entirely (~615 KiB).
-  All three trade retrieval accuracy or add runtime complexity for space this
-  change obtains by deleting duplicates. There is no reason to spend accuracy
-  before spending waste.
+  base64 (~500 KiB more) and requesting 512 instead of 1536 dimensions (~⅔ of
+  the index). ~~and moving the index to the `ASSETS` binding entirely
+  (~615 KiB)~~ **— moved into scope; see the amendment above.** Both
+  remaining levers trade retrieval accuracy for space; there is no reason to
+  spend accuracy while a same-fidelity option (Assets) was still available,
+  which is exactly what moving the index off the Worker's ledger obtains
+  instead.
 
 ## Capabilities
 

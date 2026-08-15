@@ -96,14 +96,22 @@ npm run validate:content                         # content-schema gate (see belo
 
 There is no `test:watch` or `test:coverage` script — use the `npx vitest` forms above.
 
-`npm run build` runs a `prebuild` step (`lib/rag/embed.ts`) that regenerates the
+`npm run build` runs a `prebuild` chain — `lib/rag/embed.ts` regenerates the
 chatbot's static retrieval index (`lib/rag/index.json`, gitignored) from current
-`/content` on every build — see `openspec/changes/archive/*-build-time-content-indexing-pipeline/`.
-It requires `OPENAI_API_KEY`: locally via `.env.local` (loaded automatically with
-`--env-file-if-exists`, gitignored, never commit it), and in the Vercel project's
-build environment for production deploys. Without it, `npm run build` fails fast
-with a clear error before `next build` runs — `npm run dev`, `npm test`,
-`npx tsc --noEmit`, and `npm run validate:content` are all unaffected.
+`/content` on every build (see `openspec/changes/archive/*-build-time-content-indexing-pipeline/`),
+`lib/rag/publish-index.ts` copies it to `public/rag-index.json` so it ships as
+a static asset rather than bundled JS (`openspec/changes/reduce-worker-bundle-size`
+— the index is ~30% of the Worker's gzipped size by itself, embeddings compress
+poorly), `lib/site-config/build.ts` derives a small request-time-safe config
+slice, and `lib/seo/generate-og-image.ts` renders the OpenGraph share card to
+`public/og-image.png` (`next/og`'s `ImageResponse`, `React.createElement` not
+JSX — this script runs under `node --experimental-strip-types`, which strips
+types but doesn't transform JSX). The first step requires `OPENAI_API_KEY`:
+locally via `.env.local` (loaded automatically with `--env-file-if-exists`,
+gitignored, never commit it), and in the Vercel project's build environment
+for production deploys. Without it, `npm run build` fails fast with a clear
+error before `next build` runs — `npm run dev`, `npm test`, `npx tsc --noEmit`,
+and `npm run validate:content` are all unaffected.
 
 ## 9. Architecture
 
@@ -134,6 +142,19 @@ integrity matter beyond rendering.
   self-describing content (e.g. `content/meta.md`) gets model names injected
   from here at chunk-build time — never hardcoded — so it can't drift when
   `lib/rag/active-provider.ts`'s provider swap changes the active model.
+  `lib/rag/generate.ts` imports `EMBEDDING_MODEL` from here directly, not via
+  `embed.ts`'s re-export — a mixed value+type import from `embed.ts` pulls
+  its entire build-time-only CLI script into the runtime Worker bundle,
+  since a bundler can't tree-shake `main()` out when it's referenced by
+  module-scope code (`openspec/changes/reduce-worker-bundle-size`).
+- `lib/rag/retrieve.ts`'s `loadIndex()` fetches the retrieval index via the
+  Cloudflare Workers Static Assets binding (`getCloudflareContext().env.ASSETS`),
+  not a build-time `import()` — the index is ~30% of the Worker's own
+  gzipped size by itself (embeddings compress ~5:1, vs. ordinary JS's
+  ~16:1), and Static Assets carries no comparable limit. `lib/rag/publish-index.ts`
+  (run in `prebuild`) is what puts the index at `public/rag-index.json` as a
+  static asset from `embed.ts`'s canonical output. Cached per Worker isolate
+  (module-level variable) so a chat request doesn't re-fetch it every time.
 - `lib/fonts.ts` — the site's typeface, loaded via `next/font/local` (not
   `next/font/google`: Google's typed API can't pin a specific width-axis
   value, only the full variable range or the default width — see

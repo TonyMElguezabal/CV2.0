@@ -62,6 +62,15 @@ describe("buildRootMetadata", () => {
 
     expect(twitter.card).toBe("summary_large_image");
   });
+
+  it("points the OpenGraph image at the static file, not the removed /opengraph-image route", () => {
+    const metadata = buildRootMetadata(FIXTURE_PROFILE, SITE_URL);
+    const openGraph = metadata.openGraph as { images: { url: string }[] };
+    const twitter = metadata.twitter as { images: string[] };
+
+    expect(openGraph.images[0]?.url).toBe(`${SITE_URL}/og-image.png`);
+    expect(twitter.images[0]).toBe(`${SITE_URL}/og-image.png`);
+  });
 });
 
 describe("buildPersonJsonLd", () => {

@@ -23,7 +23,10 @@ export interface ProfilePageJsonLd {
 export function buildRootMetadata(profile: Profile, siteUrl: string): Metadata {
   const title = `${profile.name} — ${profile.positioning}`;
   const description = profile.summary;
-  const ogImageUrl = `${siteUrl}/opengraph-image`;
+  // Static file (lib/seo/generate-og-image.ts, run in `prebuild`), not a
+  // Next.js route — next/og never executes in the Worker this way. See
+  // openspec/changes/reduce-worker-bundle-size design.md Decision 2/3.
+  const ogImageUrl = `${siteUrl}/og-image.png`;
 
   return {
     title,

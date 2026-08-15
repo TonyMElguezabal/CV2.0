@@ -14,3 +14,22 @@ The system SHALL serve the OpenGraph image without executing image generation at
 #### Scenario: Metadata points at the served image
 - **WHEN** the site's page metadata is generated
 - **THEN** its OpenGraph image URL resolves to the prebuilt image that is actually served, so a shared link renders its preview card correctly
+
+### Requirement: No request-time filesystem reads of bundled application data
+The system SHALL NOT read bundled application data files via `node:fs` at request time, in any code path that executes inside the deployed Worker (page, layout, or Route Handler) — including error-response paths, not only success paths. Data generated at build time SHALL be made available via a build-time-resolved import, or — for data too large to justify bundling into the Worker's own script (subject to the platform's hard size limit) — via the Workers Static Assets binding (`env.ASSETS`), a Workers-native fetch that never touches `node:fs`. Either mechanism satisfies the underlying constraint (no request-time filesystem access); a data file's actual size, not a blanket rule, decides which one a given case uses.
+
+#### Scenario: The RAG index is loaded
+- **WHEN** the retrieval index is loaded to serve a chat request
+- **THEN** it is obtained via the `env.ASSETS` static-assets binding, not a runtime `readFileSync` call — the index is generated at build time into a servable static asset (not bundled into the Worker's own script), because its size is large enough that bundling it would consume a disproportionate share of the Worker's hard size limit, and the Assets binding carries no such limit for this content
+
+#### Scenario: Chat error responses need contact information
+- **WHEN** `/api/chat` returns a rate-limited or service-unavailable error response
+- **THEN** the contact information it includes is obtained via a build-time-resolved import, not a runtime content read
+
+#### Scenario: The admin dashboard needs the ordered chapter list
+- **WHEN** the admin dashboard queries analytics reports scoped by chapter
+- **THEN** the ordered chapter-ID list is obtained via a build-time-resolved import, not a runtime content read
+
+#### Scenario: The admin area's layout does not trigger runtime content reads
+- **WHEN** any admin-area route (login or dashboard) is requested
+- **THEN** no code path rendering it performs a request-time filesystem read of `/content`
