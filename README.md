@@ -165,16 +165,22 @@ external validators are the test per the SEO story's acceptance criteria
 
 ## Performance budget
 
-> **Owner decision, 2026-08-13** (`openspec/changes/site-typography-and-palette`):
-> the figures below are recorded **for information only**, not as a merge
-> gate. This site is distributed by pasting its URL directly to recruiters
-> and via a printed résumé, not through search discovery — so Core Web
-> Vitals scoring and crawl-driven traffic carry little value here, and
-> current client hardware absorbs the added weight. The numbers stay in
-> this file because they're still useful signal (a page that got
-> *dramatically* heavier or slower is still worth knowing about), just not
-> a blocking one. `openspec/changes/narrow-performance-budget` formalizes
-> this at the spec level.
+> **Owner decision, 2026-08-13** (`openspec/changes/site-typography-and-palette`,
+> formalized at the spec level by `openspec/changes/narrow-performance-budget`):
+> the figures below are **historical reference only, no longer enforced**.
+> This site is distributed by pasting its URL directly to recruiters and via
+> a printed résumé, not through search discovery — so Core Web Vitals
+> scoring and crawl-driven traffic carry little value here, and current
+> client hardware absorbs the added weight. `performance-budget-compliance`
+> no longer asserts a Lighthouse score, an LCP target, a First Load JS
+> ceiling, or a motion-library-lazy-loading rule — those four requirements
+> were removed outright, not just deprioritized in prose. The numbers below
+> stay in this file only as dated snapshots (a page that got *dramatically*
+> heavier or slower is still useful to know about), never as a merge gate.
+> **The budget that is still spec-enforced is the deployed Cloudflare
+> Worker's gzipped size limit — see "Cloudflare deployment" → "Bundle size"
+> below** — plus the unchanged 60fps / compositor-only-properties
+> requirement (verified at the code level further down this section).
 
 The landing route's **First Load JS is ~123 KB gzip** (re-measured
 2026-07-24 after adding the whole-page `HeroLaptop` scroll motif — no

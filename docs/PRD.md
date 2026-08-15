@@ -230,7 +230,7 @@ Deliberately minimal. One repo, one deployment, one serverless function.
 
 ## 9. Non-functional requirements
 
-- **Performance:** Lighthouse ≥ 90 performance/SEO/best-practices on the landing page; LCP < 2.5s on desktop broadband, < 4s on mid-range mobile; animation at 60fps; total JS budget enforced — motion library loaded lazily below the fold.
+- **Performance:** as of `openspec/changes/narrow-performance-budget` (owner decision, 2026-08-13), the site's distribution is direct URL sharing and a printed résumé, not search discovery, so the original Lighthouse ≥ 90 / LCP < 2.5s–4s / total-JS-budget targets are no longer spec-enforced merge gates — they're recorded historically in `README.md`'s "Performance budget" section, not tracked here. What *is* still enforced: 60fps compositor-only animation (unchanged — janky motion is a direct first-impression failure, not a discovery-driven metric), and the deployed Cloudflare Worker's gzipped size limit (a hard platform ceiling, not a client-performance concern — see `README.md`'s "Cloudflare deployment" → "Bundle size").
 - **Accessibility:** WCAG 2.1 AA intent — keyboard navigable, visible focus, contrast-checked dark theme, full `prefers-reduced-motion` alternative (fade-only), semantic HTML so the story reads correctly in a screen reader.
 - **SEO:** SSG pages with proper metadata, OpenGraph cards (the share preview is part of the first impression), structured data (Person, ProfilePage).
 - **Resilience:** Site fully functional with chat unavailable. No single third-party outage takes down the profile.
