@@ -25,5 +25,11 @@ lib/rag/index.json
 lib/rag/eval-results.json
 lib/rag/eval-report.json
 
+# Published copy of the RAG index served as a static asset (regenerate via lib/rag/publish-index.ts)
+public/rag-index.json
+
+# Generated OpenGraph share card (build artifact derived from profile.yaml, regenerate via lib/seo/generate-og-image.ts)
+public/og-image.png
+
 # Generated site config (build artifact derived from /content, regenerate via lib/site-config/build.ts)
 lib/site-config/generated.json

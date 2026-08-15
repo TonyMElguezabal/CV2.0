@@ -1,4 +1,6 @@
-import { cosineSimilarity, loadIndex, retrieveTopK } from "./retrieve.ts";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { cosineSimilarity, retrieveTopK } from "./retrieve.ts";
 import type { IndexedChunk } from "./embed.ts";
 
 function makeChunk(id: string, embedding: number[]): IndexedChunk {
@@ -11,8 +13,40 @@ function makeChunk(id: string, embedding: number[]): IndexedChunk {
   };
 }
 
+// retrieve.ts fetches the index via the Workers Static Assets binding
+// (getCloudflareContext().env.ASSETS.fetch), not a build-time import —
+// design.md Decision 6 in openspec/changes/reduce-worker-bundle-size. Mocked
+// here rather than relying on next.config.ts's dev-mode Cloudflare shim,
+// which Vitest doesn't run under.
+const fetchMock = vi.fn();
+
+vi.mock("@opennextjs/cloudflare", () => ({
+  getCloudflareContext: async () => ({
+    env: { ASSETS: { fetch: fetchMock } },
+  }),
+}));
+
+function realIndexFixture(): IndexedChunk[] {
+  const raw = readFileSync(
+    join(process.cwd(), "lib", "rag", "index.json"),
+    "utf-8",
+  );
+  return JSON.parse(raw) as IndexedChunk[];
+}
+
 describe("loadIndex", () => {
-  it("loads the bundled RAG index via a static import, not a runtime filesystem read", async () => {
+  beforeEach(() => {
+    vi.resetModules();
+    fetchMock.mockReset();
+  });
+
+  it("loads the RAG index via the Assets binding, not a runtime filesystem read", async () => {
+    const realIndex = realIndexFixture();
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify(realIndex), { status: 200 }),
+    );
+    const { loadIndex } = await import("./retrieve.ts");
+
     const index = await loadIndex();
 
     expect(Array.isArray(index)).toBe(true);
@@ -26,6 +60,27 @@ describe("loadIndex", () => {
         embedding: expect.any(Array),
       }),
     );
+  });
+
+  it("fetches the asset URL and caches the result — a second call does not fetch again", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify([makeChunk("a", [1, 0])]), { status: 200 }),
+    );
+    const { loadIndex } = await import("./retrieve.ts");
+
+    await loadIndex();
+    await loadIndex();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws a clear error when the Assets fetch fails", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(null, { status: 404, statusText: "Not Found" }),
+    );
+    const { loadIndex } = await import("./retrieve.ts");
+
+    await expect(loadIndex()).rejects.toThrow(/404/);
   });
 });
 

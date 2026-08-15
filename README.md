@@ -406,11 +406,11 @@ for the full investigation:
 
 - **The static-assets incremental cache must be configured and populated.**
   `open-next.config.ts` sets `incrementalCache: staticAssetsIncrementalCache`
-  so prerendered routes (`/`, `/opengraph-image`) are served from build-time
-  output rather than re-executed per request — without it, or without
-  running the population step, *every* route (even fully static ones)
-  falls through to a live re-render and crashes on `node:fs` calls the
-  Workers runtime doesn't support. **Always verify with
+  so prerendered routes (`/`) are served from build-time output rather than
+  re-executed per request — without it, or without running the population
+  step, *every* route (even fully static ones) falls through to a live
+  re-render and crashes on `node:fs` calls the Workers runtime doesn't
+  support. **Always verify with
   `npm run preview` (`opennextjs-cloudflare build && opennextjs-cloudflare
   preview`), which populates the cache automatically — a raw `wrangler
   dev` against an unpopulated cache gives false-negative crashes for
@@ -421,21 +421,55 @@ for the full investigation:
 - **No request-time `node:fs` reads survive in genuinely dynamic routes.**
   `/api/chat` and `/admin` don't benefit from the static-assets cache (one's
   a Route Handler, the other is `force-dynamic` for fresh Neon queries), so
-  both were reworked to avoid any runtime filesystem read: the RAG index
-  (`lib/rag/retrieve.ts`) and a small site-config artifact (`{ contact,
-  chapterIds }`, `lib/site-config/`) are both loaded via `import()`
-  resolved at build time, not `readFileSync`. `lib/content/read.ts` itself
-  is unchanged — every other consumer renders on static, cache-served
-  routes and never executes in the Worker.
+  both were reworked to avoid any runtime filesystem read. The RAG index
+  is fetched via the Workers Static Assets binding (`env.ASSETS`,
+  `lib/rag/retrieve.ts`) rather than bundled into the Worker's own script —
+  see **Bundle size** below for why. A small site-config artifact
+  (`{ contact, chapterIds }`, `lib/site-config/`) is loaded via `import()`
+  resolved at build time. `lib/content/read.ts` itself is unchanged — every
+  other consumer renders on static, cache-served routes and never executes
+  in the Worker.
 
 **Bundle size**: a dry-run deploy (`npx wrangler deploy --dry-run`)
-measured the full Worker upload at **~2.86 MiB gzip** (~12.1 MiB
-uncompressed) — dominated by the ~2.6 MB RAG embedding index bundled
-directly into the Worker. This is close enough to Cloudflare's **free-tier
-3 MiB gzip Worker size limit** that any further content growth (more
-career chapters, more FAQ entries expanding the index) risks tipping over
-it — **the paid Workers plan (10 MiB gzip limit) is recommended** rather
-than assuming the free tier has headroom.
+**re-measured 2026-08-14 at 1520.08 KiB gzip** (down from ~2.86 MiB / 3009.68
+KiB at the previous measurement — `openspec/changes/reduce-worker-bundle-size`)
+— **49.5% of Cloudflare's free-tier 3072 KiB gzip Worker size limit, 1551.92
+KiB of headroom.** The owner is deliberately remaining on the free tier
+(2026-08-13 decision); this change was undertaken specifically because the
+previous measurement left only ~62 KiB of headroom against that limit, close
+enough that a pure content change (a few more FAQ entries) could have broken
+a deploy. Two things were removed from the Worker's own script, neither of
+which changed application behavior:
+
+- **The RAG embedding index (the single largest contributor) now ships as a
+  static asset, not bundled JS.** `lib/rag/publish-index.ts` (run in
+  `prebuild`) copies `lib/rag/embed.ts`'s canonical output to
+  `public/rag-index.json`; `retrieve.ts` fetches it via `env.ASSETS` at
+  request time instead of a build-time `import()`. Workers Static Assets
+  has its own, much larger allowance separate from the 3072 KiB Worker
+  script limit — this is why the index's own necessary weight (embeddings
+  compress only ~5:1, vs. ordinary JS's ~16:1, so ~2.5 MB of raw index data
+  was costing far more than its share) no longer counts against it at all.
+- **`next/og` no longer ships in the Worker.** The OpenGraph share card is
+  now generated at build time (`lib/seo/generate-og-image.ts`, run in
+  `prebuild`) and served as a static `public/og-image.png`, instead of a
+  Next.js route rendered via `next/og`'s `ImageResponse`. The library is
+  entirely absent from the Worker's import graph, not merely served from a
+  prerendered cache.
+
+**Unspent follow-up levers**, if future content growth erodes this headroom
+again — recorded here so the next person facing this ceiling doesn't have to
+rediscover them (`openspec/changes/reduce-worker-bundle-size/design.md`
+Decision 4/6):
+
+- **Quantize embeddings to int8 + base64** (~500 KiB further reduction).
+  Trades a small amount of retrieval precision for size; not needed now that
+  the index no longer counts against the Worker limit at all, but still
+  shrinks what ships as a static asset if that ever matters (e.g. cold-fetch
+  latency).
+- **Request 512 dimensions instead of 1536 from the embeddings API**
+  (~⅔ reduction). Same trade-off, larger effect, more retrieval-accuracy
+  risk.
 
 **Also required, unrelated to the adapter itself**: Next 16's Proxy
 (`proxy.ts`) always runs on the Node.js runtime, which the adapter

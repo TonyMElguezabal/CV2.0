@@ -1,5 +1,15 @@
 import type OpenAI from "openai";
-import { EMBEDDING_MODEL, type IndexedChunk } from "./embed.ts";
+// EMBEDDING_MODEL sourced directly from models.ts, not re-exported via
+// embed.ts: a mixed value+type import from embed.ts pulls its entire
+// build-time-only CLI script (OpenAI client construction, content chunker,
+// writeFileSync, process.exit) into the runtime bundle, because a bundler
+// can't tree-shake embed.ts's main() out when it's referenced by
+// module-scope code, even though it's never invoked outside the CLI guard
+// (`if (import.meta.url === ...) main()`) — see
+// openspec/changes/reduce-worker-bundle-size/design.md Decision 5.
+// IndexedChunk stays a pure `import type`, which is fully erased.
+import { EMBEDDING_MODEL } from "./models.ts";
+import type { IndexedChunk } from "./embed.ts";
 import { retrieveTopK, cosineSimilarity } from "./retrieve.ts";
 import type { LlmProvider } from "./adapter.ts";
 
