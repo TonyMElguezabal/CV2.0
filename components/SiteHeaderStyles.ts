@@ -9,9 +9,10 @@ import { focusRingClass } from "./a11yStyles.ts";
 // keeps both rows legible as page content and the fixed HeroLaptop layer
 // scroll beneath them. `z-30` sits below the skip link's focused `z-50`
 // (SkipToContentLink.tsx) so a focused skip link always stacks above it —
-// design.md Decision 3 / Task Group 4. The grid overlay (Task Group 5), not
-// this class, draws the horizontal rule under the header, so no border
-// lives here.
+// design.md Decision 3 / Task Group 4. Deliberately edgeless — no border
+// lives here (openspec/changes/remove-grid-overlay: the header previously
+// relied on a decorative grid overlay to draw a rule beneath it; the grid
+// is gone and nothing replaces the rule, per the owner's decision).
 export const siteHeaderClass =
   "fixed inset-x-0 top-0 z-30 flex flex-col bg-background/90 backdrop-blur-sm";
 

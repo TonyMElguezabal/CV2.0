@@ -182,7 +182,7 @@ describe("AmbientSparkleLayer — structure (Task Group 1)", () => {
     expect(container.textContent).toBe("");
   });
 
-  it("sits behind normal content via a negative z-index, matching HeroLaptop/GridOverlay's convention", () => {
+  it("sits behind normal content via a negative z-index, matching HeroLaptop's convention", () => {
     expect(ambientSparkleLayerClass).toMatch(/-z-10\b/);
   });
 
