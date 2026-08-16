@@ -61,10 +61,10 @@ describe("HeroCtas", () => {
     expect(screen.getByText("chat isOpen: true")).toBeInTheDocument();
   });
 
-  it("wires the primary CTA to the #hero-next in-page anchor", () => {
+  it("wires the primary CTA to the #career in-page anchor", () => {
     renderWithProvider();
 
     const primaryLink = screen.getByRole("link", { name: /scroll/i });
-    expect(primaryLink).toHaveAttribute("href", "#hero-next");
+    expect(primaryLink).toHaveAttribute("href", "#career");
   });
 });

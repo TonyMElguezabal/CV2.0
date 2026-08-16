@@ -25,7 +25,7 @@ export function HeroCtas() {
       animate={step.animate}
       transition={step.transition}
     >
-      <a href="#hero-next" className={ctaPrimaryClass}>
+      <a href="#career" className={ctaPrimaryClass}>
         Scroll to explore ↓
       </a>
       <button type="button" onClick={openChat} className={ctaSecondaryClass}>
