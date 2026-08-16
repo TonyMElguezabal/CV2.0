@@ -13,7 +13,6 @@ import {
   heroDisplayGradientClass,
   heroAccentWordClass,
   heroPositioningClass,
-  spacerSectionClass,
 } from "./HeroShellStyles";
 
 export interface HeroProps {
@@ -94,9 +93,6 @@ export function HeroFramer({ name, positioning }: HeroProps) {
         </m.p>
         <HeroCtas />
       </m.div>
-      <div id="hero-next" className={spacerSectionClass}>
-        More below
-      </div>
     </MotionProvider>
   );
 }

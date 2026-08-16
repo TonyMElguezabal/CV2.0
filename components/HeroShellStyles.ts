@@ -45,9 +45,6 @@ export const heroAccentWordClass = "text-accent";
 export const heroPositioningClass =
   "mt-6 max-w-2xl text-[17px] leading-[1.68] text-ink-body";
 
-export const spacerSectionClass =
-  "flex min-h-screen items-center justify-center text-zinc-400";
-
 export const ctaRowClass =
   "mt-10 flex flex-wrap items-center justify-center gap-4";
 
