@@ -1,15 +1,16 @@
 ## Purpose
 
 Defines the site's persistent editorial frame: a fixed header carrying the
-brand wordmark, section navigation, and a contact action; stable anchor
-targets on every navigable section; and a decorative grid overlay of
-hairlines that gives the page a composed, deliberate structure instead of a
-single free-scrolling column. Fixed chrome creates obligations of its own —
-anchor clearance so destinations aren't hidden beneath the header, and a skip
-link that stays visible above it — which this capability also owns. The frame
-introduces no scroll-position indicator of its own: the career timeline is
-the site's single indicator of position within the document, and this
-capability enforces that no second one is added alongside it.
+brand wordmark, section navigation, and a contact action, and stable anchor
+targets on every navigable section. Fixed chrome creates obligations of its
+own — anchor clearance so destinations aren't hidden beneath the header, and a
+skip link that stays visible above it — which this capability also owns. The
+frame is deliberately minimal: it carries no decorative grid, and the header is
+edgeless, separated from the content scrolling beneath it by its own
+translucent blurred background rather than by a rule. The frame introduces no
+scroll-position indicator of its own: the career timeline is the site's single
+indicator of position within the document, and this capability enforces that no
+second one is added alongside it.
 
 ## Requirements
 
@@ -65,17 +66,6 @@ The skip-to-content link SHALL remain the first focusable element in the documen
 - **WHEN** the skip-to-content link receives focus
 - **THEN** it is visibly rendered and is not covered by, or stacked beneath, the fixed header
 
-### Requirement: The grid overlay is decorative only
-The site SHALL render a decorative grid of hairlines as part of the frame. It SHALL be non-interactive, SHALL be hidden from assistive technology, SHALL NOT intercept pointer events, and SHALL NOT carry text. Its hairline color SHALL come from the palette tint designated for borders and rules rather than from a text tint.
-
-#### Scenario: The grid is inert
-- **WHEN** the grid overlay is rendered
-- **THEN** it is hidden from assistive technology, does not receive focus, and does not intercept pointer events from the content beneath it
-
-#### Scenario: The grid carries no text
-- **WHEN** the grid overlay is inspected
-- **THEN** it contains no text content, so the borders-only palette tint it uses is never applied to text
-
 ### Requirement: The frame introduces no second scroll-position indicator
 The frame SHALL NOT add a scroll-position or progress indicator of its own. The career timeline is the site's single indicator of position within the document, and any progress affordance in the frame SHALL be served by it rather than duplicated alongside it.
 
@@ -84,7 +74,7 @@ The frame SHALL NOT add a scroll-position or progress indicator of its own. The 
 - **THEN** exactly one component indicates the visitor's position within the document, and it is the career timeline
 
 ### Requirement: The frame adapts on small viewports without trapping content
-On small viewports the frame SHALL adapt rather than persist unchanged, so that fixed chrome does not consume a disproportionate share of a short viewport or overlap page content. Section navigation SHALL remain reachable at every viewport width, and the grid overlay SHALL NOT reduce content legibility on small screens.
+On small viewports the frame SHALL adapt rather than persist unchanged, so that fixed chrome does not consume a disproportionate share of a short viewport or overlap page content. Section navigation SHALL remain reachable at every viewport width.
 
 #### Scenario: Small viewport chrome is proportionate
 - **WHEN** the page is viewed on a small (mobile) viewport

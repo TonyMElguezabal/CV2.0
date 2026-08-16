@@ -80,6 +80,6 @@ not a supplement to the unit tests.
 
 ## 10. OpenSpec sync
 
-- [ ] 10.1 **After merge**, sync `specs/site-editorial-frame/spec.md` into `openspec/specs/site-editorial-frame/spec.md` — verify `Requirement: The grid overlay is decorative only` is gone, the small-viewport requirement lost only its grid clause, and the Purpose is replaced with design.md Decision 5's rewritten text
-- [ ] 10.2 Confirm after sync that `Requirement: The frame introduces no second scroll-position indicator` is still present and unmodified
-- [ ] 10.3 Archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 10.1 **After merge**, sync `specs/site-editorial-frame/spec.md` into `openspec/specs/site-editorial-frame/spec.md` — verify `Requirement: The grid overlay is decorative only` is gone, the small-viewport requirement lost only its grid clause, and the Purpose is replaced with design.md Decision 5's rewritten text
+- [x] 10.2 Confirm after sync that `Requirement: The frame introduces no second scroll-position indicator` is still present and unmodified
+- [x] 10.3 Archive this change (per CLAUDE.md §10 / `opsx:archive`)

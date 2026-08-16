@@ -107,4 +107,4 @@ record numbers as information, do not block on them.
 
 ## 12. OpenSpec sync
 
-- [ ] 12.1 After merge, sync `specs/site-visual-language/spec.md` into `openspec/specs/site-visual-language/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 12.1 After merge, sync `specs/site-visual-language/spec.md` into `openspec/specs/site-visual-language/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)

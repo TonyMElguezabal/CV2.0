@@ -121,4 +121,4 @@ Full suite: `npx vitest run` — 74 files / 373 tests, same pre-existing `ChatWi
 
 ## 14. OpenSpec sync
 
-- [ ] 14.1 After merge, sync `specs/hero-signature-motion/spec.md` into `openspec/specs/hero-signature-motion/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 14.1 After merge, sync `specs/hero-signature-motion/spec.md` into `openspec/specs/hero-signature-motion/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)

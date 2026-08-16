@@ -45,5 +45,5 @@ project's recorded numbers are accurate.
 
 ## 6. OpenSpec sync
 
-- [ ] 6.1 After merge, sync `specs/performance-budget-compliance/spec.md` into `openspec/specs/performance-budget-compliance/` — verify the four REMOVED requirements are actually gone from the main spec, the new size requirement is present, and the Purpose reflects the rewrite from task 2.1
-- [ ] 6.2 Archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 6.1 After merge, sync `specs/performance-budget-compliance/spec.md` into `openspec/specs/performance-budget-compliance/` — verify the four REMOVED requirements are actually gone from the main spec, the new size requirement is present, and the Purpose reflects the rewrite from task 2.1
+- [x] 6.2 Archive this change (per CLAUDE.md §10 / `opsx:archive`)

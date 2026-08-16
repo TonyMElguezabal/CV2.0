@@ -87,4 +87,4 @@
 
 ## 12. OpenSpec sync
 
-- [ ] 12.1 After merge, sync `specs/site-ambient-motion/` and `specs/performance-budget-compliance/` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`). **Verify the 60fps requirement's final text is the broadened one** and was not reverted by JOS-107's sync (task 0.4)
+- [x] 12.1 After merge, sync `specs/site-ambient-motion/` and `specs/performance-budget-compliance/` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`). **Verify the 60fps requirement's final text is the broadened one** and was not reverted by JOS-107's sync (task 0.4)

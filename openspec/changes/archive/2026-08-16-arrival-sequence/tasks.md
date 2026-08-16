@@ -99,4 +99,4 @@ sequence first and the safety net second is how a CV ends up blank.
 
 ## 13. OpenSpec sync
 
-- [ ] 13.1 After merge, sync `specs/site-arrival-sequence/` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 13.1 After merge, sync `specs/site-arrival-sequence/` into `openspec/specs/` and archive this change (per CLAUDE.md §10 / `opsx:archive`)
