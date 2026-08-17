@@ -49,5 +49,5 @@
 
 ## 8. OpenSpec sync
 
-- [ ] 8.1 **After merge**, sync `specs/hero-ctas/spec.md` into `openspec/specs/hero-ctas/spec.md` — verify the primary-CTA requirement's updated text and new `#career` scenario are present
-- [ ] 8.2 Archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 8.1 **After merge**, sync `specs/hero-ctas/spec.md` into `openspec/specs/hero-ctas/spec.md` — verify the primary-CTA requirement's updated text and new `#career` scenario are present
+- [x] 8.2 Archive this change (per CLAUDE.md §10 / `opsx:archive`)
