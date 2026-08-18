@@ -155,6 +155,43 @@ integrity matter beyond rendering.
   (run in `prebuild`) is what puts the index at `public/rag-index.json` as a
   static asset from `embed.ts`'s canonical output. Cached per Worker isolate
   (module-level variable) so a chat request doesn't re-fetch it every time.
+- **Career-chapter chunks are self-describing in time and attribution**
+  (`chatbot-era-collision-guard`, JOS-116). `lib/content/chunk.ts`'s
+  `chapterFramingPrefix()` prefixes the technologies, actions, leadership,
+  and lessons chunks with `"{role} at {company} ({dateRange})"`, reusing
+  `renderDateRange()` so the form matches the `-mission-dates` chunk. Two
+  problems this fixes: (1) *era collision* — the technologies chunk had no
+  date at all, so a legacy-tooling chunk (once JOS-115 adds 1990s content)
+  would compete on equal footing with current tooling for a "what's his
+  cloud experience?" question; (2) *orphaned chunks* — the actions,
+  leadership, and lessons chunks were bare joined strings with no company or
+  role, so a retrieved one carried no indication of which chapter it
+  belonged to. `-context` and `-mission-dates` were left untouched (already
+  attributed); `-project-N` is out of scope. **`MIN_CHUNK_LENGTH` is
+  measured against a chunk's authored content, excluding this generated
+  prefix** — the prefix alone is long enough to push a thin chapter's body
+  over the 60-char threshold, which would silently turn the thin-content
+  guard into a tautology; `chunk.test.ts` strips the prefix (via the
+  exported `chapterFramingPrefix()`) before measuring. `k` in
+  `retrieve.ts`/`generate.ts` was deliberately left at 5 — "only tune what
+  the evals show is needed, don't tune blind" — since at 86 chunks the
+  crowding risk is a projection, not yet a measurement; re-evaluate once
+  JOS-115/117/118 land.
+- `lib/rag/eval-run.ts`'s `initCloudflareContextForScript()` is a **required
+  prerequisite**, not incidental scaffolding: `loadIndex()` needs
+  `getCloudflareContext()`, whose context is normally supplied by
+  `initOpenNextCloudflareForDev()` in `next.config.ts` — but that function
+  silently no-ops outside Next's own dev-server process (it gates on
+  `globalThis.AsyncLocalStorage`, set only by Next's boot sequence), so
+  `npm run eval:chat` cannot reach it as a standalone script. This function
+  replicates what `initOpenNextCloudflareForDev` does when its gate passes:
+  gets real local bindings via wrangler's public `getPlatformProxy()` API
+  and stores them under the same well-known global symbol
+  (`Symbol.for("__cloudflare-context__")`) that `getCloudflareContext()`
+  reads from. Found broken (this call was missing) two days after JOS-106
+  moved the index behind the Assets binding; no change in between had
+  actually run `eval:chat` end-to-end. Scoped entirely to this script —
+  `retrieve.ts` and the production `/api/chat` route are unaffected.
 - `lib/fonts.ts` — the site's typeface, loaded via `next/font/local` (not
   `next/font/google`: Google's typed API can't pin a specific width-axis
   value, only the full variable range or the default width — see

@@ -29,7 +29,13 @@ function normalizeApostrophes(text: string): string {
 // apostrophes (’) instead of straight ones. Rather than match the exact
 // string, check the stable prefix/suffix fragments around the variable
 // name segment — still derived from the single source of truth
-// (OFF_TOPIC_REFUSAL), not a hardcoded duplicate.
+// (OFF_TOPIC_REFUSAL), not a hardcoded duplicate. A second live run found
+// the same variance in the suffix's trailing punctuation: a refusal that
+// continues into the same sentence ("...background, and I can't print
+// internal configuration...") ends the fragment in a comma, not
+// OFF_TOPIC_REFUSAL's period — the refusal itself is substantively
+// correct, so the trailing "." is stripped from the match rather than
+// required.
 const [REFUSAL_PREFIX, REFUSAL_SUFFIX] = OFF_TOPIC_REFUSAL.split("Jose's");
 if (!REFUSAL_PREFIX || !REFUSAL_SUFFIX) {
   throw new Error(
@@ -37,7 +43,9 @@ if (!REFUSAL_PREFIX || !REFUSAL_SUFFIX) {
   );
 }
 const NORMALIZED_REFUSAL_PREFIX = normalizeApostrophes(REFUSAL_PREFIX.trim());
-const NORMALIZED_REFUSAL_SUFFIX = normalizeApostrophes(REFUSAL_SUFFIX.trim());
+const NORMALIZED_REFUSAL_SUFFIX = normalizeApostrophes(
+  REFUSAL_SUFFIX.trim(),
+).replace(/\.$/, "");
 
 function containsRefusal(answer: string): boolean {
   const normalized = normalizeApostrophes(answer);

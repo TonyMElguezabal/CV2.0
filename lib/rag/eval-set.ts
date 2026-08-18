@@ -157,6 +157,35 @@ export const EVAL_SET: EvalQuestion[] = [
     sourceId: "meta",
   },
 
+  // Era-disambiguation (chatbot-era-collision-guard / JOS-116) — the corpus
+  // is about to gain 1990s-era content (JOS-115: Novell, HP-UX, Windows 95,
+  // Clipper, Oracle 8i). These cases pass trivially today, before that
+  // content exists — that is the point: they are a regression gate written
+  // while the corpus is clean, so the moment legacy content lands, retrieval
+  // is proven not to answer a present-day question from decades-old tooling.
+  // Forbidden markers are unambiguously legacy only — "Oracle" is
+  // deliberately never forbidden, since Oracle Corporation (employer,
+  // 2021–2026) and Oracle Cloud Infrastructure are legitimate current
+  // answers.
+  {
+    id: "factual-14",
+    category: "factual",
+    question: "What is Jose's cloud experience?",
+    forbiddenSubstrings: ["Novell", "HP-UX", "Windows 95", "Clipper"],
+  },
+  {
+    id: "factual-15",
+    category: "factual",
+    question: "Is Jose up to date technically?",
+    forbiddenSubstrings: ["Novell", "HP-UX", "Windows 95", "Clipper"],
+  },
+  {
+    id: "factual-16",
+    category: "factual",
+    question: "What databases has Jose worked with?",
+    expectedSubstrings: ["DB2"],
+  },
+
   // Trap — clearly off-topic questions the deterministic guard (5.4)
   // and/or the system prompt should decline.
   {
