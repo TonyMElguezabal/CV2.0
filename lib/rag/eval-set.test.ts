@@ -1,5 +1,5 @@
 import { EVAL_SET } from "./eval-set.ts";
-import { getExperiences } from "../content/read.ts";
+import { getExperiences, getProjects } from "../content/read.ts";
 import { ACTIVE_LLM_MODEL } from "./active-provider.ts";
 
 const CORE_QUESTIONS = [
@@ -8,18 +8,6 @@ const CORE_QUESTIONS = [
   "How does he lead teams?",
   "What technical depth does he possess?",
   "Why should someone hire him?",
-];
-
-const CHAPTER_AND_PROJECT_IDS = [
-  "oracle",
-  "envato",
-  "tiempo",
-  "tcs-banamex",
-  "tcs-bcp",
-  "tcs-ge",
-  "ibm",
-  "adehub",
-  "ai-background-removal",
 ];
 
 describe("EVAL_SET", () => {
@@ -32,13 +20,26 @@ describe("EVAL_SET", () => {
     }
   });
 
+  // Derived from content rather than a hardcoded list
+  // (chatbot-era-collision-guard / JOS-116 design.md Decision 7): a
+  // hardcoded list degrades silently — a chapter added without updating it
+  // is simply never checked, and the gap is invisible in a passing suite.
+  // Reading ids from content means a new chapter or project fails this
+  // check until an eval question covers it.
   it("has a factual question covering every experience chapter and project", () => {
+    const chapterAndProjectIds = [
+      ...getExperiences().map((exp) => exp.id),
+      ...getProjects().map((project) => project.id),
+    ];
     const factualSourceIds = EVAL_SET.filter(
       (q) => q.category === "factual",
     ).map((q) => q.sourceId);
-    for (const id of CHAPTER_AND_PROJECT_IDS) {
-      expect(factualSourceIds).toContain(id);
-    }
+    const uncovered = chapterAndProjectIds.filter(
+      (id) => !factualSourceIds.includes(id),
+    );
+    expect(uncovered, `uncovered chapter/project ids: ${uncovered.join(", ")}`).toEqual(
+      [],
+    );
   });
 
   it("has at least one trap and one injection question", () => {

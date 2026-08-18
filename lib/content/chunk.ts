@@ -26,7 +26,11 @@ export interface GetContentChunksOptions {
 // than retrievable meaning. Never used to filter or merge chunks — a chunk
 // below this length means the underlying content is thin and should be
 // authored, not hidden (design decision 5). See design.md in
-// openspec/changes/chatbot-corpus-coverage.
+// openspec/changes/chatbot-corpus-coverage. Measured against a chunk's
+// *authored* content, excluding chapterFramingPrefix()'s generated
+// role/company/date prefix — that framing would otherwise mask thin
+// authored content by padding the combined text past this threshold (see
+// design.md in openspec/changes/chatbot-era-collision-guard).
 export const MIN_CHUNK_LENGTH = 60;
 
 function slugify(value: string): string {
@@ -55,6 +59,28 @@ function renderDateRange(start: string, end: string | undefined): string {
   const startRendered = renderMonthYear(start);
   const endRendered = end ? renderMonthYear(end) : "present";
   return `${startRendered} – ${endRendered}`;
+}
+
+interface FramableExperience {
+  role: string;
+  company: string;
+  dates: { start: string; end?: string };
+}
+
+// Prefixed onto otherwise-unattributed chunk bodies (technologies, actions,
+// leadership, lessons) so a chunk retrieved in isolation still carries the
+// era and employer it describes — without this, a chunk naming legacy
+// tooling competes on equal footing with one naming current tooling for a
+// question explicitly about present-day capability. Reuses
+// renderDateRange() so the date form matches the chapter's mission-dates
+// chunk (chatbot-era-collision-guard design.md Decision 1). Exported so
+// tests can measure a chunk's authored body separately from this generated
+// framing (design.md Decision 4) — MIN_CHUNK_LENGTH must flag thin authored
+// content even when the framing alone would push a chunk over the
+// threshold.
+export function chapterFramingPrefix(experience: FramableExperience): string {
+  const dateRange = renderDateRange(experience.dates.start, experience.dates.end);
+  return `${experience.role} at ${experience.company} (${dateRange})`;
 }
 
 // Chunks by semantic unit (chapter section, project, leadership story, FAQ
@@ -99,7 +125,7 @@ export function getContentChunks(options: GetContentChunksOptions): ContentChunk
 
     chunks.push({
       id: `${experience.id}-actions`,
-      text: experience.responsibilities.join("\n"),
+      text: `${chapterFramingPrefix(experience)}\n${experience.responsibilities.join("\n")}`,
       source: "experience",
       chapterId: experience.id,
       anchor,
@@ -120,7 +146,7 @@ export function getContentChunks(options: GetContentChunksOptions): ContentChunk
     if (experience.technologies.length > 0) {
       chunks.push({
         id: `${experience.id}-technologies`,
-        text: `As ${experience.role} at ${experience.company}, Jose worked with the following tools and technologies: ${experience.technologies.join(", ")}.`,
+        text: `${chapterFramingPrefix(experience)}\nJose worked with the following tools and technologies: ${experience.technologies.join(", ")}.`,
         source: "experience",
         chapterId: experience.id,
         anchor,
@@ -129,7 +155,7 @@ export function getContentChunks(options: GetContentChunksOptions): ContentChunk
 
     chunks.push({
       id: `${experience.id}-leadership`,
-      text: experience.leadership.join("\n"),
+      text: `${chapterFramingPrefix(experience)}\n${experience.leadership.join("\n")}`,
       source: "experience",
       chapterId: experience.id,
       anchor,
@@ -137,7 +163,7 @@ export function getContentChunks(options: GetContentChunksOptions): ContentChunk
 
     chunks.push({
       id: `${experience.id}-lessons`,
-      text: experience.lessons,
+      text: `${chapterFramingPrefix(experience)}\n${experience.lessons}`,
       source: "experience",
       chapterId: experience.id,
       anchor,

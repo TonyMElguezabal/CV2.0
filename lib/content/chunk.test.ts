@@ -1,7 +1,13 @@
 import { rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { makeFixtureRoot } from "./test-fixtures";
-import { getContentChunks, MIN_CHUNK_LENGTH } from "./chunk.ts";
+import { getContentChunks, chapterFramingPrefix, MIN_CHUNK_LENGTH } from "./chunk.ts";
+import { getExperiences } from "./read.ts";
+
+// The four chunk types chapterFramingPrefix() is prepended to
+// (chatbot-era-collision-guard) — used below to strip the generated prefix
+// before measuring authored content.
+const FRAMED_SUFFIXES = ["-technologies", "-actions", "-leadership", "-lessons"];
 
 const TEST_MODELS = { llm: "test-llm-model", embedding: "test-embedding-model" };
 
@@ -61,13 +67,75 @@ describe("getContentChunks", () => {
     }
   });
 
-  it("never emits a chunk shorter than MIN_CHUNK_LENGTH (a short chunk means content is thin and should be authored, not hidden)", () => {
+  it("never emits a chunk whose authored content is shorter than MIN_CHUNK_LENGTH (a short chunk means content is thin and should be authored, not hidden)", () => {
+    // Measures authored content, not the full chunk text: a framed chunk's
+    // generated prefix (role/company/date) must not be able to mask thin
+    // authored content by padding the combined length past the threshold
+    // (chatbot-era-collision-guard design.md Decision 4).
     const root = makeFixtureRoot();
     try {
+      const experiences = getExperiences(root);
       const chunks = getContentChunks({ contentRoot: root, models: TEST_MODELS });
       for (const chunk of chunks) {
-        expect(chunk.text.trim().length).toBeGreaterThanOrEqual(MIN_CHUNK_LENGTH);
+        const experience = chunk.chapterId
+          ? experiences.find((e) => e.id === chunk.chapterId)
+          : undefined;
+        const isFramed =
+          experience &&
+          FRAMED_SUFFIXES.some((suffix) => chunk.id === `${chunk.chapterId}${suffix}`);
+        const authoredText = isFramed
+          ? chunk.text.slice(chapterFramingPrefix(experience).length)
+          : chunk.text;
+        expect(authoredText.trim().length).toBeGreaterThanOrEqual(MIN_CHUNK_LENGTH);
       }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("detects thin authored content even when the generated framing pushes the combined chunk text past MIN_CHUNK_LENGTH", () => {
+    const root = makeFixtureRoot();
+    try {
+      const thinExperience = `
+company: International Business Machines Corporation
+role: Senior Regional Delivery and Program Management Director
+mission: Thin-content fixture mission statement, long enough on its own to be unrelated to this test's concern.
+dates:
+  start: "2010-01"
+  end: "2011-01"
+context: Thin-content fixture context, long enough on its own to be unrelated to this test's concern here.
+responsibilities:
+  - Did X
+projects: []
+leadership:
+  - Led Y
+technologies:
+  - SQL
+lessons: Learned Z.
+`;
+      writeFileSync(join(root, "experience", "delta.yaml"), thinExperience);
+
+      const experiences = getExperiences(root);
+      const delta = experiences.find((e) => e.id === "delta");
+      expect(delta).toBeDefined();
+      const prefix = chapterFramingPrefix(delta!);
+
+      const chunks = getContentChunks({
+        contentRoot: root,
+        models: TEST_MODELS,
+      }).filter((c) => c.id === "delta-leadership");
+      expect(chunks).toHaveLength(1);
+      const chunk = chunks[0]!;
+
+      // The long role/company/date framing alone pushes the combined text
+      // past the threshold — proving that measuring the full chunk text
+      // would have wrongly let this thin content through.
+      expect(chunk.text.trim().length).toBeGreaterThanOrEqual(MIN_CHUNK_LENGTH);
+
+      // The authored body underneath the framing ("Led Y") is thin and must
+      // still be caught by content authors, not silently hidden.
+      const authoredBody = chunk.text.slice(prefix.length).trim();
+      expect(authoredBody.length).toBeLessThan(MIN_CHUNK_LENGTH);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -273,6 +341,87 @@ lessons: No-tech lesson.
       expect(chunks).toHaveLength(1);
       expect(chunks[0]?.text).toContain("Test positioning statement.");
       expect(chunks[0]?.text).toContain("Test summary.");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  // chatbot-era-collision-guard (JOS-116): career-chapter chunks must be
+  // self-describing in time and attribution, so a chunk retrieved in
+  // isolation carries the era and employer it belongs to.
+  it("names the chapter's rendered date range in the technologies chunk", () => {
+    const root = makeFixtureRoot();
+    try {
+      const chunks = getContentChunks({
+        contentRoot: root,
+        models: TEST_MODELS,
+      }).filter((c) => c.id === "acme-technologies");
+      expect(chunks).toHaveLength(1);
+      expect(chunks[0]?.text).toContain("January 2020 – June 2021");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("names the chapter's role and company in the actions, leadership, and lessons chunks", () => {
+    const root = makeFixtureRoot();
+    try {
+      const chunks = getContentChunks({
+        contentRoot: root,
+        models: TEST_MODELS,
+      }).filter((c) =>
+        ["acme-actions", "acme-leadership", "acme-lessons"].includes(c.id),
+      );
+      expect(chunks).toHaveLength(3);
+      for (const chunk of chunks) {
+        expect(chunk.text).toContain("Engineer");
+        expect(chunk.text).toContain("Acme");
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("makes the framed chunk types (technologies, actions, leadership, lessons) attributable to a role, company, and date range in isolation", () => {
+    // Scoped to the four chunk types this change frames (proposal.md "What
+    // Changes"), not every experience chunk: -context and -mission-dates
+    // already carried role/company attribution before this change, and
+    // -project-N is out of scope.
+    const root = makeFixtureRoot();
+    try {
+      const chunks = getContentChunks({
+        contentRoot: root,
+        models: TEST_MODELS,
+      }).filter((c) =>
+        [
+          "acme-technologies",
+          "acme-actions",
+          "acme-leadership",
+          "acme-lessons",
+        ].includes(c.id),
+      );
+      expect(chunks).toHaveLength(4);
+      for (const chunk of chunks) {
+        expect(chunk.text).toContain("Engineer");
+        expect(chunk.text).toContain("Acme");
+        expect(chunk.text).toContain("January 2020 – June 2021");
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("renders the same date form in the technologies chunk as in the mission-dates chunk", () => {
+    const root = makeFixtureRoot();
+    try {
+      const chunks = getContentChunks({ contentRoot: root, models: TEST_MODELS });
+      const missionDates = chunks.find((c) => c.id === "acme-mission-dates");
+      const technologies = chunks.find((c) => c.id === "acme-technologies");
+      const rangeMatch = missionDates?.text.match(
+        /[A-Z][a-z]+ \d{4} – (?:[A-Z][a-z]+ \d{4}|present)/,
+      );
+      expect(rangeMatch).not.toBeNull();
+      expect(technologies?.text).toContain(rangeMatch?.[0]);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

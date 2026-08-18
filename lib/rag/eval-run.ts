@@ -1,7 +1,35 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import OpenAI from "openai";
+import { getPlatformProxy } from "wrangler";
 import { loadIndex } from "./retrieve.ts";
+
+// Pre-existing bug fix, unrelated to this change's actual scope
+// (chatbot-era-collision-guard / JOS-116): `loadIndex()` fetches the
+// retrieval index via `getCloudflareContext()`, which since JOS-106
+// (reduce-worker-bundle-size) reads the Workers Static Assets binding
+// rather than a build-time import. That context is normally supplied by
+// `initOpenNextCloudflareForDev()` in next.config.ts — but that function
+// silently no-ops outside Next's own dev-server process (it gates on
+// `globalThis.AsyncLocalStorage`, which only Next's boot sequence sets),
+// so it cannot be called from this standalone script. No change since
+// JOS-106 merged had actually run this script end-to-end.
+//
+// This replicates what `initOpenNextCloudflareForDev` itself does when
+// the gate passes: get real local bindings from wrangler's public
+// `getPlatformProxy()` API, then store them under the same well-known
+// global symbol `getCloudflareContext()` reads from — see
+// `initOpenNextCloudflareForDevErrorMsg`'s own note that the context is
+// "set on the global state by either the worker entrypoint (in prod) or
+// by `initOpenNextCloudflareForDev` (in dev)" in
+// @opennextjs/cloudflare/dist/api/cloudflare-context.js. Scoped entirely
+// to this script — `retrieve.ts` and the production `/api/chat` route are
+// unchanged.
+async function initCloudflareContextForScript(): Promise<void> {
+  const { env, cf, ctx } = await getPlatformProxy();
+  const contextSymbol = Symbol.for("__cloudflare-context__");
+  (globalThis as Record<symbol, unknown>)[contextSymbol] = { env, cf, ctx };
+}
 import { generateGroundedAnswer } from "./generate.ts";
 import { createActiveProvider } from "./active-provider.ts";
 import { EVAL_SET, type EvalQuestion } from "./eval-set.ts";
@@ -71,6 +99,8 @@ function printSummary(summary: ReturnType<typeof summarizeGrades>): void {
 }
 
 async function main(): Promise<void> {
+  await initCloudflareContextForScript();
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     console.error("OPENAI_API_KEY is required to run the eval set.");
