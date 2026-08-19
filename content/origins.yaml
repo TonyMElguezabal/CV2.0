@@ -1,0 +1,101 @@
+title: Origins
+period: 1994 – 2006
+summary: >
+  Before the résumé begins, there's a longer story. Jose has been building,
+  teaching, and selling technology since he was 13 — starting as a student
+  at a small local computer school, then as its instructor a year later,
+  then as a teenage IT support technician who standardized a 300-machine
+  rollout across every branch of the shop he worked for. The credential
+  came after the practice: he went to university, and while still enrolled,
+  interned at INEGI, Mexico's national statistics institute, where he built
+  a system that is still in production today.
+entries:
+  - id: ccej
+    label: Student, then instructor, at a local computer school
+    period: age 13–14
+    organization: CCEJ
+    phase: self-taught
+    narrative: >
+      At 13, Jose enrolled as a student at CCEJ, a small local computer
+      school — four classrooms, about 30 machines set aside for practice.
+      He learned operating systems (DOS, Windows), programming (Basic,
+      Clipper), and Corel Draw for design. After he finished the courses,
+      he kept coming back — there was little else to do with a computer in
+      a pre-internet town — and the school's director noticed and asked if
+      he would teach. He started with students younger than himself, and
+      within the same stretch was teaching adults who had enrolled as paying
+      students, for roughly eight months in total, averaging about ten
+      students per group. CCEJ is no longer in business.
+    highlight: >
+      A fourteen-year-old, months out of the student's chair in that same
+      room, teaching adults who had paid to be there.
+    technologies:
+      - DOS
+      - Windows 95
+      - Basic
+      - Clipper
+      - Corel Draw 5
+  - id: first-software-sale
+    label: Built and sold his first piece of software
+    period: age 16
+    phase: self-taught
+    narrative: >
+      Jose's father asked him for a way to track the electronic components
+      he stocked — part numbers, quantities on hand, and suppliers — so he
+      would know when to reorder resistors and transistors before running
+      out. Jose built it in Clipper, a language well suited to a quick
+      administration system backed by a local database; the first working
+      version took about a month. A coworker of his father's saw it in use
+      and asked for a copy adapted to his own needs. Jose sold it as-is,
+      with a couple of small improvements made specifically for that
+      request, for twenty-five US dollars — his first paid software sale.
+      He never heard from the buyer again after that.
+    highlight: A $25 sale, one copy, Clipper — his first time being paid for software.
+    technologies:
+      - Clipper
+  - id: calcom
+    label: In-shop IT support technician
+    period: age 17 to 2001
+    organization: CALCOM (California Computers)
+    phase: self-taught
+    narrative: >
+      Jose joined CALCOM, a computer vendor, as an in-shop IT support
+      technician — no customer-site visits, all work done on the shop
+      floor. The job was assembling machines for customers, installing
+      operating systems, configuring peripherals such as video and sound
+      cards, occasional printer repairs, occasional network configuration,
+      and helping configure new systems. He left CALCOM in 2001 to start
+      university.
+    highlight: >
+      A customer ordered 300 computers to open a computer school. The
+      shop's process was to assemble each machine, then install Windows and
+      all required software by hand — 300 times over. Jose cloned the hard
+      disk of one fully configured system using Norton Ghost, and the
+      resulting process was adopted across every CALCOM branch and office
+      for future large orders.
+    technologies:
+      - DOS
+      - Windows 95
+      - Novell
+      - Norton Ghost
+  - id: inegi
+    label: Intern developer at Mexico's national statistics institute
+    period: 2004–2006
+    organization: INEGI
+    phase: formal
+    narrative: >
+      While still enrolled at university, Jose interned at INEGI
+      (https://www.inegi.org.mx/), the Mexican government institute
+      responsible for national population and statistical data, as an
+      intern developer. His work was internal-only PHP tooling. Around
+      ninety percent of his time was spent on Oracle 8i database work on
+      HP-UX servers — querying and running tape backups — and he was
+      present, learning, while his manager carried out the migration to
+      Oracle 9i.
+    highlight: >
+      The internal vehicle-management system he built at INEGI was still in
+      production twenty years later, in 2026.
+    technologies:
+      - PHP
+      - Oracle 8i
+      - HP-UX

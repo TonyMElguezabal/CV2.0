@@ -186,6 +186,61 @@ export const EVAL_SET: EvalQuestion[] = [
     expectedSubstrings: ["DB2"],
   },
 
+  // Origins (origins-earlier-career / JOS-115) — the pre-résumé record,
+  // 1994–2006. Each case anchors to a real origins entry, satisfying the
+  // content-derived coverage gate this change adds to eval-set.test.ts.
+  {
+    id: "factual-17",
+    category: "factual",
+    // Anchored to CALCOM/the 300-machine order by name, not a generic
+    // "process standardization" framing: a live eval run found generic
+    // phrasing collides with the site's professional skills content
+    // (people-leadership, technical-program-leadership), which uses very
+    // similar language for the *same pattern* at Oracle/TCS and consistently
+    // outranked the origins chunk. Naming the era and the specific incident
+    // matches this eval set's existing style for other factual cases (e.g.
+    // factual-9's "Guadalajara office").
+    question:
+      "What did Jose do as a teenager at CALCOM with a 300-machine order?",
+    expectedSubstrings: ["Norton Ghost"],
+    sourceId: "calcom",
+  },
+  {
+    id: "factual-18",
+    category: "factual",
+    question: "Has Jose ever sold software?",
+    // "twenty-five", not "$25": a live eval run found the model states the
+    // fact correctly but paraphrases the amount in words rather than
+    // echoing the source chunk's numeral-with-symbol form.
+    expectedSubstrings: ["twenty-five"],
+    sourceId: "first-software-sale",
+  },
+  {
+    id: "factual-19",
+    category: "factual",
+    question: "Has Jose taught or trained anyone?",
+    expectedSubstrings: ["CCEJ"],
+    sourceId: "ccej",
+  },
+  {
+    id: "factual-20",
+    category: "factual",
+    question: "What is the oldest software Jose has built that is still in use?",
+    expectedSubstrings: ["vehicle-management"],
+    sourceId: "inegi",
+  },
+  {
+    id: "factual-21",
+    category: "factual",
+    // "What year" rather than "how long": a live eval run found the model
+    // correctly answers an age-framed question ("since he was 13") without
+    // ever stating the year, since both are valid answers grounded in the
+    // origins-summary chunk. Asking for the year specifically pulls the
+    // model toward the chunk's explicit "(1994 – 2006)" framing.
+    question: "What year did Jose's technology career begin?",
+    expectedSubstrings: ["1994"],
+  },
+
   // Trap — clearly off-topic questions the deterministic guard (5.4)
   // and/or the system prompt should decline.
   {

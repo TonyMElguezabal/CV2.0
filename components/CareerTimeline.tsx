@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ExperienceWithId } from "@/lib/content/read.ts";
-import { formatChapterDateRange } from "./formatChapterDate";
+import type { Origins } from "@/lib/content/types.ts";
+import {
+  experienceToTimelineEntry,
+  originsToTimelineEntry,
+  type TimelineEntry,
+} from "./timelineEntries";
 import {
   timelineNavClass,
   timelineSpineClass,
@@ -15,6 +20,11 @@ import {
 
 export interface CareerTimelineProps {
   experiences: ExperienceWithId[];
+  // Optional — origins-earlier-career adds one rail node for the site's
+  // origins record when present. Omitting it (as every pre-existing call
+  // site and test does) reproduces this component's exact prior behavior;
+  // see design.md Decision 4 in openspec/changes/origins-earlier-career.
+  origins?: Origins;
 }
 
 // A reading-line band through the upper-middle of the viewport (20%-65%
@@ -33,12 +43,22 @@ function isScrolledToBottom(): boolean {
   );
 }
 
-export function CareerTimeline({ experiences }: CareerTimelineProps) {
+export function CareerTimeline({ experiences, origins }: CareerTimelineProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  // One uniform list regardless of source — the effect and render below
+  // never branch on where an entry came from (design.md Decision 4).
+  const entries = useMemo<TimelineEntry[]>(
+    () => [
+      ...experiences.map(experienceToTimelineEntry),
+      ...(origins ? [originsToTimelineEntry(origins)] : []),
+    ],
+    [experiences, origins]
+  );
+
   useEffect(() => {
-    const elements = experiences
-      .map((experience) => document.getElementById(experience.id))
+    const elements = entries
+      .map((entry) => document.getElementById(entry.id))
       .filter((el): el is HTMLElement => el !== null);
 
     if (elements.length === 0) {
@@ -53,24 +73,22 @@ export function CareerTimeline({ experiences }: CareerTimelineProps) {
     // gesture, instead of racing to overwrite each other.
     function updateActiveId() {
       if (isScrolledToBottom()) {
-        const last = experiences[experiences.length - 1];
+        const last = entries[entries.length - 1];
         if (last) {
           setActiveId(last.id);
         }
         return;
       }
 
-      const current = experiences.find((experience) =>
-        intersectingIds.has(experience.id)
-      );
+      const current = entries.find((entry) => intersectingIds.has(entry.id));
       if (current) {
         setActiveId(current.id);
       }
     }
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      (observerEntries) => {
+        observerEntries.forEach((entry) => {
           if (entry.isIntersecting) {
             intersectingIds.add(entry.target.id);
           } else {
@@ -100,9 +118,9 @@ export function CareerTimeline({ experiences }: CareerTimelineProps) {
       observer.disconnect();
       window.removeEventListener("scroll", updateActiveId);
     };
-  }, [experiences]);
+  }, [entries]);
 
-  if (experiences.length === 0) {
+  if (entries.length === 0) {
     return null;
   }
 
@@ -110,23 +128,22 @@ export function CareerTimeline({ experiences }: CareerTimelineProps) {
     <nav aria-label="Career timeline" className={timelineNavClass}>
       <span aria-hidden="true" className={timelineSpineClass} />
       <ol className={timelineListClass}>
-        {experiences.map((experience) => {
-          const dateRange = formatChapterDateRange(experience.dates);
-          const isActive = experience.id === activeId;
+        {entries.map((entry) => {
+          const isActive = entry.id === activeId;
           return (
-            <li key={experience.id}>
+            <li key={entry.id}>
               <a
-                href={`#${experience.id}`}
-                aria-label={`${experience.role} at ${experience.company}, ${dateRange}`}
+                href={`#${entry.id}`}
+                aria-label={entry.accessibleName}
                 aria-current={isActive ? "location" : undefined}
                 className={timelineNodeClass}
               >
                 <span aria-hidden="true" className={timelineMarkerClass} />
                 <span aria-hidden="true" className={timelineCompanyClass}>
-                  {experience.company}
+                  {entry.label}
                 </span>
                 <span aria-hidden="true" className={timelineDateClass}>
-                  {dateRange}
+                  {entry.meta}
                 </span>
               </a>
             </li>

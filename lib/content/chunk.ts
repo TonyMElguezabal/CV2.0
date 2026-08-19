@@ -1,9 +1,24 @@
-import { getExperiences, getProfile, getSkills, getProjects, getFaq, getMeta } from "./read.ts";
+import {
+  getExperiences,
+  getProfile,
+  getSkills,
+  getProjects,
+  getFaq,
+  getMeta,
+  getOrigins,
+} from "./read.ts";
 
 export interface ContentChunk {
   id: string;
   text: string;
-  source: "experience" | "project" | "skill" | "faq" | "profile" | "meta";
+  source:
+    | "experience"
+    | "project"
+    | "skill"
+    | "faq"
+    | "profile"
+    | "meta"
+    | "origins";
   chapterId?: string;
   anchor: string;
 }
@@ -223,6 +238,40 @@ export function getContentChunks(options: GetContentChunksOptions): ContentChunk
     source: "meta",
     anchor: "#chat",
   });
+
+  // One overview chunk carrying the record's overall span (e.g. "1994 –
+  // 2006") — without this, that span exists only in origins.yaml's
+  // top-level `period` field and is never retrievable, since each entry
+  // chunk below carries only its own narrower period. A question like "how
+  // long has he been in technology?" needs this chunk to reach the actual
+  // starting point rather than the earliest per-entry period.
+  const origins = getOrigins(contentRoot);
+  chunks.push({
+    id: "origins-summary",
+    text: `${origins.title} (${origins.period}). ${origins.summary}`,
+    source: "origins",
+    anchor: "#origins",
+  });
+
+  // One chunk per origins entry, anchored to the single condensed section
+  // (origins-earlier-career design.md: one timeline node, not one node per
+  // entry). The entry's period is woven into the text — never appended as
+  // a separate line the way chapterFramingPrefix() does for career
+  // chapters — so a chunk retrieved in isolation is still attributable to
+  // an era, the same self-describing-chunk principle
+  // chatbot-era-collision-guard established for career chapters.
+  for (const entry of origins.entries) {
+    const organizationClause = entry.organization
+      ? ` at ${entry.organization}`
+      : "";
+    const highlightClause = entry.highlight ? ` ${entry.highlight}` : "";
+    chunks.push({
+      id: `origins-${entry.id}`,
+      text: `${entry.label}${organizationClause} (${entry.period}). ${entry.narrative}${highlightClause}`,
+      source: "origins",
+      anchor: "#origins",
+    });
+  }
 
   return chunks;
 }

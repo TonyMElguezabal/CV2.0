@@ -34,6 +34,83 @@ describe("validateContent: missing required field", () => {
   });
 });
 
+// origins-earlier-career (JOS-115)
+describe("validateContent: origins content", () => {
+  it("reports an error naming the file and field when origins.yaml is malformed", () => {
+    const root = makeFixtureRoot();
+    try {
+      const malformedOrigins = `
+title: Origins
+entries:
+  - id: broken
+    label: Broken entry
+    period: age 16
+`;
+      // Missing the required top-level `summary` and the entry's required `narrative`.
+      writeFileSync(join(root, "origins.yaml"), malformedOrigins);
+
+      const result = validateContent(root);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({ file: "origins.yaml", field: "summary" }),
+      );
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({
+          file: "origins.yaml",
+          field: "entries.0.narrative",
+        }),
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reports an error when origins.yaml is missing entirely", () => {
+    const root = makeFixtureRoot();
+    try {
+      rmSync(join(root, "origins.yaml"));
+
+      const result = validateContent(root);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({
+          file: "origins.yaml",
+          message: "file is missing",
+        }),
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects a skill whose evidence references an origins entry id instead of a chapter or project — origins entries are never skill evidence", () => {
+    const root = makeFixtureRoot();
+    try {
+      const skillsReferencingOrigin = `
+- name: Testing
+  evidence:
+    - test-origin
+  summary: Test summary evidencing this skill.
+`;
+      writeFileSync(join(root, "skills.yaml"), skillsReferencingOrigin);
+
+      const result = validateContent(root);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({
+          file: "skills.yaml",
+          message: expect.stringContaining("test-origin"),
+        }),
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("validateContent: dangling skill evidence references", () => {
   it("reports an error when a skill evidence ID matches no experience or project slug", () => {
     const root = makeFixtureRoot();

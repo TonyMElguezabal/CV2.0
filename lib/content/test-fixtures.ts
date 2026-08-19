@@ -85,6 +85,17 @@ Test site description. This fictional description is written at enough length to
 Test chatbot pipeline description. This fictional description is written at enough length to resemble a real explanation of the retrieval pipeline.
 `;
 
+export const VALID_ORIGINS = `
+title: Origins
+period: 1994 – 2006
+summary: Test origins summary. This fictional summary is written at enough length to resemble a real formative-period record used only for testing.
+entries:
+  - id: test-origin
+    label: Test origin entry
+    period: age 16
+    narrative: Test origin narrative. This fictional narrative is written at enough length to resemble a real origins entry used only for testing.
+`;
+
 export function makeFixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), "content-fixture-"));
   mkdirSync(join(root, "experience"));
@@ -95,5 +106,6 @@ export function makeFixtureRoot(): string {
   writeFileSync(join(root, "skills.yaml"), VALID_SKILLS);
   writeFileSync(join(root, "faq.md"), VALID_FAQ);
   writeFileSync(join(root, "meta.md"), VALID_META);
+  writeFileSync(join(root, "origins.yaml"), VALID_ORIGINS);
   return root;
 }

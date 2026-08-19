@@ -73,7 +73,7 @@ async function retrieveContext(
   question: string,
   deps: GenerateGroundedAnswerDeps,
 ): Promise<{ retrievedChunks: IndexedChunk[]; context: string; topScore: number }> {
-  const { embeddingClient, index, k = 5 } = deps;
+  const { embeddingClient, index, k = 7 } = deps;
   const queryEmbedding = await embedQuery(embeddingClient, question);
   const retrievedChunks = retrieveTopK(queryEmbedding, index, k);
   const context = retrievedChunks.map((chunk) => chunk.text).join("\n\n---\n\n");

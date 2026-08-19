@@ -8,8 +8,9 @@ import {
   SkillSchema,
   ProjectSchema,
   MetaSchema,
+  OriginsSchema,
 } from "./schemas.ts";
-import type { Experience, Profile, Skill, Project, Meta } from "./types.ts";
+import type { Experience, Profile, Skill, Project, Meta, Origins } from "./types.ts";
 
 // process.cwd(), not import.meta.dirname: this module is imported into
 // Next.js's bundle (unlike validate.ts/cli.ts, which only run via raw
@@ -111,4 +112,14 @@ export function getFaq(contentRoot: string = defaultContentRoot): FaqEntry[] {
     entries.push({ question, answer });
   }
   return entries;
+}
+
+// Entries are returned in authored order, deliberately not sorted — the
+// origins record is a narrative arc, not a reverse-chronological list, and
+// its correct order is an editorial judgment rather than a computation
+// (origins-earlier-career design.md Decision 3), unlike getExperiences()'s
+// sort by dates.start.
+export function getOrigins(contentRoot: string = defaultContentRoot): Origins {
+  const raw = readFileSync(join(contentRoot, "origins.yaml"), "utf-8");
+  return OriginsSchema.parse(parseYaml(raw));
 }

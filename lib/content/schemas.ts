@@ -96,3 +96,34 @@ export const MetaSchema = z.object({
   title: z.string(),
   topics: z.array(z.string()),
 });
+
+// `period` is a plain display string, not `dateStringSchema` — the origins
+// record's real precision is approximate ("age 16", "1999–2001"), and
+// forcing month-level calendar dates would invent false precision nobody
+// can verify (origins-earlier-career design.md Decision 2).
+export const OriginEntrySchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  period: z.string(),
+  organization: z.string().optional(),
+  narrative: z.string(),
+  highlight: z.string().optional(),
+  technologies: z.array(z.string()).optional(),
+  // Groups entries into the record's two-beat rendering — "the self-taught
+  // years" then "the formal years" — an editorial grouping that belongs in
+  // content, not as hardcoded ids or positional logic in the component
+  // that renders it. Optional so it can be omitted for a record with no
+  // such split.
+  phase: z.enum(["self-taught", "formal"]).optional(),
+});
+
+export const OriginsSchema = z.object({
+  title: z.string(),
+  // The record's overall span, displayed on its single timeline node
+  // (e.g. "1994 – 2006") — authored, not derived: entry periods are free
+  // text ("age 13–14", "1999–2001"), not structured enough to compute an
+  // aggregate range from reliably.
+  period: z.string(),
+  summary: z.string(),
+  entries: z.array(OriginEntrySchema),
+});

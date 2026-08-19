@@ -11,6 +11,8 @@ import type {
   ProjectSchema,
   SkillSchema,
   MetaSchema,
+  OriginEntrySchema,
+  OriginsSchema,
 } from "./schemas";
 
 export type ProfileLinks = z.infer<typeof ProfileLinksSchema>;
@@ -28,3 +30,6 @@ export type Project = z.infer<typeof ProjectSchema>;
 export type Skill = z.infer<typeof SkillSchema>;
 
 export type Meta = z.infer<typeof MetaSchema>;
+
+export type OriginEntry = z.infer<typeof OriginEntrySchema>;
+export type Origins = z.infer<typeof OriginsSchema>;

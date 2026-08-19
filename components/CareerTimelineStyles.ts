@@ -14,8 +14,19 @@
 // border segments. `relative` added to the nav so the spine (a sibling of
 // the `<ol>`, not one of its children — an `<ol>` should only contain
 // `<li>`s) can position against it.
+//
+// `top-[calc(50%+3rem)]` rather than a plain `top-1/2`
+// (origins-earlier-career, Task Group 12): centering on the full viewport
+// let the topmost node land under `SiteHeader`'s fixed band (`h-14` + `h-10`
+// = 96px) on short viewports — verified in a real browser at the 779px
+// height design.md measured, where the 8-node rail's thin margin (~17px)
+// put "Oracle Corporation" almost entirely behind the header. 3rem (48px)
+// is half that header height, shifting the rail's centering point down so
+// it centers within the space *below* the header instead of the full
+// viewport. Not a `scroll-margin-top`-style fix (that governs scroll
+// landing position, not this element's own static placement).
 export const timelineNavClass =
-  "relative mx-auto flex max-w-3xl gap-6 overflow-x-auto px-6 pb-6 md:fixed md:left-4 md:top-1/2 md:mx-0 md:max-w-none md:-translate-y-1/2 md:flex-col md:gap-4 md:overflow-visible md:px-0 md:pb-0";
+  "relative mx-auto flex max-w-3xl gap-6 overflow-x-auto px-6 pb-6 md:fixed md:left-4 md:top-[calc(50%+3rem)] md:mx-0 md:max-w-none md:-translate-y-1/2 md:flex-col md:gap-4 md:overflow-visible md:px-0 md:pb-0";
 
 // `md:` only — the mobile layout is a horizontally scrolling row where a
 // single vertical spine has no meaningful position; each node keeps its

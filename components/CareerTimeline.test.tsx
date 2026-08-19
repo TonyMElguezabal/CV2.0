@@ -2,6 +2,7 @@
 import { render, screen } from "@testing-library/react";
 import { CareerTimeline } from "./CareerTimeline";
 import type { ExperienceWithId } from "@/lib/content/read.ts";
+import type { Origins } from "@/lib/content/types.ts";
 
 const OLDER: ExperienceWithId = {
   id: "acme",
@@ -72,6 +73,75 @@ describe("CareerTimeline", () => {
     render(<CareerTimeline experiences={[]} />);
     expect(screen.queryAllByRole("link")).toHaveLength(0);
 
+    render(<CareerTimeline experiences={[OLDER, NEWER]} />);
+    expect(screen.getAllByRole("link")).toHaveLength(2);
+  });
+});
+
+// origins-earlier-career (JOS-115): the origins prop is optional and
+// additive — every test above omits it and must keep passing unmodified
+// (design.md Decision 4).
+const ORIGINS_FIXTURE: Origins = {
+  title: "Origins",
+  period: "1994 – 2006",
+  summary: "Fixture origins summary.",
+  entries: [
+    {
+      id: "ccej",
+      label: "Fixture entry",
+      period: "age 13",
+      narrative: "Fixture narrative.",
+    },
+    {
+      id: "calcom",
+      label: "Fixture entry two",
+      period: "age 17",
+      narrative: "Fixture narrative two.",
+    },
+  ],
+};
+
+describe("CareerTimeline with an origins record", () => {
+  it("adds exactly one node for the origins record, regardless of how many entries it contains", () => {
+    render(<CareerTimeline experiences={[OLDER, NEWER]} origins={ORIGINS_FIXTURE} />);
+    // 2 experience nodes + exactly 1 origins node, even though the fixture
+    // record has 2 entries.
+    expect(screen.getAllByRole("link")).toHaveLength(3);
+  });
+
+  it("adding an entry to the origins record does not change the node count", () => {
+    const withThreeEntries: Origins = {
+      ...ORIGINS_FIXTURE,
+      entries: [
+        ...ORIGINS_FIXTURE.entries,
+        { id: "inegi", label: "Third entry", period: "2004–2006", narrative: "Third narrative." },
+      ],
+    };
+    render(<CareerTimeline experiences={[OLDER]} origins={withThreeEntries} />);
+    expect(screen.getAllByRole("link")).toHaveLength(2);
+  });
+
+  it("labels the origins node from the origins record's own title and period, not a hardcoded string", () => {
+    render(<CareerTimeline experiences={[]} origins={ORIGINS_FIXTURE} />);
+    expect(screen.getByText("Origins")).toBeInTheDocument();
+    expect(screen.getByText("1994 – 2006")).toBeInTheDocument();
+
+    const renamed: Origins = { ...ORIGINS_FIXTURE, title: "Before The Résumé", period: "1993 – 2005" };
+    const { unmount } = render(<CareerTimeline experiences={[]} origins={renamed} />);
+    expect(screen.getByText("Before The Résumé")).toBeInTheDocument();
+    expect(screen.getByText("1993 – 2005")).toBeInTheDocument();
+    unmount();
+  });
+
+  it("links the origins node to #origins, matching the anchor origins chunks and OriginsSection use", () => {
+    render(<CareerTimeline experiences={[]} origins={ORIGINS_FIXTURE} />);
+    expect(screen.getByRole("link", { name: /origins/i })).toHaveAttribute(
+      "href",
+      "#origins"
+    );
+  });
+
+  it("omitting origins reproduces the exact prior node count", () => {
     render(<CareerTimeline experiences={[OLDER, NEWER]} />);
     expect(screen.getAllByRole("link")).toHaveLength(2);
   });
