@@ -9,6 +9,7 @@ import {
   ProjectSchema,
   SkillSchema,
   MetaSchema,
+  OriginsSchema,
 } from "./schemas.ts";
 import { OPENAI_MODEL, EMBEDDING_MODEL } from "../rag/models.ts";
 
@@ -125,6 +126,25 @@ export function validateContent(
   } else {
     errors.push({ file: "meta.md", message: "file is missing" });
   }
+
+  const originsPath = join(contentRoot, "origins.yaml");
+  if (existsSync(originsPath)) {
+    const parsed = parseYaml(readFileSync(originsPath, "utf-8"));
+    const result = OriginsSchema.safeParse(parsed);
+    if (!result.success) {
+      errors.push(...zodIssuesToErrors("origins.yaml", result.error.issues));
+    }
+  } else {
+    errors.push({ file: "origins.yaml", message: "file is missing" });
+  }
+
+  // Origins entry ids are deliberately excluded from `knownSlugs` above —
+  // an origins entry can never satisfy a skill's evidence[] reference
+  // (origins-earlier-career design.md Decision 5: legacy tooling stays
+  // narrative and is never claimed as a current skill). No special-case
+  // code needed: skills.yaml's existing dangling-reference check above
+  // already rejects an origins id, since it was never added to the set of
+  // ids a skill is permitted to reference.
 
   return { valid: errors.length === 0, errors };
 }

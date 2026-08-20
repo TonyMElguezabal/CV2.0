@@ -1,5 +1,5 @@
 import { EVAL_SET } from "./eval-set.ts";
-import { getExperiences, getProjects } from "../content/read.ts";
+import { getExperiences, getProjects, getOrigins } from "../content/read.ts";
 import { ACTIVE_LLM_MODEL } from "./active-provider.ts";
 
 const CORE_QUESTIONS = [
@@ -38,6 +38,22 @@ describe("EVAL_SET", () => {
       (id) => !factualSourceIds.includes(id),
     );
     expect(uncovered, `uncovered chapter/project ids: ${uncovered.join(", ")}`).toEqual(
+      [],
+    );
+  });
+
+  // origins-earlier-career (JOS-115): a separate coverage check, since
+  // JOS-116's gate above was scoped to chapters/projects only — origins
+  // didn't exist as a content type yet when that gate was written. Same
+  // content-derived principle: an origins entry added without an eval
+  // question fails this check rather than silently going unchecked.
+  it("has a factual question covering every origins entry", () => {
+    const originsIds = getOrigins().entries.map((entry) => entry.id);
+    const factualSourceIds = EVAL_SET.filter(
+      (q) => q.category === "factual",
+    ).map((q) => q.sourceId);
+    const uncovered = originsIds.filter((id) => !factualSourceIds.includes(id));
+    expect(uncovered, `uncovered origins entry ids: ${uncovered.join(", ")}`).toEqual(
       [],
     );
   });

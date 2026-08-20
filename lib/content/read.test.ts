@@ -1,7 +1,13 @@
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { getExperiences, getSkills, getProjects, getMeta } from "./read.ts";
+import {
+  getExperiences,
+  getSkills,
+  getProjects,
+  getMeta,
+  getOrigins,
+} from "./read.ts";
 
 const OLDER_EXPERIENCE = `
 company: Acme
@@ -228,6 +234,100 @@ describe("getMeta", () => {
     expect(meta.sections["how the chatbot works"]).toContain(
       "It retrieves matching content and generates a grounded answer.",
     );
+  });
+});
+
+// origins-earlier-career (JOS-115): array order is authored display order,
+// deliberately not sorted — the section is a narrative arc (design.md
+// Decision 3), unlike getExperiences()'s reverse-chronological sort.
+const ORIGINS_FIXTURE = `
+title: Origins
+period: "1994 – 2001"
+summary: A formative period before the résumé begins.
+entries:
+  - id: first-entry
+    label: First Entry
+    period: "age 13"
+    narrative: The first thing that happened, described in enough detail to resemble a real origins entry used only for testing.
+  - id: second-entry
+    label: Second Entry
+    period: "1999–2001"
+    organization: Some Company
+    narrative: The second thing that happened, described in enough detail to resemble a real origins entry used only for testing.
+    highlight: A notable moment worth calling out on its own.
+    technologies:
+      - Clipper
+`;
+
+function makeOriginsFixtureRoot(): string {
+  const root = mkdtempSync(join(tmpdir(), "read-origins-fixture-"));
+  writeFileSync(join(root, "origins.yaml"), ORIGINS_FIXTURE);
+  return root;
+}
+
+describe("getOrigins", () => {
+  it("returns the record's title, summary, and entries from content/origins.yaml", () => {
+    const root = makeOriginsFixtureRoot();
+    const origins = getOrigins(root);
+    expect(origins.title).toBe("Origins");
+    expect(origins.period).toBe("1994 – 2001");
+    expect(origins.summary).toContain("formative period");
+    expect(origins.entries).toHaveLength(2);
+  });
+
+  it("preserves entries in authored order, not sorted by period", () => {
+    const root = makeOriginsFixtureRoot();
+    const origins = getOrigins(root);
+    expect(origins.entries.map((entry) => entry.id)).toEqual([
+      "first-entry",
+      "second-entry",
+    ]);
+  });
+
+  it("parses each entry through OriginEntrySchema, exposing its real fields including optional ones", () => {
+    const root = makeOriginsFixtureRoot();
+    const origins = getOrigins(root);
+    const second = origins.entries.find((entry) => entry.id === "second-entry");
+    expect(second?.label).toBe("Second Entry");
+    expect(second?.period).toBe("1999–2001");
+    expect(second?.organization).toBe("Some Company");
+    expect(second?.highlight).toBe("A notable moment worth calling out on its own.");
+    expect(second?.technologies).toEqual(["Clipper"]);
+  });
+
+  it("leaves optional fields undefined when an entry doesn't set them", () => {
+    const root = makeOriginsFixtureRoot();
+    const origins = getOrigins(root);
+    const first = origins.entries.find((entry) => entry.id === "first-entry");
+    expect(first?.organization).toBeUndefined();
+    expect(first?.highlight).toBeUndefined();
+    expect(first?.technologies).toBeUndefined();
+  });
+
+  it("validates approximate, non-calendar period labels — no month-precise date required (design.md Decision 2)", () => {
+    const root = mkdtempSync(join(tmpdir(), "read-origins-approx-fixture-"));
+    const approximatePeriods = `
+title: Origins
+period: "1994 – 2001"
+summary: A formative period expressed only in approximate terms, on purpose.
+entries:
+  - id: approx-age
+    label: An entry dated only by age
+    period: "age 16"
+    narrative: This entry's period is an age, not a calendar date, and must still validate successfully.
+  - id: approx-range
+    label: An entry dated only by year range
+    period: "1999–2001"
+    narrative: This entry's period is a bare year range with no month precision, and must still validate successfully.
+`;
+    writeFileSync(join(root, "origins.yaml"), approximatePeriods);
+
+    expect(() => getOrigins(root)).not.toThrow();
+    const origins = getOrigins(root);
+    expect(origins.entries.map((entry) => entry.period)).toEqual([
+      "age 16",
+      "1999–2001",
+    ]);
   });
 });
 

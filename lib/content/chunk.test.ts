@@ -22,13 +22,21 @@ function _typeCheckModelsIsRequired(root: string): void {
 void _typeCheckModelsIsRequired;
 
 describe("getContentChunks", () => {
-  it("produces at least one chunk per real content source (profile, experience, project, skill, FAQ, meta)", () => {
+  it("produces at least one chunk per real content source (profile, experience, project, skill, FAQ, meta, origins)", () => {
     const root = makeFixtureRoot();
     try {
       const chunks = getContentChunks({ contentRoot: root, models: TEST_MODELS });
       const sources = new Set(chunks.map((c) => c.source));
       expect(sources).toEqual(
-        new Set(["profile", "experience", "project", "skill", "faq", "meta"]),
+        new Set([
+          "profile",
+          "experience",
+          "project",
+          "skill",
+          "faq",
+          "meta",
+          "origins",
+        ]),
       );
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -433,6 +441,112 @@ lessons: No-tech lesson.
       const chunks = getContentChunks({ contentRoot: root, models: TEST_MODELS }).filter((c) => c.source === "project");
       expect(chunks).toHaveLength(1);
       expect(chunks[0]?.anchor).toBe("#proj");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  // origins-earlier-career (JOS-115)
+  it("produces at least one chunk per origins entry, anchored to #origins", () => {
+    const root = makeFixtureRoot();
+    try {
+      const chunks = getContentChunks({
+        contentRoot: root,
+        models: TEST_MODELS,
+      }).filter((c) => c.source === "origins");
+      expect(chunks.length).toBeGreaterThanOrEqual(1);
+      expect(chunks.every((c) => c.anchor === "#origins")).toBe(true);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("names an origins entry's period in its own chunk text, so the era is determinable in isolation", () => {
+    const root = makeFixtureRoot();
+    try {
+      // Scoped to per-entry chunks, not the "origins-summary" overview
+      // chunk — that one carries the record's overall span instead of any
+      // single entry's period (see the dedicated test for it below).
+      const chunks = getContentChunks({
+        contentRoot: root,
+        models: TEST_MODELS,
+      }).filter((c) => c.source === "origins" && c.id !== "origins-summary");
+      expect(chunks.length).toBeGreaterThan(0);
+      for (const chunk of chunks) {
+        expect(chunk.text).toContain("age 16");
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("produces an origins-summary chunk carrying the record's overall span, so it is retrievable independent of any single entry's period", () => {
+    const root = makeFixtureRoot();
+    try {
+      const chunks = getContentChunks({
+        contentRoot: root,
+        models: TEST_MODELS,
+      }).filter((c) => c.id === "origins-summary");
+      expect(chunks).toHaveLength(1);
+      expect(chunks[0]!.text).toContain("1994 – 2006");
+      expect(chunks[0]!.anchor).toBe("#origins");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("still catches a thin origins entry against MIN_CHUNK_LENGTH — origins chunks have no generated framing to strip, so their full text is authored content", () => {
+    const root = makeFixtureRoot();
+    try {
+      const thinOrigins = `
+title: Origins
+period: "age 9 – age 9"
+summary: Test origins summary long enough to resemble a real formative-period record used only for testing.
+entries:
+  - id: thin-entry
+    label: X
+    period: age 9
+    narrative: Too short.
+`;
+      writeFileSync(join(root, "origins.yaml"), thinOrigins);
+
+      const chunks = getContentChunks({
+        contentRoot: root,
+        models: TEST_MODELS,
+      }).filter((c) => c.id === "origins-thin-entry");
+      expect(chunks).toHaveLength(1);
+      expect(chunks[0]!.text.trim().length).toBeLessThan(MIN_CHUNK_LENGTH);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("produces multiple origins chunks when the record has multiple entries, one per entry", () => {
+    const root = makeFixtureRoot();
+    try {
+      const multiEntryOrigins = `
+title: Origins
+period: "age 13 – age 17"
+summary: Test origins summary long enough to resemble a real formative-period record used only for testing.
+entries:
+  - id: origin-one
+    label: First origin entry
+    period: age 13
+    narrative: First fictional origins narrative, written at enough length to resemble real content used only for testing.
+  - id: origin-two
+    label: Second origin entry
+    period: age 17
+    narrative: Second fictional origins narrative, written at enough length to resemble real content used only for testing.
+`;
+      writeFileSync(join(root, "origins.yaml"), multiEntryOrigins);
+
+      const chunks = getContentChunks({
+        contentRoot: root,
+        models: TEST_MODELS,
+      }).filter((c) => c.source === "origins");
+      expect(chunks.length).toBeGreaterThanOrEqual(2);
+      expect(chunks.some((c) => c.text.includes("age 13"))).toBe(true);
+      expect(chunks.some((c) => c.text.includes("age 17"))).toBe(true);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

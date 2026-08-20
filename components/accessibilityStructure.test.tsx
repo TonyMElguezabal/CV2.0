@@ -13,8 +13,9 @@ import { ProjectsSection } from "./ProjectsSection";
 import { SiteHeader } from "./SiteHeader";
 import { AmbientSparkleLayer } from "./AmbientSparkleLayer";
 import { MotionProvider } from "./MotionProvider";
+import { OriginsSection } from "./OriginsSection";
 import type { ExperienceWithId, ProjectWithId } from "@/lib/content/read.ts";
-import type { Profile, Skill } from "@/lib/content/types.ts";
+import type { Profile, Skill, Origins } from "@/lib/content/types.ts";
 
 // jsdom has no IntersectionObserver implementation (same gap documented in
 // CareerTimeline.activeState.test.tsx) — this test only needs CareerTimeline
@@ -83,6 +84,21 @@ const FIXTURE_PROJECT: ProjectWithId = {
   outcome: "Fixture outcome.",
 };
 
+const FIXTURE_ORIGINS: Origins = {
+  title: "Origins",
+  period: "1994 – 2006",
+  summary: "Fixture origins summary.",
+  entries: [
+    {
+      id: "fixture-origin",
+      label: "Fixture origin entry",
+      period: "age 13",
+      narrative: "Fixture origin narrative.",
+      phase: "self-taught",
+    },
+  ],
+};
+
 afterEach(() => {
   cleanup();
 });
@@ -149,7 +165,10 @@ describe("Automated accessibility structure checks", () => {
         <SiteHeader brandName="Fixture Person" />
         <HeroLaptop terminalLines={["$ whoami", "fixture_person"]} />
         <AmbientSparkleLayer />
-        <CareerTimeline experiences={[FIXTURE_EXPERIENCE]} />
+        <CareerTimeline
+          experiences={[FIXTURE_EXPERIENCE]}
+          origins={FIXTURE_ORIGINS}
+        />
         <main id="main">
           <HeroFramer name="Fixture Person" positioning="Fixture Positioning" />
           <MotionProvider>
@@ -159,6 +178,7 @@ describe("Automated accessibility structure checks", () => {
               experiences={[FIXTURE_EXPERIENCE]}
             />
             <ProjectsSection projects={[FIXTURE_PROJECT]} />
+            <OriginsSection origins={FIXTURE_ORIGINS} />
             <ContactSection {...FIXTURE_CONTACT} />
           </MotionProvider>
         </main>
@@ -202,6 +222,9 @@ describe("Automated accessibility structure checks", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Projects", level: 2 })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Origins", level: 2 })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Contact", level: 2 })

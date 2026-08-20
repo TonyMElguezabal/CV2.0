@@ -176,7 +176,63 @@ integrity matter beyond rendering.
   `retrieve.ts`/`generate.ts` was deliberately left at 5 — "only tune what
   the evals show is needed, don't tune blind" — since at 86 chunks the
   crowding risk is a projection, not yet a measurement; re-evaluate once
-  JOS-115/117/118 land.
+  JOS-115/117/118 land. **Re-evaluated at JOS-115** (`origins-earlier-career`
+  design.md Decision 8) — raised to 7 after a live eval run found the
+  `origins-summary` chunk ranking #7, just outside `k=5`, crowded out by
+  generic FAQ/skill chunks that score broadly high against nearly any
+  career-shaped question. Re-evaluate again once JOS-117/118 land.
+- **The pre-résumé record (1994–2006) is a separate `origins` content
+  type, not `content/experience/*.yaml`** (`origins-earlier-career`,
+  JOS-115). Two independent constraints rule this out: `ExperienceSchema`
+  requires `leadership` and `projects[].metrics`, which can't be filled
+  truthfully for a teenage support job or an internship without inventing
+  claims the site's evidence-linking promise doesn't allow; and `CareerTimeline`'s
+  rail has no scroll containment (`md:overflow-visible`), so four more
+  experience files would mean four more rail nodes — see the rail-headroom
+  note below. `content/origins.yaml` holds `{ title, summary, period,
+  entries: [...] }` in **authored order, no sort** (unlike `getExperiences()`'s
+  `localeCompare` sort) — the material is a narrative arc, not a
+  chronological list, and `period` on each entry is a **display string**
+  (`"age 16"`, `"1999–2001"`), not `dateStringSchema` — the real precision
+  isn't known and forcing `YYYY-MM` would invite fabrication. `CareerTimeline`
+  takes both `experiences` (unchanged) and an optional `origins` prop,
+  mapped internally to a shared `TimelineEntry` view-model
+  (`components/timelineEntries.ts`'s `{ id, label, meta, accessibleName }`,
+  via `experienceToTimelineEntry()`/`originsToTimelineEntry()`) so the rail
+  renders one uniform shape without special-casing a non-experience node
+  inside the component whose observer/`aria-current` logic is guarded by
+  `oneScrollIndicator.test.tsx` — see design.md Decision 4.
+- **The rail's vertical headroom is thin and was already collision-prone
+  once** (`origins-earlier-career`, JOS-115 Task Group 12) — `CareerTimelineStyles.ts`'s
+  `timelineNavClass` centers on the viewport *below* `SiteHeader`
+  (`md:top-[calc(50%+3rem)]`, not a plain `top-1/2`) specifically because
+  at 8 nodes (721px measured rail height) the naive full-viewport centering
+  put the topmost node almost entirely behind the header at a 779px
+  viewport. That fix removes the collision at viewport heights ≥ 817px
+  (header height + rail height) but not below it — there is currently no
+  containment strategy (no max-height, no internal scroll) once the rail's
+  content genuinely exceeds the space available below the header. **The
+  next node added to this rail will very likely need one** — check the
+  live rail height against `header height (96px) + target viewport height`
+  before assuming a CSS offset alone will be enough a second time.
+- **Two editorial invariants govern all pre-résumé/origins content**
+  (`origins-earlier-career`, JOS-115 design.md Decisions 5–6) — check both
+  before adding to or editing `content/origins.yaml`. (1) **Legacy tooling
+  (DOS, Windows 95, Novell, Clipper, Corel Draw, Oracle 8i, HP-UX, ...)
+  stays narrative and never becomes a claimed current skill** — it must
+  never be added to `skills.yaml`, and origins entries must not feed the
+  skills surface; a current-capability list is exactly where decades-old
+  tooling actively subtracts (dilutes the cloud/AI signal, invites age
+  filtering). `skills.yaml`'s `evidence[]` is validated against known
+  chapter ids and origins ids are deliberately never added to that set, so
+  this is partly enforced by `validate.ts` already, not just convention.
+  (2) **No birth date anywhere in `/content`, and no current age is ever
+  stated** — the site may say "in technology since 1994" or "started at
+  13," both narrative claims the owner explicitly wants, but never a birth
+  year or a current age, which would be a machine-readable field ripe for
+  filtering. Publishing the span is an accepted, unavoidable trade-off
+  (a reader can derive an approximate birth year from age + year
+  arithmetic); publishing an explicit birth date or current age is not.
 - `lib/rag/eval-run.ts`'s `initCloudflareContextForScript()` is a **required
   prerequisite**, not incidental scaffolding: `loadIndex()` needs
   `getCloudflareContext()`, whose context is normally supplied by
@@ -192,6 +248,18 @@ integrity matter beyond rendering.
   moved the index behind the Assets binding; no change in between had
   actually run `eval:chat` end-to-end. Scoped entirely to this script —
   `retrieve.ts` and the production `/api/chat` route are unaffected.
+  **A second, related gotcha found running `origins-earlier-career`'s
+  eval (JOS-115)**: `getPlatformProxy()`'s ASSETS binding serves files from
+  `.open-next/assets/`, a build artifact distinct from `public/rag-index.json`
+  (the file `npm run build`'s `prebuild` chain actually refreshes).
+  `.open-next/assets/` is only regenerated by `opennextjs-cloudflare build`
+  (the first half of `npm run preview`) — plain `npm run build` does not
+  touch it. Running `eval:chat` after a content change without that step
+  silently evaluates against a stale index with no error, no warning, and
+  no indication anything is wrong short of noticing the answers don't
+  reflect the new content. **Any workflow that edits `/content` and then
+  runs `npm run eval:chat` must run `npx opennextjs-cloudflare build` (or
+  `npm run preview`'s build half) first.**
 - `lib/fonts.ts` — the site's typeface, loaded via `next/font/local` (not
   `next/font/google`: Google's typed API can't pin a specific width-axis
   value, only the full variable range or the default width — see
