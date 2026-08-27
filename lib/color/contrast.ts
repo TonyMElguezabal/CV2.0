@@ -37,3 +37,52 @@ export function contrastRatio(hexA: string, hexB: string): number {
   const darker = Math.min(lA, lB);
   return (lighter + 0.05) / (darker + 0.05);
 }
+
+// Simulates canvas 2D compositing of a translucent foreground colour over an
+// opaque background, so a rendered contrast can be checked before anything
+// is actually drawn. "source-over" is normal alpha blending; "lighter" is
+// additive (Porter-Duff "plus") compositing, matching
+// `ctx.globalCompositeOperation`. Shared by AmbientSparkleLayer's node pass
+// (lighter) and its link pass (source-over, deliberately not lighter) — see
+// ambient-constellation-links design.md Decision 3, where the two modes are
+// shown to produce materially different contrast against the same
+// background.
+export function compositeOverBackground(
+  foregroundHex: string,
+  backgroundHex: string,
+  alpha: number,
+  mode: "source-over" | "lighter" = "source-over"
+): [number, number, number] {
+  const [fr, fg, fb] = hexToRgb(foregroundHex);
+  const [br, bg, bb] = hexToRgb(backgroundHex);
+  if (mode === "lighter") {
+    return [
+      Math.min(255, fr * alpha + br),
+      Math.min(255, fg * alpha + bg),
+      Math.min(255, fb * alpha + bb),
+    ];
+  }
+  return [
+    fr * alpha + br * (1 - alpha),
+    fg * alpha + bg * (1 - alpha),
+    fb * alpha + bb * (1 - alpha),
+  ];
+}
+
+export function relativeLuminanceRgb(rgb: readonly [number, number, number]): number {
+  const [r, g, b] = rgb;
+  return (
+    0.2126 * srgbToLinear(r) + 0.7152 * srgbToLinear(g) + 0.0722 * srgbToLinear(b)
+  );
+}
+
+export function contrastRatioRgb(
+  rgbA: readonly [number, number, number],
+  rgbB: readonly [number, number, number]
+): number {
+  const lA = relativeLuminanceRgb(rgbA);
+  const lB = relativeLuminanceRgb(rgbB);
+  const lighter = Math.max(lA, lB);
+  const darker = Math.min(lA, lB);
+  return (lighter + 0.05) / (darker + 0.05);
+}

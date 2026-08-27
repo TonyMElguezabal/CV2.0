@@ -12,6 +12,7 @@ import {
 } from "./AmbientSparkleLayerStyles";
 import { heroLaptopAccentHex } from "./HeroShellStyles";
 import { hexToRgb } from "@/lib/color/contrast.ts";
+import { particleCountForArea } from "@/lib/particles/simulation.ts";
 import { ArrivalSequenceProvider } from "./ArrivalSequenceProvider";
 
 // Same fake mediaQueryList pattern as HeroLaptop.test.tsx/HeroFramer.test.tsx
@@ -50,15 +51,32 @@ function setPrefersReducedMotion(matches: boolean) {
 class FakeCanvasContext {
   calls: string[] = [];
   fillStyle = "";
-  globalCompositeOperation = "source-over";
+  strokeStyle = "";
+  lineWidth = 1;
+  private _globalCompositeOperation = "source-over";
+  get globalCompositeOperation() {
+    return this._globalCompositeOperation;
+  }
+  set globalCompositeOperation(value: string) {
+    this._globalCompositeOperation = value;
+    this.calls.push(`mode:${value}`);
+  }
   setTransform() {}
   clearRect() {
     this.calls.push("clearRect");
   }
+  arcCalls: Array<{ x: number; y: number; radius: number }> = [];
   beginPath() {}
-  arc() {}
+  moveTo() {}
+  lineTo() {}
+  arc(x: number, y: number, radius: number) {
+    this.arcCalls.push({ x, y, radius });
+  }
   fill() {
     this.calls.push(`fill:${this.fillStyle}`);
+  }
+  stroke() {
+    this.calls.push(`stroke:${this.strokeStyle}`);
   }
 }
 let fakeCtx: FakeCanvasContext;
@@ -231,6 +249,259 @@ describe("AmbientSparkleLayer — particle simulation (Task Group 2)", () => {
   });
 });
 
+describe("AmbientSparkleLayer — constellation links, two-pass draw (ambient-constellation-links Task Group 6)", () => {
+  it("draws links source-over, then nodes lighter, in that order", () => {
+    render(<AmbientSparkleLayer />);
+    const modeCalls = fakeCtx.calls.filter((c) => c.startsWith("mode:"));
+    const sourceOverIndex = modeCalls.indexOf("mode:source-over");
+    const lighterIndex = modeCalls.indexOf("mode:lighter");
+    expect(sourceOverIndex).toBeGreaterThanOrEqual(0);
+    expect(lighterIndex).toBeGreaterThanOrEqual(0);
+    expect(sourceOverIndex).toBeLessThan(lighterIndex);
+  });
+
+  it("strokes every link before filling any node", () => {
+    // All particles land at the same position (distance 0), which
+    // guarantees at least one link exists regardless of the random draw —
+    // avoids a flaky assertion that depends on particles happening to end
+    // up close enough by chance.
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+    render(<AmbientSparkleLayer />);
+    const strokeIndices = fakeCtx.calls
+      .map((c, i) => (c.startsWith("stroke:") ? i : -1))
+      .filter((i) => i >= 0);
+    const firstFillIndex = fakeCtx.calls.findIndex((c) =>
+      c.startsWith("fill:")
+    );
+    expect(strokeIndices.length).toBeGreaterThan(0);
+    expect(firstFillIndex).toBeGreaterThanOrEqual(0);
+    expect(Math.max(...strokeIndices)).toBeLessThan(firstFillIndex);
+  });
+
+  it("derives link stroke colour from the shared accent token, not a second hard-coded value", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+    render(<AmbientSparkleLayer />);
+    const [r, g, b] = hexToRgb(heroLaptopAccentHex);
+    const strokeCall = fakeCtx.calls.find((c) => c.startsWith("stroke:"));
+    expect(strokeCall).toBeDefined();
+    expect(strokeCall).toContain(`rgba(${r}, ${g}, ${b},`);
+  });
+
+  it("batches strokes by alpha bucket rather than issuing one stroke per link", () => {
+    // Every particle at the same position -> every pair has the same
+    // strength -> every link falls in the same alpha bucket. A batched
+    // renderer issues exactly one stroke() for that bucket regardless of
+    // how many individual links it contains; an unbatched one would issue
+    // one stroke() per link (dozens, for ~40+ particles all mutually
+    // linked).
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+    render(<AmbientSparkleLayer />);
+    const strokeCalls = fakeCtx.calls.filter((c) => c.startsWith("stroke:"));
+    expect(strokeCalls.length).toBeGreaterThan(0);
+    expect(strokeCalls.length).toBeLessThanOrEqual(16);
+  });
+
+  it("restores lighter compositing for nodes after the link pass, so the existing additive-glow assertion still holds", () => {
+    render(<AmbientSparkleLayer />);
+    expect(fakeCtx.globalCompositeOperation).toBe("lighter");
+  });
+});
+
+function setContainerSize(width: number, height: number) {
+  (
+    Element.prototype.getBoundingClientRect as ReturnType<typeof vi.fn>
+  ).mockReturnValue({
+    width,
+    height,
+    top: 0,
+    left: 0,
+    right: width,
+    bottom: height,
+    x: 0,
+    y: 0,
+    toJSON() {},
+  } as DOMRect);
+}
+
+describe("AmbientSparkleLayer — viewport-derived particle count and resize hysteresis (ambient-constellation-links Task Group 7)", () => {
+  it("derives the initial particle count from the measured container area, not a fixed constant", () => {
+    // beforeEach's default mock reports a 1200x800 container.
+    render(<AmbientSparkleLayer />);
+    const fillCount = fakeCtx.calls.filter((c) => c.startsWith("fill:")).length;
+    expect(fillCount).toBe(particleCountForArea(1200, 800));
+  });
+
+  // arc() receives pixel-space coordinates (particle.x * width), which
+  // legitimately change on resize even for an untouched particle, since the
+  // canvas itself is a different size. Positions are compared in normalized
+  // space (dividing back out the container size at each snapshot) so the
+  // assertion is about the underlying particle, not the render scale.
+  function normalized(
+    calls: Array<{ x: number; y: number; radius: number }>,
+    width: number,
+    height: number
+  ) {
+    return calls.map((p) => ({ x: p.x / width, y: p.y / height, radius: p.radius }));
+  }
+
+  it("leaves particle positions untouched across a resize that changes the derived count by less than the hysteresis threshold", () => {
+    render(<AmbientSparkleLayer />);
+    const before = normalized(fakeCtx.arcCalls.slice(), 1200, 800);
+    fakeCtx.arcCalls = [];
+
+    // 1200x800 -> 1200x850: a small area change, well under the ~15%
+    // hysteresis threshold on the derived particle count.
+    setContainerSize(1200, 850);
+    window.dispatchEvent(new Event("resize"));
+
+    const after = normalized(fakeCtx.arcCalls, 1200, 850);
+    expect(after.length).toBe(before.length);
+    after.forEach((p, i) => {
+      expect(p.x).toBeCloseTo(before[i]!.x, 10);
+      expect(p.y).toBeCloseTo(before[i]!.y, 10);
+      expect(p.radius).toBe(before[i]!.radius);
+    });
+  });
+
+  it("adjusts the field incrementally — growth adds particles without disturbing the ones that already exist", () => {
+    render(<AmbientSparkleLayer />);
+    const before = normalized(fakeCtx.arcCalls.slice(), 1200, 800);
+    fakeCtx.arcCalls = [];
+
+    // 1200x800 -> 2400x1600: area quadruples, well past the hysteresis
+    // threshold.
+    setContainerSize(2400, 1600);
+    window.dispatchEvent(new Event("resize"));
+
+    const after = normalized(fakeCtx.arcCalls, 2400, 1600);
+    expect(after.length).toBe(particleCountForArea(2400, 1600));
+    expect(after.length).toBeGreaterThan(before.length);
+    // The particles that existed before the resize keep their exact
+    // positions — growth is additive, not a full regeneration.
+    before.forEach((p, i) => {
+      expect(after[i]!.x).toBeCloseTo(p.x, 10);
+      expect(after[i]!.y).toBeCloseTo(p.y, 10);
+      expect(after[i]!.radius).toBe(p.radius);
+    });
+  });
+
+  it("adjusts the field incrementally — shrinkage removes particles without repositioning the ones that remain", () => {
+    setContainerSize(2400, 1600);
+    render(<AmbientSparkleLayer />);
+    const before = normalized(fakeCtx.arcCalls.slice(), 2400, 1600);
+    fakeCtx.arcCalls = [];
+
+    setContainerSize(1200, 800); // area quarters
+    window.dispatchEvent(new Event("resize"));
+
+    const after = normalized(fakeCtx.arcCalls, 1200, 800);
+    expect(after.length).toBe(particleCountForArea(1200, 800));
+    expect(after.length).toBeLessThan(before.length);
+    after.forEach((p, i) => {
+      expect(p.x).toBeCloseTo(before[i]!.x, 10);
+      expect(p.y).toBeCloseTo(before[i]!.y, 10);
+      expect(p.radius).toBe(before[i]!.radius);
+    });
+  });
+});
+
+function dispatchPointerMove(
+  clientX: number,
+  clientY: number,
+  pointerType: "mouse" | "touch" = "mouse"
+) {
+  window.dispatchEvent(
+    new PointerEvent("pointermove", { clientX, clientY, pointerType })
+  );
+}
+
+describe("AmbientSparkleLayer — pointer attraction (ambient-constellation-links Task Group 8)", () => {
+  it("registers a passive pointermove listener on window, never on the layer itself", () => {
+    const addSpy = vi.spyOn(window, "addEventListener");
+    render(<AmbientSparkleLayer />);
+    const call = addSpy.mock.calls.find(([type]) => type === "pointermove");
+    expect(call).toBeDefined();
+    expect(call![2]).toMatchObject({ passive: true });
+    // The layer keeps pointer-events-none regardless (existing assertion,
+    // re-affirmed here since this whole describe block is about how the
+    // layer tracks the pointer without ever receiving its events directly).
+    expect(ambientSparkleLayerClass).toMatch(/\bpointer-events-none\b/);
+  });
+
+  it("ignores non-mouse pointer types — a touch drag must not move the field", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.5); // stationary particle at (0.5, 0.5), vx=vy=0
+    render(<AmbientSparkleLayer />);
+    flushRaf(0); // establish the loop's time baseline (delta=0, a no-op)
+
+    dispatchPointerMove(700, 400, "touch"); // 100px right of the particle's (600, 400)
+    fakeCtx.arcCalls = [];
+    flushRaf(1000); // 1s later — plenty of time for attraction to show, if active
+
+    expect(fakeCtx.arcCalls[0]!.x).toBeCloseTo(600, 5);
+    expect(fakeCtx.arcCalls[0]!.y).toBeCloseTo(400, 5);
+  });
+
+  it("attracts toward a hovering mouse pointer, and releases on document pointerleave", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+    render(<AmbientSparkleLayer />);
+    flushRaf(0);
+
+    dispatchPointerMove(700, 400, "mouse");
+    fakeCtx.arcCalls = [];
+    flushRaf(1000);
+    const attractedX = fakeCtx.arcCalls[0]!.x;
+    expect(attractedX).toBeGreaterThan(600); // pulled toward the pointer
+
+    document.dispatchEvent(new PointerEvent("pointerleave"));
+    fakeCtx.arcCalls = [];
+    flushRaf(2000);
+    const releasedX = fakeCtx.arcCalls[0]!.x;
+    expect(releasedX).toBeLessThan(attractedX); // easing back, not held in place
+    expect(releasedX).toBeCloseTo(600, 0); // nearly fully released after 1s more
+  });
+
+  it("also releases on window blur", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+    render(<AmbientSparkleLayer />);
+    flushRaf(0);
+
+    dispatchPointerMove(700, 400, "mouse");
+    fakeCtx.arcCalls = [];
+    flushRaf(1000);
+    const attractedX = fakeCtx.arcCalls[0]!.x;
+
+    window.dispatchEvent(new Event("blur"));
+    fakeCtx.arcCalls = [];
+    flushRaf(2000);
+    expect(fakeCtx.arcCalls[0]!.x).toBeLessThan(attractedX);
+  });
+
+  it("registers no pointer listener at all under prefers-reduced-motion: reduce", () => {
+    setPrefersReducedMotion(true);
+    const windowAddSpy = vi.spyOn(window, "addEventListener");
+    const docAddSpy = vi.spyOn(document, "addEventListener");
+    render(<AmbientSparkleLayer />);
+
+    expect(
+      windowAddSpy.mock.calls.filter(([type]) => type === "pointermove")
+    ).toHaveLength(0);
+    expect(
+      windowAddSpy.mock.calls.filter(([type]) => type === "blur")
+    ).toHaveLength(0);
+    expect(
+      docAddSpy.mock.calls.filter(([type]) => type === "pointerleave")
+    ).toHaveLength(0);
+  });
+
+  it("includes links in the reduced-motion static frame, not particles alone", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.5); // guarantees at least one link
+    setPrefersReducedMotion(true);
+    render(<AmbientSparkleLayer />);
+    expect(fakeCtx.calls.some((c) => c.startsWith("stroke:"))).toBe(true);
+    expect(fakeCtx.calls.some((c) => c.startsWith("fill:"))).toBe(true);
+  });
+});
+
 describe("AmbientSparkleLayer — reduced motion (Task Group 3)", () => {
   it("draws exactly one static frame and never schedules an animation loop", () => {
     setPrefersReducedMotion(true);
@@ -327,6 +598,23 @@ describe("AmbientSparkleLayer — lifecycle (Task Group 4)", () => {
       expect.any(Function)
     );
     expect(disconnectSpy).toHaveBeenCalled();
+
+    // ambient-constellation-links Task Group 8: the pointer-tracking
+    // listeners added alongside pointer attraction must be released too —
+    // the "removes every listener it registered" guarantee stays literally
+    // true, not just true for the listeners that predate this change.
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      "pointermove",
+      expect.any(Function)
+    );
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      "blur",
+      expect.any(Function)
+    );
+    expect(docRemoveEventListenerSpy).toHaveBeenCalledWith(
+      "pointerleave",
+      expect.any(Function)
+    );
   });
 
   it("throttled is not the same as stopped: being merely unscheduled after a flush still counts as a live loop until an explicit stop condition fires", () => {

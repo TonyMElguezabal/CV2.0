@@ -299,10 +299,9 @@ integrity matter beyond rendering.
   `bg-background/90 backdrop-blur-sm` alone to stay legible over content
   scrolling beneath it; nothing replaces the removed rule.
 - `components/AmbientSparkleLayer.tsx` — the ambient particle field (JOS-110),
-  a single `<canvas>` with `globalCompositeOperation = "lighter"` for
-  additive glow, mounted in `app/(marketing)/layout.tsx` after `HeroLaptop`.
-  **Must stay above the hero laptop layer and its scrim, never inside it or
-  beneath it** — placing it under the
+  a single `<canvas>`, mounted in `app/(marketing)/layout.tsx` after
+  `HeroLaptop`. **Must stay above the hero laptop layer and its scrim, never
+  inside it or beneath it** — placing it under the
   scrim was measured to cut its visible contribution by ~80% (+221 → +43
   levels over the background), which is exactly the reasoning that got
   JOS-105's light ⑤ removed for being indistinguishable from nothing;
@@ -314,6 +313,55 @@ integrity matter beyond rendering.
   and on unmount — this is the first continuously-running surface on the
   site, so those three stop conditions are the substance of the component,
   not polish (`components/AmbientSparkleLayer.test.tsx`).
+  **Particles are joined by constellation links and lean toward the
+  pointer** (`ambient-constellation-links`, JOS-119). Two composite modes,
+  deliberately different, in a fixed order every frame: links draw first
+  with `globalCompositeOperation = "source-over"`, nodes draw second with
+  `"lighter"` (additive glow, unchanged from JOS-110). This is a correctness
+  constraint, not a style choice — additive compositing sums overlapping
+  links at a crossing, which measured 5.64:1 contrast against the page
+  background (above `--ink-meta`'s 5.23:1 text floor); `source-over` caps
+  any overlap at the accent's own 4.94:1, permanently below it, **regardless
+  of link density** — see `palette.test.tsx`'s
+  "ambient link contrast bound" suite and
+  `openspec/changes/ambient-constellation-links/design.md` Decision 3.
+  Link peak alpha (`LINK_PEAK_ALPHA = 0.75`, ceiling `0.79` at `--hair`
+  parity 3.47:1) and link geometry (`LINK_RADIUS_PX = 160`,
+  `linkedPairs()`) both live in `lib/particles/simulation.ts`, computed in
+  **pixel space** via an explicit `{ width, height }` projection — the
+  particles themselves stay normalized `[0,1)`, and a naive normalized-space
+  radius would describe an ellipse, not a circle, on a non-square viewport
+  (Decision 2). Above ~150 particles, `linkedPairs()` uses a uniform spatial
+  grid bucketed at `LINK_RADIUS_PX` (9-cell neighbourhood) rather than a
+  naive O(n²) scan — required to be pair-identical to the naive scan, which
+  `simulation.test.ts`'s randomized equivalence test enforces.
+  **`PARTICLE_COUNT` is no longer a fixed constant** — `particleCountForArea()`
+  derives the count from measured container area at a fixed density (target
+  mean-neighbour count = 5 at `LINK_RADIUS_PX`), clamped to `[40, 260]`. The
+  prior fixed `140` produced a ~10× density swing between the `sm` gate and
+  an ultrawide (22 mean neighbours vs. 2.3) — invisible with unconnected
+  dots, unmissable once linked; re-tune by changing the target
+  mean-neighbour count or the clamp range, not the count itself. A resize
+  under a 15% relative change in the derived count (`PARTICLE_COUNT_HYSTERESIS`)
+  is ignored entirely; above it, particles are appended or truncated —
+  **never regenerated** — so any particle that survives a resize keeps its
+  exact position (a full reseed would visibly teleport the whole field
+  during a window drag). Pointer attraction
+  (`stepParticles(particles, deltaSeconds, pointer?)`) is delta-time based
+  (`1 - Math.exp(-k * deltaSeconds)`, exactly frame-rate invariant, unlike
+  the naive per-frame reference this design rejected — see design.md
+  Decision 1) and bounded (`POINTER_MAX_DISPLACEMENT_PX = 24` within
+  `POINTER_INFLUENCE_RADIUS_PX = 220`, both starting points tuned by eye
+  per design.md's Open Questions, not derived). A `pointermove` listener on
+  `window` (never the layer — it keeps `pointer-events-none`) is filtered to
+  `pointerType === "mouse"` (a touch contact is a tap, not a hover) and
+  released on `pointerleave`/`blur`, easing back rather than snapping.
+  **Registered only when motion isn't reduced** — under
+  `prefers-reduced-motion: reduce`, no pointer listener is attached at all,
+  and the single static frame includes links. Measured live at three
+  viewports (`sm` gate, laptop, ultrawide): **75fps / 13.3ms average frame
+  time at every one**, ~3.3ms of margin under the 60fps budget — see
+  `openspec/changes/ambient-constellation-links/reports/2026-08-26-step-12-browser-verification.md`.
 - **Scroll-triggered content reveals** (JOS-111) — `components/useRevealOnScroll.ts`
   is the shared one-shot reveal hook (`IntersectionObserver` + a scroll-listener
   fallback, mirroring `CareerTimeline.tsx`'s own dual-trigger pattern):
