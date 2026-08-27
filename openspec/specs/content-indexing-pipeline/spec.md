@@ -64,6 +64,25 @@ The generated index SHALL contain chunks covering every facet of `/content` that
 - **WHEN** the content chunks are generated
 - **THEN** every chunk's text is long enough to carry retrievable meaning rather than a bare label or identifier list
 
+### Requirement: The index covers the origins record
+The generated index SHALL contain a chunk for every origins entry, so the retrieval corpus reaches the formative period rather than beginning at the earliest full career chapter. Each origins chunk SHALL carry its entry's period within its text, so a chunk retrieved in isolation is attributable to an era.
+
+#### Scenario: Origins entries are retrievable
+- **WHEN** the content chunks are generated
+- **THEN** each entry in the origins record contributes at least one chunk containing that entry's narrative
+
+#### Scenario: Origins chunks name their period
+- **WHEN** an origins chunk is generated
+- **THEN** its text names the entry's period, so the era it describes is determinable from the chunk alone
+
+#### Scenario: Origins chunks are distinguishable by source
+- **WHEN** the generated chunks are inspected
+- **THEN** origins chunks carry a source identifying them as origins content, distinct from career-chapter, project, skill, FAQ, profile and meta chunks
+
+#### Scenario: Origins chunks deep-link to the origins section
+- **WHEN** an answer cites an origins chunk
+- **THEN** the citation's anchor resolves to the origins section on the page
+
 ### Requirement: Self-describing content resolves model identifiers from code
 Chunks generated from the site-meta content source SHALL have the active LLM model identifier and the embedding model identifier injected from the application's model constants at index-build time, rather than read from the content file, so the corpus cannot describe a model the application no longer uses.
 

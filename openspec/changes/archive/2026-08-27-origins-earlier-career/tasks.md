@@ -129,7 +129,7 @@ non-trivial** — the legacy tooling they guard against now exists.
 
 ## 15. OpenSpec sync
 
-- [ ] 15.1 **After merge**, sync `specs/origins-narrative/` (new capability) and the `career-timeline-navigation`, `content-indexing-pipeline`, `chatbot-eval-and-ship-gate` deltas into `openspec/specs/`
-- [ ] 15.2 Verify `career-timeline-navigation`'s single-scroll-indicator guarantee survived the sync unmodified
-- [ ] 15.3 Archive this change (per CLAUDE.md §10 / `opsx:archive`)
-- [ ] 15.4 Comment on JOS-115 in Linear that origins has landed
+- [x] 15.1 **After merge**, sync `specs/origins-narrative/` (new capability) and the `career-timeline-navigation`, `content-indexing-pipeline`, `chatbot-eval-and-ship-gate` deltas into `openspec/specs/` — created `openspec/specs/origins-narrative/spec.md` (6 requirements); merged 2 MODIFIED + 1 ADDED requirement into `career-timeline-navigation`; 1 ADDED into `content-indexing-pipeline`; 2 ADDED into `chatbot-eval-and-ship-gate`. All four `openspec validate --strict` clean
+- [x] 15.2 Verify `career-timeline-navigation`'s single-scroll-indicator guarantee survived the sync unmodified — confirmed word-for-word intact in the synced spec text, plus `npx vitest run components/oneScrollIndicator.test.tsx components/CareerTimeline.test.tsx` — 12/12 pass
+- [x] 15.3 Archive this change (per CLAUDE.md §10 / `opsx:archive`)
+- [x] 15.4 Comment on JOS-115 in Linear that origins has landed — posted, confirming the OpenSpec sync and archive
