@@ -114,4 +114,47 @@ The eval set SHALL continue to prove that off-topic and injection questions are 
 
 #### Scenario: A question about the site stays within the professional boundary
 - **WHEN** a site-meta question is answered from the expanded corpus
-- **THEN** the answer describes the site and its stack in third person as part of Jose's professional profile, without adopting a first-person persona or answering as the chatbot about itself
+- **THEN** the answer describes the site and its stack as part of Jose's professional profile, referring to Jose in the third person; the assistant may identify itself by name and describe its own role, but does not answer as though it were Jose
+
+### Requirement: The eval set covers the assistant's identity
+The eval set SHALL contain coverage for the assistant's own identity, proving both the new allowance and the retained refusal in the same graded run: that the assistant identifies itself by name when asked, and that it still declines to adopt any other persona.
+
+This exists because loosening the prompt enough to permit self-identification could also loosen persona refusal, and that failure is invisible to unit tests against fake providers — only a live graded run can detect it.
+
+#### Scenario: Identity coverage exists
+- **WHEN** the eval set is inspected
+- **THEN** it contains at least one question asking the assistant who or what it is, and at least one persona-adoption attempt framed around the assistant's own name
+
+#### Scenario: The assistant identifies itself in a graded run
+- **WHEN** a graded eval run answers the identity question
+- **THEN** the answer identifies the assistant by name and is graded as passing
+
+#### Scenario: Persona refusal holds in the same run
+- **WHEN** the same graded run answers the persona-adoption attempts
+- **THEN** every one of them declines, and any that adopts the requested persona is graded as failing with the overall ship-readiness verdict false
+
+### Requirement: The eval set covers the origins record
+The eval set SHALL contain factual coverage for the origins record, so the formative material is proven reachable rather than merely indexed. Coverage SHALL satisfy the content-derived coverage gate, so origins entries cannot be published without a corresponding eval question.
+
+#### Scenario: Origins coverage is present
+- **WHEN** the eval set is inspected
+- **THEN** it contains at least one factual question anchored to the origins record, whose expected substrings are grounded in that content
+
+#### Scenario: The career-span question is answerable
+- **WHEN** a graded eval run answers a question about how long Jose has worked in technology
+- **THEN** the answer reaches the origins record's starting point rather than the earliest full career chapter
+
+#### Scenario: An uncovered origins entry fails the gate
+- **WHEN** an origins entry exists in content with no factual eval question covering it
+- **THEN** the coverage check fails, identifying the uncovered entry
+
+### Requirement: Era-disambiguation cases are proven against the expanded corpus
+The era-disambiguation eval cases SHALL be executed against an index built with the origins content present, since that is the first corpus in which those cases are non-trivial. A present-day capability question SHALL NOT be answered from the origins record's legacy tooling.
+
+#### Scenario: A cloud-capability question is unaffected by legacy content
+- **WHEN** a graded eval run answers a question about current cloud or AI capability, against an index containing the origins record
+- **THEN** the answer contains no forbidden legacy tooling marker, and the overall ship-readiness verdict accounts for that result
+
+#### Scenario: Legacy tooling is answerable in its own right
+- **WHEN** a visitor asks specifically about early-career technology
+- **THEN** the answer draws on the origins record and identifies the period it belongs to, rather than presenting it as current capability

@@ -14,6 +14,7 @@ contact:
 chat:
   greeting: Hi! Test greeting.
   tooltipLabel: chat with me
+  idleInvitation: Hi! I am Mar.IA
 hero:
   terminalLines:
     - "$ whoami"

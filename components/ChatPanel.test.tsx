@@ -439,6 +439,117 @@ describe("ChatPanel", () => {
   });
 });
 
+// chatbot-ui-restyle Task Group 4 — the panel's 3D bot render, ported
+// from the owner's mockup as a static asset (not inline base64) with its
+// saluting-arm animation. jsdom applies framer-motion's `initial`/`animate`
+// state synchronously as inline styles even without real animation
+// timing (see "ChatPanel reduced motion" below, which relies on the same
+// behaviour), so these assertions read `.style` directly rather than
+// waiting for any animation frame.
+// chatbot-ui-restyle Task Group 5 — the panel title stays task-oriented
+// ("Ask about Jose") rather than being replaced by the assistant's name;
+// the name is introduced in the greeting instead (design.md Decision 3).
+describe("ChatPanel identity", () => {
+  beforeEach(() => {
+    mockStreamChat.mockReset();
+    mockStreamChat.mockReturnValue(eventsOf([{ type: "done" }]));
+  });
+
+  it("keeps the panel title as 'Ask about Jose', not the assistant's name", () => {
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    const panel = screen.getByRole("region", { name: /ask about jose/i });
+    expect(panel).toHaveTextContent("Ask about Jose");
+  });
+
+  // The pronunciation-split construction itself (aria-hidden animated
+  // layer + sr-only complete spoken string) is covered by
+  // ChatGreetingText.test.tsx — this just confirms ChatPanel actually
+  // wires the greeting prop into that component rather than rendering it
+  // some other way.
+  it("renders the greeting via ChatGreetingText, with the assistant's name announced correctly", () => {
+    mockStreamChat.mockReturnValue(eventsOf([{ type: "done" }]));
+    render(
+      <ChatWidgetProvider>
+        <TestTrigger />
+        <ChatPanel
+          starterQuestions={STARTER_QUESTIONS}
+          contact={TEST_CONTACT}
+          greeting="Hi! I'm Mar.IA, nice to meet you."
+        />
+      </ChatWidgetProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    const greeting = screen.getByTestId("chat-greeting");
+    expect(greeting.querySelector('[aria-hidden="true"]')).not.toBeNull();
+    expect(greeting.querySelector(".sr-only")?.textContent).toBe(
+      "Hi! I'm Maria, nice to meet you.",
+    );
+  });
+});
+
+describe("ChatPanel bot artwork", () => {
+  beforeEach(() => {
+    mockStreamChat.mockReset();
+    mockStreamChat.mockReturnValue(eventsOf([{ type: "done" }]));
+  });
+
+  it("renders the bot body as a static asset, not an inline data: URI", () => {
+    setPrefersReducedMotion(false);
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    const body = screen.getByTestId("chat-bot-body");
+    expect(body).toHaveAttribute("src", expect.stringMatching(/^\//));
+    expect(body.getAttribute("src")).not.toMatch(/^data:/);
+  });
+
+  // The arm's rotation is a keyframe array driven over real time by
+  // framer-motion; jsdom advances no animation frames, so both motion
+  // states legitimately render the same rotate:0 first frame ("none") —
+  // there is nothing at t=0 to distinguish them by inline style, the same
+  // limitation documented elsewhere for CSS/motion assertions in this
+  // codebase (e.g. ImpactSurfaceStyles.ts's className-pinning tests).
+  // `data-salute` is our own conditional prop-passing logic, not
+  // framer-motion's runtime state, so it is what these two tests actually
+  // exercise: whether the looping keyframe animation is wired up at all.
+  it("wires up the looping salute animation under default motion settings", () => {
+    setPrefersReducedMotion(false);
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    const arm = screen.getByTestId("chat-bot-arm");
+    expect(arm).toHaveAttribute("data-salute", "on");
+  });
+
+  it("renders the arm at rest with the salute animation disabled under prefers-reduced-motion", () => {
+    setPrefersReducedMotion(true);
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    const arm = screen.getByTestId("chat-bot-arm");
+    expect(arm).toHaveAttribute("data-salute", "off");
+    expect(arm.style.transform).not.toContain("rotate(115deg)");
+  });
+
+  it("hides both bot layers from assistive technology", () => {
+    setPrefersReducedMotion(false);
+    renderWidget();
+    fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
+
+    expect(screen.getByTestId("chat-bot-body")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+    expect(screen.getByTestId("chat-bot-arm")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+  });
+});
+
 describe("ChatPanel reduced motion", () => {
   beforeEach(() => {
     mockStreamChat.mockReset();
@@ -464,23 +575,32 @@ describe("ChatPanel reduced motion", () => {
     expect(panel.style.transform).not.toContain("px");
   });
 
-  it("applies a y-offset to the greeting's entrance under default motion settings", () => {
+  // The greeting's fade+slide paragraph-level entrance was replaced by a
+  // letter-by-letter typing animation (chatbot-ui-restyle Task Group 8,
+  // chat-widget-entry-point's MODIFIED "Panel shows an animated greeting
+  // on open"). The per-character construction itself is covered by
+  // ChatGreetingText.test.tsx; these two just confirm ChatPanel threads
+  // its own `useReducedMotion()` result into that component correctly.
+  it("starts the greeting's first character unrevealed under default motion settings", () => {
     setPrefersReducedMotion(false);
     renderWidget();
     fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
 
     const greeting = screen.getByTestId("chat-greeting");
-    expect(greeting.style.transform).toContain("px");
+    const hiddenLayer = greeting.querySelector('[aria-hidden="true"]');
+    const firstChar = hiddenLayer?.firstElementChild as HTMLElement;
+    expect(firstChar.style.opacity).toBe("0");
   });
 
-  it("renders the greeting with no motion (final state) under prefers-reduced-motion", () => {
+  it("renders the greeting's characters already fully revealed under prefers-reduced-motion", () => {
     setPrefersReducedMotion(true);
     renderWidget();
     fireEvent.click(screen.getByRole("button", { name: /ask about jose/i }));
 
     const greeting = screen.getByTestId("chat-greeting");
-    expect(greeting.style.transform).not.toContain("px");
-    expect(greeting.style.opacity).toBe("1");
+    const hiddenLayer = greeting.querySelector('[aria-hidden="true"]');
+    const firstChar = hiddenLayer?.firstElementChild as HTMLElement;
+    expect(firstChar.style.opacity).toBe("1");
   });
 
   it("renders the thinking indicator's dots in a static form with no looping animation under prefers-reduced-motion", async () => {

@@ -38,6 +38,7 @@ export const ProfileContactSchema = z.object({
 export const ChatSchema = z.object({
   greeting: z.string(),
   tooltipLabel: z.string(),
+  idleInvitation: z.string(),
 });
 
 export const HeroSchema = z.object({

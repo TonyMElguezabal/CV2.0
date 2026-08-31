@@ -19,7 +19,7 @@ two different places — it's one evidence base, reused.
 
 ## How The Chatbot Works
 
-The chat assistant on this page is itself a working example of the
+Mar.IA, the chat assistant on this page, is itself a working example of the
 kind of AI-powered delivery Jose has led elsewhere: at build time, the
 site's content is split into semantic chunks — one per career-chapter
 section, project, skill, and FAQ pair — and each chunk is embedded

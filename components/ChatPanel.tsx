@@ -6,6 +6,7 @@ import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 import { MotionProvider } from "./MotionProvider";
 import { useChatWidget } from "./ChatWidgetContext";
 import { streamChat, ChatRequestError } from "../lib/chat/streamChat.ts";
+import { ChatGreetingText } from "./ChatGreetingText";
 import { track } from "../lib/analytics/track.ts";
 import type { Citation } from "../lib/rag/generate.ts";
 import type { ProfileContact } from "../lib/content/types.ts";
@@ -31,6 +32,13 @@ import {
   chatThinkingDotsRowClass,
   chatThinkingDotClass,
   chatThinkingDotAnimatedClass,
+  chatBotWrapClass,
+  chatBotBodyImageClass,
+  chatBotArmImageClass,
+  BOT_SALUTE_DURATION_SECONDS,
+  BOT_SALUTE_ROTATE_KEYFRAMES,
+  BOT_SALUTE_TIMES,
+  BOT_ARM_TRANSFORM_ORIGIN,
 } from "./ChatWidgetStyles";
 
 interface DisplayMessage {
@@ -70,11 +78,6 @@ export function ChatPanel({ starterQuestions, contact, greeting }: ChatPanelProp
   const panelInitial = prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 };
   const panelAnimate = prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 };
   const panelExit = prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 };
-  // Unlike the hero's reduced-motion state (a fade-only alternative), this
-  // capability's spec requires "no fade or slide animation" at all under
-  // reduced motion — initial already equals animate, so no transition runs.
-  const greetingInitial = prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 8 };
-  const greetingAnimate = { opacity: 1, y: 0 };
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isAwaitingResponse, setIsAwaitingResponse] = useState(false);
@@ -287,15 +290,48 @@ export function ChatPanel({ starterQuestions, contact, greeting }: ChatPanelProp
             </div>
 
             {messages.length === 0 && (
-              <m.p
-                className={chatGreetingClass}
-                data-testid="chat-greeting"
-                initial={greetingInitial}
-                animate={greetingAnimate}
-                transition={{ duration: 0.3 }}
-              >
-                {greeting}
-              </m.p>
+              <>
+                <div className={chatBotWrapClass} aria-hidden="true">
+                  <img
+                    src="/chat-bot-body-240.png"
+                    alt=""
+                    aria-hidden="true"
+                    data-testid="chat-bot-body"
+                    className={chatBotBodyImageClass}
+                  />
+                  <m.img
+                    src="/chat-bot-arm-240.png"
+                    alt=""
+                    aria-hidden="true"
+                    data-testid="chat-bot-arm"
+                    className={chatBotArmImageClass}
+                    style={{ transformOrigin: BOT_ARM_TRANSFORM_ORIGIN }}
+                    data-salute={prefersReducedMotion ? "off" : "on"}
+                    initial={{ rotate: 0 }}
+                    animate={
+                      prefersReducedMotion
+                        ? { rotate: 0 }
+                        : { rotate: BOT_SALUTE_ROTATE_KEYFRAMES }
+                    }
+                    transition={
+                      prefersReducedMotion
+                        ? undefined
+                        : {
+                            duration: BOT_SALUTE_DURATION_SECONDS,
+                            times: BOT_SALUTE_TIMES,
+                            ease: "easeInOut",
+                            repeat: Infinity,
+                          }
+                    }
+                  />
+                </div>
+                <p className={chatGreetingClass} data-testid="chat-greeting">
+                  <ChatGreetingText
+                    text={greeting}
+                    prefersReducedMotion={prefersReducedMotion}
+                  />
+                </p>
+              </>
             )}
 
             {messages.length === 0 && starterQuestions.length > 0 && (

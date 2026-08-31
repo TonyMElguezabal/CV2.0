@@ -151,6 +151,46 @@ describe("ambient link contrast bound (ambient-constellation-links design.md Dec
   });
 });
 
+describe("chat widget conforms to the bounded palette (chatbot-ui-restyle)", () => {
+  // Prior to this change ChatWidgetStyles.ts was the site's one surface
+  // still drawing from raw zinc-* Tailwind classes rather than the bounded
+  // palette tokens (site-visual-language: "the site's foreground colours
+  // ... resolve to the defined token set"). This is a conformance fix to
+  // an already-accepted requirement, not new behaviour.
+  const source = readFileSync(
+    join(process.cwd(), "components", "ChatWidgetStyles.ts"),
+    "utf8"
+  );
+
+  // Scoped to text-colour utilities, not every zinc-* usage: the site's
+  // bounded-palette requirement (site-visual-language) governs foreground
+  // tints, and HeroShellStyles.ts's laptop-bezel backgrounds/borders are
+  // already-accepted zinc usage outside that scope — there is no
+  // equivalent "panel background" token to move a background to. Two
+  // deliberate, documented exceptions are excluded before checking: (1)
+  // the visitor-message bubble's dark text on its light chip
+  // (`text-zinc-900` on `bg-zinc-200`) — inverted text on a light surface,
+  // not the dark page/panel background the --ink family is calibrated
+  // against; (2) the tooltip block (`chatTooltipClass`) — the owner asked
+  // to keep the existing hover/focus tooltip, emoji and all, exactly as-is
+  // (chatbot-ui-restyle design.md Decision 2's correction), so it is
+  // excluded from this pass entirely rather than partially recoloured.
+  it("no text-color utility for text on the dark page/panel surface resolves to a raw zinc shade", () => {
+    const withoutExceptions = source
+      .replace(/export const chatTooltipClass =[\s\S]*?;/, "")
+      .replace(/\btext-zinc-900\b/g, "");
+    expect(withoutExceptions).not.toMatch(/\btext-zinc-\d{2,3}\b/);
+  });
+
+  it("the chat input's border resolves to --accent, not the prior failing zinc-700 (1.70:1 -> 4.42:1)", () => {
+    const match = source.match(/export const chatInputClass = `([^`]*)`/);
+    expect(match).not.toBeNull();
+    const inputClass = match![1];
+    expect(inputClass).toMatch(/\bborder-accent\b/);
+    expect(inputClass).not.toMatch(/\bborder-zinc-700\b/);
+  });
+});
+
 describe("the hairline tint never carries text", () => {
   const styleFiles = [
     "HeroShellStyles.ts",
@@ -160,6 +200,7 @@ describe("the hairline tint never carries text", () => {
     "ContactSectionStyles.ts",
     "CareerTimelineStyles.ts",
     "SiteFooterStyles.ts",
+    "ChatWidgetStyles.ts",
   ];
 
   it.each(styleFiles)("%s: no text-color utility resolves to --hair", (file) => {
