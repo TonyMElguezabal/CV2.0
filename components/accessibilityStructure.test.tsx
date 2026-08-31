@@ -139,6 +139,7 @@ describe("Automated accessibility structure checks", () => {
           }}
           tooltipLabel="chat with me"
           greeting="Hi! Fixture greeting."
+          idleInvitation="Hi! I am Mar.IA"
         />
       </ChatWidgetProvider>
     );
@@ -190,6 +191,7 @@ describe("Automated accessibility structure checks", () => {
           }}
           tooltipLabel="chat with me"
           greeting="Hi! Fixture greeting."
+          idleInvitation="Hi! I am Mar.IA"
         />
       </ChatWidgetProvider>
     );

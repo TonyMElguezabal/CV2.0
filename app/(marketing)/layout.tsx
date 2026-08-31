@@ -95,6 +95,7 @@ export default function RootLayout({
               contact={contact}
               tooltipLabel={chat.tooltipLabel}
               greeting={chat.greeting}
+              idleInvitation={chat.idleInvitation}
             />
           </ChatWidgetProvider>
         </ArrivalSequenceProvider>

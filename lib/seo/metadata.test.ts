@@ -20,6 +20,7 @@ const FIXTURE_PROFILE: Profile = {
   chat: {
     greeting: "Hi! Fixture greeting.",
     tooltipLabel: "chat with me",
+    idleInvitation: "Hi! I am Mar.IA",
   },
   hero: {
     terminalLines: ["$ whoami", "fixture_person"],

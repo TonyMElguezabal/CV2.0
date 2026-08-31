@@ -78,7 +78,7 @@ developer platform, using Oracle Cloud Infrastructure's AI/LLM
 services. At Envato/Placeit, he led delivery of an AI-powered
 background-removal tool, coordinating the training and integration of
 a machine-learning image-segmentation model. This site's own chat
-assistant is itself a retrieval-augmented generation system he built —
+assistant, Mar.IA, is itself a retrieval-augmented generation system he built —
 content is chunked and embedded into a retrieval index at build time,
 and a language model generates answers grounded only in the chunks
 retrieved for a given question.

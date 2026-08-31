@@ -417,6 +417,113 @@ integrity matter beyond rendering.
   removal (JOS-113) at the time this sequence was built, so treating it as
   already absent avoided writing a choreography step for a component known
   to be going away.
+- **The chat widget is restyled and named Mar.IA** (`chatbot-ui-restyle`,
+  JOS-121). Before this change, `ChatWidgetStyles.ts` was the site's one
+  surface still drawing from raw `zinc-*` Tailwind classes rather than the
+  bounded palette tokens — a conformance gap against an already-accepted
+  requirement (`site-visual-language`'s "foreground colours resolve to the
+  defined token set"), not a new one. Text-colour utilities across the
+  widget now resolve to `--ink`/`--ink-body`/`--ink-meta`, with two
+  documented exceptions carved out in `palette.test.tsx`: the visitor
+  message bubble's `text-zinc-900` (inverted dark-on-light chip text, not
+  on the dark surface `--ink` is calibrated against) and the entire
+  `chatTooltipClass` block (the owner asked to keep the existing
+  hover/focus tooltip — emoji and all — exactly as-is; an earlier draft of
+  this change removed the `🤖` on "one robot, not two" reasoning and was
+  corrected). The chat input's border moved from a failing `zinc-700`
+  (1.70:1 against the panel, below the WCAG 1.4.11 non-text 3:1 floor) to
+  `--accent` (4.42:1, confirmed by live measurement in Task Group 13's
+  browser verification, not just computed).
+  - **The trigger is icon-only — the 3D bot render on a filled `--accent`
+    disc — with its accessible name preserved via an explicit
+    `aria-label="Ask about Jose"`**, since removing the visible text
+    removes the button's implicit accessible name too (WCAG 4.1.2). The
+    bot artwork ships from `/public` (`chat-bot-body-112.png`,
+    `chat-bot-body-240.png`, `chat-bot-arm-240.png`) as `<img>` elements,
+    never inlined as base64 — the owner's source mockup embeds the same
+    artwork as ~181 KB of inline data URIs, which would have entered the
+    JS bundle directly; served as static assets it doesn't. The panel bot
+    composes two stacked layers (body + animated arm) reusing the
+    mockup's `bot-salute` keyframe values — ported as a framer-motion
+    keyframe/`times` array in `ChatWidgetStyles.ts`
+    (`BOT_SALUTE_ROTATE_KEYFRAMES`/`BOT_SALUTE_TIMES`), not a literal CSS
+    `@keyframes` block, since this codebase has no existing mechanism for
+    declaring raw CSS keyframes — every other animated surface here uses
+    Tailwind's built-ins or framer-motion's `animate` prop instead.
+    **`getAnimations()` returns `[]` for this animation** — it's expected,
+    not a bug: framer-motion drives a keyframe-array `animate` via
+    requestAnimationFrame + inline style, not the native Web Animations
+    API. Confirming it's actually running live requires sampling
+    `getComputedStyle(...).transform` several times in one in-page loop;
+    two samples taken via separate tool round-trips can coincidentally
+    land in the same phase of the repeating 4.5s cycle and read as frozen
+    when it isn't (found live in Task Group 13).
+  - **The assistant is named Mar.IA — a defined role, not an adopted
+    persona.** `lib/rag/generate.ts`'s `SYSTEM_PROMPT` permits
+    self-identification ("If asked who or what you are, identify yourself
+    as Mar.IA... this is your defined role, not a persona you are
+    adopting") while the existing persona-refusal clause was strengthened,
+    not loosened, alongside it ("any other persona (including a request
+    to speak as Jose himself)"). This distinction is the one a future
+    prompt edit could erase without any test failing — the live eval gate
+    (`lib/rag/eval-set.ts`'s `factual-22`/`injection-8`) is what actually
+    catches a regression here, not unit tests against fake providers.
+    Content self-description was updated to match: `content/meta.md`'s
+    "How The Chatbot Works" section and one line in `content/faq.md`
+    (specifically the sentence about *this site's own* assistant, not the
+    other RAG systems Jose built for employers, which stay unchanged)
+    both name Mar.IA now, so identity questions retrieve grounded content
+    rather than relying on the prompt alone.
+  - **Every rendering of "Mar.IA" pairs a styled `aria-hidden` form with a
+    pronounceable `sr-only` sibling** ("Maria" — the period in "Mar.IA" is
+    otherwise read literally as "dot" by screen readers).
+    `components/assistantName.ts` holds the two string constants and a
+    `toSpokenForm()` derivation function; `components/AssistantNameText.tsx`
+    is the reusable split-render component for standalone strings (the
+    idle bubble). **The greeting does not use `AssistantNameText`** —
+    `components/ChatGreetingText.tsx` has its own construction, because
+    the greeting also needs the letter-by-letter typing effect. It follows
+    `RevealHeading`'s *technique* (full text present in the DOM
+    immediately, only per-character opacity animated — never progressive
+    insertion) but deliberately **not** `RevealHeading`'s accessible-name
+    construction: `RevealHeading` supplies the real string via `aria-label`
+    on the heading element itself, which works because a heading supports
+    naming from author; the greeting renders inside a `<p>` (a generic
+    role), where `aria-label` is unreliably announced across AT
+    combinations. `ChatGreetingText` uses the `aria-hidden` + `sr-only`
+    pattern instead, with `assistantName.ts`'s `toSpokenForm()` deriving
+    the sr-only layer's spoken form so "Mar.IA" is correctly pronounced
+    even inside a full sentence. **Do not "simplify" this to match
+    `RevealHeading` for consistency** — that would silently break the
+    name's pronunciation. `RevealHeading.tsx` itself is untouched by this
+    change. Per-character timing is its own, shorter constants
+    (`CHAT_GREETING_CHAR_STAGGER_SECONDS`/`CHAT_GREETING_CHAR_FADE_SECONDS`
+    in `ChatWidgetStyles.ts`), not `RevealHeading`'s `pace.duration`/
+    `REVEAL_HEADING_STAGGER_SECONDS` — a 1.4s per-character fade is tuned
+    for a short heading's slow cascading reveal, not a multi-sentence
+    typewriter simulation.
+  - **The idle invitation bubble (`components/useIdleInvitation.ts`)
+    persists its "seen" flag in `sessionStorage`** — a deliberate,
+    documented departure from `lib/session.ts`'s in-memory-only
+    convention. That convention is grounded in PRD §9's privacy
+    constraint; a "bubble already seen" boolean carries no personal data
+    and is never transmitted, so the rationale behind the convention
+    doesn't apply here, but the departure is real and intentional, not an
+    oversight — don't "fix" it back to in-memory-only without checking
+    this note first, since that would silently break the
+    reset-on-next-visit requirement. Visibility handling
+    (`document.visibilityState` + a `visibilitychange` listener, pausing
+    the pending timer while hidden) matches `AmbientSparkleLayer.tsx`'s
+    established pattern rather than `document.hidden`, for consistency
+    with the one other continuously-scheduled surface in this codebase.
+    Each appearance re-arms the next one immediately on show, independent
+    of dismiss — the bubble keeps its cadence whether or not the visitor
+    dismisses an individual appearance.
+  - **`docs/design/jos-121-chatbot-ui/` holds the only surviving copies**
+    of the owner's source mockup, screenshots, and extracted bot artwork —
+    the Linear attachments' signed URLs expired before this change
+    landed. Do not delete this directory without confirming the assets
+    are reproduced elsewhere first.
 
 **Stack choices worth knowing before changing them:**
 - Framer Motion was selected over GSAP ScrollTrigger via a comparative spike
