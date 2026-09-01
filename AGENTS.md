@@ -362,6 +362,44 @@ integrity matter beyond rendering.
   viewports (`sm` gate, laptop, ultrawide): **75fps / 13.3ms average frame
   time at every one**, ~3.3ms of margin under the 60fps budget — see
   `openspec/changes/ambient-constellation-links/reports/2026-08-26-step-12-browser-verification.md`.
+- **The hero laptop and the ambient layer render at every viewport width,
+  not just `sm` and above** (`mobile-motion-parity`, JOS-122). Both layers
+  used to carry a `hidden sm:*` gate (`HeroShellStyles.ts`'s
+  `heroLaptopLayerClass`, `AmbientSparkleLayerStyles.ts`'s
+  `ambientSparkleLayerClass`) that collapsed them to nothing below the
+  640px breakpoint — a deliberate mobile-perf tradeoff at the time each was
+  built. **That tradeoff was reversed on the premise that current mobile
+  hardware can sustain both**, and the gates were removed outright — **do
+  not reinstate either gate as a reflexive performance fix**; if a real
+  mobile perf problem surfaces later, address it with the existing
+  viewport-derived levers already in place (`particleCountForArea`'s
+  `[40, 260]` clamp, or thinning the lighting rig per
+  `hero-laptop-cinematic-lighting`'s Open Question 3) before reaching for
+  a blanket re-gate. Two things worth knowing before touching either layer
+  again:
+  - **`heroLaptopSceneClass`'s base `-mr-2 -mb-3` negative-margin offset is
+    load-bearing composition, not decoration.** It crops the laptop against
+    the viewport edge at every width (verified live at ~500×701: 22px
+    inset from the layer's right edge, 29px cropped past the viewport
+    bottom) so the laptop reads as an off-axis, partially-cropped
+    background object rather than a small centered thumbnail — the exact
+    failure mode this offset exists to prevent. A future editor removing
+    it would silently reintroduce that failure at narrow widths.
+  - **`AmbientSparkleLayer.tsx`'s `isGatedOff()` (the `width === 0 ||
+    height === 0` check before starting the `requestAnimationFrame` loop)
+    survives with a rewritten rationale, not as dead code** — it used to
+    describe the (removed) CSS breakpoint gate; now it's a standalone
+    zero-size-container guard, legitimate on its own merits regardless of
+    viewport (mid-mount races, future layout changes). Do not delete it as
+    unreachable.
+  - **The `100vh`/address-bar-collapse question (`heroWrapperClass`'s
+    `min-h-screen`, plus the two `fixed inset-0` layers) was evaluated and
+    left unchanged.** This session's browser-automation environment has no
+    real collapsing mobile address bar to trigger the effect against, so
+    the question was not resolved by live-device evidence either way — it
+    remains open, not silently closed. If a real mobile device later shows
+    a visible resize jump during hero scroll, that is the trigger to
+    switch to `dvh`/`svh`, not a reason to assume it already happened here.
 - **Scroll-triggered content reveals** (JOS-111) — `components/useRevealOnScroll.ts`
   is the shared one-shot reveal hook (`IntersectionObserver` + a scroll-listener
   fallback, mirroring `CareerTimeline.tsx`'s own dual-trigger pattern):

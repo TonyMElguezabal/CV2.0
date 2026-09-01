@@ -103,14 +103,15 @@ describe("HeroLaptop", () => {
     expect(screen.getByTestId("hero-laptop-lid-accent")).toBeInTheDocument();
   });
 
-  it("is simplified away below the sm breakpoint (hidden on small viewports, shown at sm and up)", () => {
+  it("renders at every viewport width, not gated to sm and up (mobile-motion-parity)", () => {
     setPrefersReducedMotion(false);
     render(<HeroLaptop terminalLines={terminalLines} />);
 
     const layer = screen.getByTestId("hero-laptop-layer");
-    expect(layer.className.split(/\s+/)).toEqual(
-      expect.arrayContaining(["hidden", "sm:flex"])
-    );
+    const layerClasses = layer.className.split(/\s+/);
+    expect(layerClasses).not.toContain("hidden");
+    expect(layerClasses).not.toContain("sm:flex");
+    expect(layerClasses).toContain("flex");
   });
 
   it("renders the lid as two distinct faces (screen and outer), each hiding its backface", () => {
@@ -296,10 +297,28 @@ describe("HeroLaptop", () => {
     expect(layerClasses).toEqual(
       expect.arrayContaining(["items-end", "justify-end"])
     );
-    // Mobile gating (AC: "Small viewports are unaffected") is unchanged.
-    expect(layerClasses).toEqual(
-      expect.arrayContaining(["hidden", "sm:flex"])
+    // mobile-motion-parity: the off-axis cropped framing now applies at
+    // every viewport width (hero-signature-motion's "Small viewports
+    // receive the same treatment" scenario) — the layer is no longer
+    // gated below sm.
+    expect(layerClasses).not.toContain("hidden");
+  });
+
+  it("crops the scene at every viewport width via a base bleed offset, not only sm+ (mobile-motion-parity Decision 2)", () => {
+    setPrefersReducedMotion(false);
+    render(<HeroLaptop terminalLines={terminalLines} />);
+
+    const scene = screen.getByTestId("hero-laptop-scene");
+    const sceneClasses = scene.className.split(/\s+/);
+    // A fully-contained, uncropped laptop is exactly the "small centered
+    // thumbnail" read the off-axis framing exists to prevent — this
+    // asserts *some* unprefixed negative-margin offset exists alongside
+    // the sm+ one, not a specific tuned value (that is Task Group 7's,
+    // against a rendered narrow viewport).
+    const hasBaseNegativeMargin = sceneClasses.some(
+      (cls) => /^-m[rb]-\d/.test(cls),
     );
+    expect(hasBaseNegativeMargin).toBe(true);
   });
 
   it("paints the scrim on top of the lit scene, not behind it, so it actually dims the laptop's own lit surfaces for text contrast", () => {

@@ -629,12 +629,19 @@ describe("AmbientSparkleLayer — lifecycle (Task Group 4)", () => {
 });
 
 describe("AmbientSparkleLayer — viewport gating (Task Group 5)", () => {
-  it("is gated to sm and up via the same hidden sm:block class the hero laptop uses", () => {
-    expect(ambientSparkleLayerClass).toContain("hidden");
-    expect(ambientSparkleLayerClass).toContain("sm:block");
+  it("renders at every viewport width, not gated to sm and up (mobile-motion-parity)", () => {
+    expect(ambientSparkleLayerClass).not.toContain("hidden");
+    expect(ambientSparkleLayerClass).not.toContain("sm:block");
+    expect(ambientSparkleLayerClass).toContain("block");
   });
 
-  it("starts no loop when its container reports zero size (the hidden sm:block collapsed state)", () => {
+  // Not a gate test despite living in this describe block — this is a
+  // robustness guard against a zero-size container that stays correct
+  // and valuable regardless of *why* the container might measure zero
+  // (e.g. mid-mount, or a future layout change), even though the
+  // `hidden sm:block` collapse that originally motivated writing it no
+  // longer exists (mobile-motion-parity design.md Decision 4).
+  it("starts no loop when its container reports zero size", () => {
     (Element.prototype.getBoundingClientRect as ReturnType<typeof vi.fn>).mockReturnValue({
       width: 0,
       height: 0,

@@ -4,11 +4,16 @@
 // openspec/changes/ambient-sparkle-layer). `-z-10` matches
 // `heroLaptopLayerClass`/`gridOverlayClass`'s own convention: negative
 // z-index guarantees normal-flow (auto z-index) page content always paints
-// above it, regardless of DOM order. `hidden sm:block` mirrors the hero
-// laptop's own `hidden sm:flex` gate (design.md Decision 5) — same
-// constrained-device and readability reasoning, one rule to learn instead
-// of two.
+// above it, regardless of DOM order.
+//
+// Renders at every viewport width, not gated below `sm` — mobile-motion-
+// parity removed the `hidden sm:block` gate that used to mirror the hero
+// laptop's own (now also removed). The layer's cost on constrained
+// devices is bounded by requirements that already apply at every width:
+// particle count derives from measured area (`particleCountForArea()`,
+// clamped [40, 260]), and the animation loop stops whenever the layer is
+// hidden or scrolled out of view.
 export const ambientSparkleLayerClass =
-  "fixed inset-0 -z-10 hidden pointer-events-none sm:block";
+  "fixed inset-0 -z-10 block pointer-events-none";
 
 export const ambientSparkleCanvasClass = "h-full w-full";

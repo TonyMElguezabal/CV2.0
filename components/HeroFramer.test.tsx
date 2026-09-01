@@ -177,17 +177,24 @@ describe("HeroFramer", () => {
     expect(providerSource).toContain("pace.ease");
   });
 
-  it("anchors the name/positioning copy to a left column on sm+ viewports, off the laptop's centered axis", () => {
+  it("anchors the name/positioning copy to a left column at every viewport width, off the laptop's centered axis", () => {
     setPrefersReducedMotion(false);
     renderHero();
 
     const wrapper = screen.getByTestId("hero-wrapper");
     const wrapperClasses = wrapper.className.split(/\s+/);
-    // hero-signature-motion "Copy and laptop do not share one axis" — the
-    // laptop layer docks to a corner (items-end justify-end); the copy
-    // anchors to a left column instead of staying centered.
-    expect(wrapperClasses).toEqual(
-      expect.arrayContaining(["sm:items-start", "sm:text-left"])
-    );
+    // hero-signature-motion "Copy and laptop do not share one axis" now
+    // applies at every width (mobile-motion-parity) — the laptop layer
+    // docks to a corner (items-end justify-end) at every width too, so
+    // the copy's off-center anchor is unconditional, not sm+-scoped.
+    expect(wrapperClasses).toContain("items-start");
+    expect(wrapperClasses).toContain("text-left");
+    expect(wrapperClasses).not.toContain("sm:items-start");
+    expect(wrapperClasses).not.toContain("sm:text-left");
+    // The generous side padding stays breakpoint-scoped (design.md
+    // Decision 1) — alignment and padding are separable, and it is the
+    // padding that would cramp a narrow column, not the alignment.
+    expect(wrapperClasses).toContain("sm:pl-16");
+    expect(wrapperClasses).toContain("sm:pr-16");
   });
 });

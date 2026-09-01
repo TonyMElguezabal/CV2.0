@@ -1,16 +1,24 @@
 import { focusRingClass } from "./a11yStyles.ts";
 
-// Below sm the laptop layer doesn't render at all (`hidden sm:flex`), so the
-// hero copy stays centered there; at sm+ it anchors to a left column so it
-// no longer shares the laptop's centered axis — see design.md Decision 5 in
-// openspec/changes/hero-laptop-cinematic-lighting. The extra `md:pl-56`
-// clears CareerTimeline's fixed left rail (`md:fixed md:left-4`, ~176px
-// right edge measured in the browser — real-browser verification during
-// Step 11 caught this collision, which jsdom's layout-free tests could not)
-// — that rail only goes fixed at `md:`, so `sm:pl-16` alone is enough
-// between sm and md where the rail is still in normal document flow.
+// The hero copy anchors off-center at every viewport width, so it never
+// shares the laptop's centered axis — see design.md Decision 5 in
+// openspec/changes/hero-laptop-cinematic-lighting, and mobile-motion-
+// parity design.md Decision 1 for why the alignment itself (`items-start`,
+// `text-left`) is unconditional while the side padding stays `sm:`-scoped:
+// alignment and padding are separable, and it is the generous padding —
+// not the alignment — that would cramp a narrow column. Un-prefixed
+// alignment previously depended on the laptop layer being hidden below
+// `sm` (it no longer is); the coupling this comment used to describe was
+// removed along with that gate, not preserved by accident.
+//
+// The extra `md:pl-56` clears CareerTimeline's fixed left rail
+// (`md:fixed md:left-4`, ~176px right edge measured in the browser —
+// real-browser verification during Step 11 caught this collision, which
+// jsdom's layout-free tests could not) — that rail only goes fixed at
+// `md:`, so `sm:pl-16` alone is enough between sm and md where the rail is
+// still in normal document flow.
 export const heroWrapperClass =
-  "relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center sm:items-start sm:justify-center sm:pl-16 sm:pr-16 sm:text-left md:pl-56";
+  "relative flex min-h-screen flex-col items-start justify-center overflow-hidden px-6 text-left sm:pl-16 sm:pr-16 md:pl-56";
 
 // Display role: clamp(34px, 6.2vw, 88px), Expanded 700, -0.035em tracking —
 // site-typography-and-palette design.md Decision 3's type scale table.
@@ -59,8 +67,15 @@ export const ctaSecondaryClass = `rounded-full border border-hair px-4 py-2 text
 // scene bleeds past the viewport edge — design.md Decision 5 in
 // openspec/changes/hero-laptop-cinematic-lighting. `overflow-hidden` on
 // this full-viewport layer is what clips the part that bleeds past.
+//
+// Renders at every viewport width, not gated below `sm` — mobile-motion-
+// parity removed that gate deliberately (it was justified partly against a
+// mobile LCP budget the project has since stopped tracking) and it must
+// not be reinstated as a reflexive performance measure. The composition
+// that makes this work at small sizes lives in `heroLaptopSceneClass`'s
+// base bleed offset, not here.
 export const heroLaptopLayerClass =
-  "fixed inset-0 -z-10 hidden items-end justify-end overflow-hidden pointer-events-none sm:flex";
+  "fixed inset-0 -z-10 flex items-end justify-end overflow-hidden pointer-events-none";
 
 // Scrim keeps the laptop subdued behind text for contrast — Decision 3.
 export const heroLaptopScrimClass =
@@ -76,21 +91,41 @@ export const heroLaptopScrimClass =
 // alignment alone would; `heroLaptopLayerClass`'s overflow-hidden clips the
 // excess. See design.md Decision 5 in openspec/changes/
 // hero-laptop-cinematic-lighting.
+//
+// The base (mobile) offset is a load-bearing composition choice, not
+// decoration — see mobile-motion-parity design.md Decision 2. Without it,
+// the smaller base-scale laptop (160x256px, from `heroLaptopBaseClass`)
+// renders fully contained rather than cropped, which is exactly the "small
+// centered thumbnail" read the off-axis framing exists to eliminate.
+// Cropping isn't a desktop-only concern either: it's what hides CSS 3D's
+// worst artifacts (far edges, the lid degenerating to a hairline at
+// grazing angles), which are at least as visible at mobile scale.
+// `-mr-2 -mb-3` is a starting value scaled roughly in proportion to the
+// laptop's smaller base size relative to its `sm:` upsize — tuned against
+// a real narrow-viewport render in Task Group 7, not a final number.
 export const heroLaptopSceneClass =
-  "hero-laptop-scene relative [perspective:1200px] [transform-style:preserve-3d] sm:-mr-4 sm:-mb-6";
+  "hero-laptop-scene relative [perspective:1200px] [transform-style:preserve-3d] -mr-2 -mb-3 sm:-mr-4 sm:-mb-6";
 
 // Enlarged from the original sm:h-56 sm:w-96 (224x384px centered thumbnail)
 // so the laptop reads as a cropped, off-axis composition rather than a
-// small centered object — design.md Decision 5.
+// small centered object — design.md Decision 5 (hero-laptop-cinematic-lighting).
+//
+// Base gradient/border is one zinc step lighter than the `sm:` (desktop)
+// value — mobile-motion-parity design.md Decision 5. At mobile's smaller
+// 160x256px scale the original zinc-700/900 pair under-read against the
+// page background (found via owner sign-off on a real narrow-viewport
+// render, Task Group 7); the `sm:`-scoped values below restore the exact
+// original desktop material, unchanged.
 export const heroLaptopBaseClass =
-  "relative h-40 w-64 rounded-b-lg border border-zinc-700 bg-gradient-to-b from-zinc-700 to-zinc-900 sm:h-[300px] sm:w-[520px]";
+  "relative h-40 w-64 rounded-b-lg border border-zinc-600 bg-gradient-to-b from-zinc-600 to-zinc-800 sm:h-[300px] sm:w-[520px] sm:border-zinc-700 sm:from-zinc-700 sm:to-zinc-900";
 
 // The lid's own transform (rotateX, driven by scroll) lives on this
 // container; position/size/frame only — the two faces below carry the
 // per-side material and content, see design.md Decision 4 in
-// openspec/changes/hero-laptop-cinematic-lighting.
+// openspec/changes/hero-laptop-cinematic-lighting. Border lightened at
+// base to match `heroLaptopBaseClass` — mobile-motion-parity Decision 5.
 export const heroLaptopLidClass =
-  "hero-laptop-lid absolute inset-x-0 bottom-full h-40 origin-bottom rounded-t-lg border border-zinc-700 [transform-style:preserve-3d] sm:h-[300px]";
+  "hero-laptop-lid absolute inset-x-0 bottom-full h-40 origin-bottom rounded-t-lg border border-zinc-600 [transform-style:preserve-3d] sm:h-[300px] sm:border-zinc-700";
 
 // Shared face geometry: each face fills the lid and hides itself once
 // rotated past 90° from the viewer, so only the viewer-facing face ever
@@ -103,9 +138,14 @@ export const heroLaptopLidFaceScreenClass =
 
 // Outer (aluminium) face sits back-to-back with the screen face via
 // rotateY(180deg), so it is the one visible whenever the lid is rotated
-// past horizontal (i.e. at/near the closed pose).
+// past horizontal (i.e. at/near the closed pose) — meaning this is the
+// dominant material at the laptop's SSR/scroll-top starting pose. Lightened
+// one zinc step at base (mobile-motion-parity Decision 5): this was the
+// single biggest contributor to the closed pose reading as too subtle at
+// mobile's smaller scale, since it was already the darkest gradient in the
+// whole rig. `sm:` restores the exact original desktop value.
 export const heroLaptopLidFaceOuterClass =
-  "hero-laptop-lid-face-outer bg-gradient-to-b from-zinc-800 to-zinc-950 [transform:rotateY(180deg)]";
+  "hero-laptop-lid-face-outer bg-gradient-to-b from-zinc-700 to-zinc-900 [transform:rotateY(180deg)] sm:from-zinc-800 sm:to-zinc-950";
 
 export const heroLaptopScreenClass =
   "hero-laptop-screen absolute inset-2 overflow-hidden rounded border-2 border-zinc-950 bg-black";
