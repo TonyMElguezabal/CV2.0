@@ -71,6 +71,14 @@ The **function stays** — a rAF loop against a zero-size canvas is worth refusi
 
 Recorded as an explicit decision because the tempting move — deleting a guard whose stated rationale just evaporated — would remove real robustness. What evaporated is the explanation, not the need.
 
+### Decision 5 — Lighten the closed-pose material at base, leave desktop's untouched
+
+Owner sign-off on the real mobile render (Task Group 7's screenshots) flagged exactly the risk this design anticipated under "[The composition reads worse small than it does large]": the laptop's closed/angled starting pose reads as too subtle against the `#0a0a0a` background at mobile's smaller 160×256px scale. The dominant visible surface at that pose is the lid's *outer* face (`heroLaptopLidFaceOuterClass`, `from-zinc-800 to-zinc-950` — the darkest material in the whole rig, since the lid is rotated ~closed and its back/aluminium face is what's showing), not the lighting-rig overlays, whose motion values (`rimIntensity` etc.) are already at their peak at the closed pose and can't be pushed further without also changing desktop's identical lighting formulas.
+
+The fix is therefore in the base **material colour**, scoped to mobile only: shift the three zinc-gradient/border pairs one step lighter at the base breakpoint (`heroLaptopBaseClass`, `heroLaptopLidClass`, `heroLaptopLidFaceOuterClass`), while every `sm:`-prefixed value stays byte-identical to what Task 7.2 already confirmed has no desktop regression. This is a mobile-only perceptual correction, not a material redesign — the same reasoning Decision 2 already established (a smaller on-screen object needs proportionally more contrast to read at all) applied to colour instead of geometry.
+
+*Alternative considered:* boost `rimIntensity`/`STATIC_RIM_OPACITY` instead, since it's already scroll/lighting-formula-driven. Rejected — those formulas are shared with desktop (`hero-laptop-cinematic-lighting`'s art-directed curves), and pushing them past their tuned peak to compensate for mobile's smaller scale would also shift desktop's rim brightness, re-opening a component already verified clean. Changing the base material colour is the narrower, better-scoped lever.
+
 ## Risks / Trade-offs
 
 **[60fps fails on real mobile hardware]** → This is the risk the original gate existed to avoid, and it is the one this change genuinely takes on. Mobile GPUs must composite the laptop's ~8 overlay layers *plus* a full-viewport canvas. Mitigation: it is the primary thing Task Group 6 measures rather than assumes, and `performance-budget-compliance` already permits documenting why a full profiling run was not achievable in a given environment — but a documented non-measurement is not a pass, and a visible frame-rate problem is a reason to reconsider scope, not to ship.

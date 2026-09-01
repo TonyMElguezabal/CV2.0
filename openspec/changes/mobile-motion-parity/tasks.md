@@ -33,6 +33,9 @@ These four tests encode the behaviour being reversed. Three flip; one is kept an
 - [x] 4.1 `heroLaptopSceneClass` gains `-mr-2 -mb-3` at base, scaled roughly proportional to the smaller mobile laptop size — starting point, tuned for real in Task Group 7
 - [x] 4.2 Comment records the "why": cropping isn't decorative, it's what prevents the small-centered-thumbnail read and hides grazing-angle 3D artifacts, at any size
 - [x] 4.3 `HeroLaptop.test.tsx`: 19/19 pass
+- [x] 4.4 **Decision 5 (found via owner sign-off on the Task Group 7 render, not pre-planned)**: lighten the closed-pose material at base only — `heroLaptopBaseClass`'s border/gradient, `heroLaptopLidClass`'s border, and `heroLaptopLidFaceOuterClass`'s gradient each gain a `sm:`-scoped pair matching their prior unscoped value exactly, with a one-step-lighter base value. Zero change to any `sm:`-and-above rendering
+- [x] 4.5 Re-run `HeroLaptop.test.tsx` — no test asserts the literal zinc-shade classes, so this is a pure addition; confirm still 19/19
+- [x] 4.6 Re-verified live at the narrow viewport (500×701): the closed pose now shows a clearly defined lighter-gray laptop shape with visible edges (`screenshot-1788237823956-15.jpg`), a material improvement over the prior near-invisible read. Desktop re-screenshotted at the same hero position — pixel-identical to the pre-Decision-5 desktop screenshot, confirming zero regression (the `sm:`-scoped values restore the exact original desktop material)
 
 ## 5. Review and Update Existing Unit Tests (MANDATORY)
 

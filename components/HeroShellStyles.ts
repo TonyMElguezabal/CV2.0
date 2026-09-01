@@ -108,16 +108,24 @@ export const heroLaptopSceneClass =
 
 // Enlarged from the original sm:h-56 sm:w-96 (224x384px centered thumbnail)
 // so the laptop reads as a cropped, off-axis composition rather than a
-// small centered object — design.md Decision 5.
+// small centered object — design.md Decision 5 (hero-laptop-cinematic-lighting).
+//
+// Base gradient/border is one zinc step lighter than the `sm:` (desktop)
+// value — mobile-motion-parity design.md Decision 5. At mobile's smaller
+// 160x256px scale the original zinc-700/900 pair under-read against the
+// page background (found via owner sign-off on a real narrow-viewport
+// render, Task Group 7); the `sm:`-scoped values below restore the exact
+// original desktop material, unchanged.
 export const heroLaptopBaseClass =
-  "relative h-40 w-64 rounded-b-lg border border-zinc-700 bg-gradient-to-b from-zinc-700 to-zinc-900 sm:h-[300px] sm:w-[520px]";
+  "relative h-40 w-64 rounded-b-lg border border-zinc-600 bg-gradient-to-b from-zinc-600 to-zinc-800 sm:h-[300px] sm:w-[520px] sm:border-zinc-700 sm:from-zinc-700 sm:to-zinc-900";
 
 // The lid's own transform (rotateX, driven by scroll) lives on this
 // container; position/size/frame only — the two faces below carry the
 // per-side material and content, see design.md Decision 4 in
-// openspec/changes/hero-laptop-cinematic-lighting.
+// openspec/changes/hero-laptop-cinematic-lighting. Border lightened at
+// base to match `heroLaptopBaseClass` — mobile-motion-parity Decision 5.
 export const heroLaptopLidClass =
-  "hero-laptop-lid absolute inset-x-0 bottom-full h-40 origin-bottom rounded-t-lg border border-zinc-700 [transform-style:preserve-3d] sm:h-[300px]";
+  "hero-laptop-lid absolute inset-x-0 bottom-full h-40 origin-bottom rounded-t-lg border border-zinc-600 [transform-style:preserve-3d] sm:h-[300px] sm:border-zinc-700";
 
 // Shared face geometry: each face fills the lid and hides itself once
 // rotated past 90° from the viewer, so only the viewer-facing face ever
@@ -130,9 +138,14 @@ export const heroLaptopLidFaceScreenClass =
 
 // Outer (aluminium) face sits back-to-back with the screen face via
 // rotateY(180deg), so it is the one visible whenever the lid is rotated
-// past horizontal (i.e. at/near the closed pose).
+// past horizontal (i.e. at/near the closed pose) — meaning this is the
+// dominant material at the laptop's SSR/scroll-top starting pose. Lightened
+// one zinc step at base (mobile-motion-parity Decision 5): this was the
+// single biggest contributor to the closed pose reading as too subtle at
+// mobile's smaller scale, since it was already the darkest gradient in the
+// whole rig. `sm:` restores the exact original desktop value.
 export const heroLaptopLidFaceOuterClass =
-  "hero-laptop-lid-face-outer bg-gradient-to-b from-zinc-800 to-zinc-950 [transform:rotateY(180deg)]";
+  "hero-laptop-lid-face-outer bg-gradient-to-b from-zinc-700 to-zinc-900 [transform:rotateY(180deg)] sm:from-zinc-800 sm:to-zinc-950";
 
 export const heroLaptopScreenClass =
   "hero-laptop-screen absolute inset-2 overflow-hidden rounded border-2 border-zinc-950 bg-black";
