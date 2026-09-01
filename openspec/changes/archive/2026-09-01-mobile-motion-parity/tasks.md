@@ -98,10 +98,10 @@ The substance of this change is visual and mobile-only. Unit tests can prove the
 
 ## 11. OpenSpec sync
 
-- [ ] 11.1 **After merge**, sync both delta specs into `openspec/specs/`. `site-ambient-motion` carries a RENAMED **and** a MODIFIED operation on the same requirement — apply the rename first, then the body edit, or the MODIFIED header will not match
-- [ ] 11.2 Verify `hero-signature-motion` no longer contains "The laptop effect is simplified on small viewports", and that its off-axis requirement's scenarios carry no `sm`-breakpoint scoping
-- [ ] 11.3 Verify `site-ambient-motion`'s no-JS guarantee survived the edit unchanged — it is unrelated to viewport width and must not be collateral damage
-- [ ] 11.4 Run `openspec validate mobile-motion-parity --type change --strict`, and `--type spec --strict` against both edited specs
-- [ ] 11.5 Archive this change (per CLAUDE.md §10 / `opsx:archive`)
-- [ ] 11.6 Comment on JOS-122 in Linear with what shipped, the tuned bleed value, and how Decisions 1–3 actually resolved against the rendered result
-- [ ] 11.7 **Owner sign-off on the mobile render before archiving.** Decisions 1 and 2 are aesthetic judgements; the DoD requires they be seen, not just described
+- [x] 11.1 Merged PR #57 (squash), then synced both delta specs into `openspec/specs/`: applied the RENAME on `site-ambient-motion` first, then its MODIFIED body edit
+- [x] 11.2 Verified `hero-signature-motion` no longer contains "The laptop effect is simplified on small viewports" (grep: no matches), and its off-axis requirement's scenarios carry no `sm`-breakpoint scoping
+- [x] 11.3 Verified `site-ambient-motion`'s no-JS scenario text is unchanged (byte-identical), just reordered ahead of the new "Small viewport" scenario
+- [x] 11.4 `openspec validate mobile-motion-parity --type change --strict` and `--type spec --strict` on both edited specs: all three valid
+- [x] 11.5 Archived to `openspec/changes/archive/2026-09-01-mobile-motion-parity/`
+- [x] 11.6 Commented on JOS-122 with what shipped, how Decisions 1–3 resolved, and the new Decision 5 found during sign-off
+- [x] 11.7 **Owner sign-off obtained in two rounds.** First render flagged the closed-pose laptop as too subtle at mobile scale (not silently accepted) — fixed via Decision 5, re-shown, then explicitly approved to ship
