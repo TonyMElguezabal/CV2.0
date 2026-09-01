@@ -4,7 +4,7 @@ Defines the site's ambient decorative motion layer — a continuously-animating
 canvas particle field behind the page content — including its stacking
 position above the hero scrim, its constellation links and pointer
 responsiveness, its reduced-motion and visibility-driven stop conditions,
-and its gating on small viewports and without JavaScript.
+and its omission without JavaScript.
 
 ## Requirements
 
@@ -141,16 +141,16 @@ Because the layer runs indefinitely rather than completing, it SHALL stop its an
 - **WHEN** the component rendering the ambient layer unmounts
 - **THEN** its animation loop is cancelled and every listener it registered is removed, leaving nothing running
 
-### Requirement: The ambient layer is omitted on small viewports and without JavaScript
-The ambient layer SHALL NOT render on small (mobile) viewports, matching the gating already applied to the hero's background motif, so that constrained devices are not asked to run a continuous animation. Without JavaScript the layer SHALL simply be absent, and its absence SHALL have no effect on the readability or completeness of the page.
-
-#### Scenario: Small viewport
-- **WHEN** the page is viewed on a small (mobile) viewport
-- **THEN** the ambient layer does not render and no animation loop runs
+### Requirement: The ambient layer is omitted without JavaScript
+Without JavaScript the ambient layer SHALL simply be absent, and its absence SHALL have no effect on the readability or completeness of the page. The layer SHALL otherwise render at every viewport width — its cost on constrained devices is bounded by the requirements it already carries (a viewport-area-derived particle count, and an animation loop that stops whenever the layer is not visible) rather than by omitting it below a breakpoint.
 
 #### Scenario: JavaScript disabled
 - **WHEN** the page is loaded with JavaScript disabled
 - **THEN** the ambient layer renders nothing, and all page content remains fully readable and complete without it
+
+#### Scenario: Small viewport
+- **WHEN** the page is viewed on a small (mobile) viewport
+- **THEN** the ambient layer renders and animates, with its particle count derived from the smaller area rather than the layer being omitted
 
 ### Requirement: Field density is derived from viewport area
 The number of particles in the field SHALL be derived from the rendered area of the layer rather than being a fixed count, so that the density of particles — and therefore the density of links between them — is consistent across viewport sizes. Without this, a single fixed count produces a crowded mesh on small viewports and a sparse scattering on large ones. The derived count SHALL be bounded by a minimum and a maximum, so that neither an unusually small nor an unusually large viewport produces a degenerate or unaffordable field. When the layer is resized, the field SHALL NOT be regenerated for small changes in area, because reseeding relocates every particle at once and is visible as a discontinuity.

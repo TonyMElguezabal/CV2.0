@@ -91,10 +91,10 @@ The terminal's text color and the light the screen casts onto the laptop (the de
 - **THEN** it meets the site's contrast requirement for text of its size against the screen background
 
 ### Requirement: The laptop is framed off-axis and cropped
-The laptop SHALL be composed as a cropped, off-axis element — rendered large enough to extend beyond the viewport edge rather than sitting fully contained and centered — and the hero's name and positioning copy SHALL be anchored off the viewport's center axis, so the laptop and the copy do not share a single centered axis. The framing SHALL keep the laptop's screen fully within the viewport at poses where the terminal is required to be readable.
+The laptop SHALL be composed as a cropped, off-axis element — rendered large enough to extend beyond the viewport edge rather than sitting fully contained and centered — and the hero's name and positioning copy SHALL be anchored off the viewport's center axis, so the laptop and the copy do not share a single centered axis. The framing SHALL keep the laptop's screen fully within the viewport at poses where the terminal is required to be readable. This composition SHALL apply at every viewport width; the cropping and the off-axis anchoring are what prevent the laptop from reading as a small contained object, and that failure mode is not specific to large viewports.
 
 #### Scenario: The laptop is cropped by the viewport
-- **WHEN** the hero is viewed on a viewport at or above the `sm` breakpoint
+- **WHEN** the hero is viewed at any viewport width
 - **THEN** the laptop is rendered large enough that part of it extends past the viewport edge, rather than being fully contained and centered
 
 #### Scenario: The screen stays in frame where the terminal must be readable
@@ -105,9 +105,9 @@ The laptop SHALL be composed as a cropped, off-axis element — rendered large e
 - **WHEN** the hero's name and positioning copy are rendered over the laptop layer
 - **THEN** the copy is anchored off the viewport's center axis, and it remains legible over the laptop with the scrim's contrast requirement satisfied
 
-#### Scenario: Small viewports are unaffected
+#### Scenario: Small viewports receive the same treatment
 - **WHEN** the page is viewed on a small (mobile) viewport
-- **THEN** the laptop effect remains simplified as already required, and neither the off-axis framing nor the lighting rig renders there
+- **THEN** the off-axis framing, the cropping, and the lighting rig all render, proportioned to that viewport rather than omitted
 
 ### Requirement: Fade-only alternative under prefers-reduced-motion
 The hero SHALL, when the visitor has `prefers-reduced-motion: reduce` set, render the laptop in a static, fully-open, front-facing state with the terminal visible — with no scroll-linked opening or reorientation and no other motion — and animate the name and positioning text with an opacity fade only.
@@ -143,10 +143,3 @@ The system SHALL render the laptop as a background layer behind page content wit
 #### Scenario: Text overlaps the laptop
 - **WHEN** page text is displayed over the laptop layer at any scroll position
 - **THEN** a scrim keeps the laptop subdued and the overlapping text meets the site's contrast requirements
-
-### Requirement: The laptop effect is simplified on small viewports
-On small (mobile) viewports the system SHALL simplify the laptop effect — a reduced or static presentation rather than a full-page fixed, scroll-driven 3D motif — to preserve readability and performance.
-
-#### Scenario: Small viewport
-- **WHEN** the page is viewed on a small (mobile) viewport
-- **THEN** the laptop effect is simplified (not a full-page fixed, scroll-driven 3D motif) and the page text remains readable
