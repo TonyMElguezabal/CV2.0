@@ -139,10 +139,13 @@ export function AmbientSparkleLayer() {
       pointer = { ...pointer, active: false };
     }
 
-    // The container's own size is the single source of truth for whether
-    // the layer is gated off — `ambientSparkleLayerClass`'s `hidden
-    // sm:block` collapses it to 0x0 below the `sm` breakpoint, so there is
-    // no separate breakpoint value to keep in sync with the CSS class.
+    // No longer driven by a CSS viewport gate (mobile-motion-parity
+    // removed `ambientSparkleLayerClass`'s `hidden sm:block`) — this is
+    // now a standalone robustness guard against a zero-size container,
+    // which can legitimately happen mid-mount or from a future layout
+    // change regardless of viewport width. Kept deliberately: a
+    // requestAnimationFrame loop against a canvas with no area to draw on
+    // is worth refusing on its own merits, not only as a breakpoint proxy.
     function isGatedOff(): boolean {
       const { width, height } = currentSize();
       return width === 0 || height === 0;

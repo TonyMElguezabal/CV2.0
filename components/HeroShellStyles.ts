@@ -1,16 +1,24 @@
 import { focusRingClass } from "./a11yStyles.ts";
 
-// Below sm the laptop layer doesn't render at all (`hidden sm:flex`), so the
-// hero copy stays centered there; at sm+ it anchors to a left column so it
-// no longer shares the laptop's centered axis — see design.md Decision 5 in
-// openspec/changes/hero-laptop-cinematic-lighting. The extra `md:pl-56`
-// clears CareerTimeline's fixed left rail (`md:fixed md:left-4`, ~176px
-// right edge measured in the browser — real-browser verification during
-// Step 11 caught this collision, which jsdom's layout-free tests could not)
-// — that rail only goes fixed at `md:`, so `sm:pl-16` alone is enough
-// between sm and md where the rail is still in normal document flow.
+// The hero copy anchors off-center at every viewport width, so it never
+// shares the laptop's centered axis — see design.md Decision 5 in
+// openspec/changes/hero-laptop-cinematic-lighting, and mobile-motion-
+// parity design.md Decision 1 for why the alignment itself (`items-start`,
+// `text-left`) is unconditional while the side padding stays `sm:`-scoped:
+// alignment and padding are separable, and it is the generous padding —
+// not the alignment — that would cramp a narrow column. Un-prefixed
+// alignment previously depended on the laptop layer being hidden below
+// `sm` (it no longer is); the coupling this comment used to describe was
+// removed along with that gate, not preserved by accident.
+//
+// The extra `md:pl-56` clears CareerTimeline's fixed left rail
+// (`md:fixed md:left-4`, ~176px right edge measured in the browser —
+// real-browser verification during Step 11 caught this collision, which
+// jsdom's layout-free tests could not) — that rail only goes fixed at
+// `md:`, so `sm:pl-16` alone is enough between sm and md where the rail is
+// still in normal document flow.
 export const heroWrapperClass =
-  "relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center sm:items-start sm:justify-center sm:pl-16 sm:pr-16 sm:text-left md:pl-56";
+  "relative flex min-h-screen flex-col items-start justify-center overflow-hidden px-6 text-left sm:pl-16 sm:pr-16 md:pl-56";
 
 // Display role: clamp(34px, 6.2vw, 88px), Expanded 700, -0.035em tracking —
 // site-typography-and-palette design.md Decision 3's type scale table.
@@ -59,8 +67,15 @@ export const ctaSecondaryClass = `rounded-full border border-hair px-4 py-2 text
 // scene bleeds past the viewport edge — design.md Decision 5 in
 // openspec/changes/hero-laptop-cinematic-lighting. `overflow-hidden` on
 // this full-viewport layer is what clips the part that bleeds past.
+//
+// Renders at every viewport width, not gated below `sm` — mobile-motion-
+// parity removed that gate deliberately (it was justified partly against a
+// mobile LCP budget the project has since stopped tracking) and it must
+// not be reinstated as a reflexive performance measure. The composition
+// that makes this work at small sizes lives in `heroLaptopSceneClass`'s
+// base bleed offset, not here.
 export const heroLaptopLayerClass =
-  "fixed inset-0 -z-10 hidden items-end justify-end overflow-hidden pointer-events-none sm:flex";
+  "fixed inset-0 -z-10 flex items-end justify-end overflow-hidden pointer-events-none";
 
 // Scrim keeps the laptop subdued behind text for contrast — Decision 3.
 export const heroLaptopScrimClass =
@@ -76,8 +91,20 @@ export const heroLaptopScrimClass =
 // alignment alone would; `heroLaptopLayerClass`'s overflow-hidden clips the
 // excess. See design.md Decision 5 in openspec/changes/
 // hero-laptop-cinematic-lighting.
+//
+// The base (mobile) offset is a load-bearing composition choice, not
+// decoration — see mobile-motion-parity design.md Decision 2. Without it,
+// the smaller base-scale laptop (160x256px, from `heroLaptopBaseClass`)
+// renders fully contained rather than cropped, which is exactly the "small
+// centered thumbnail" read the off-axis framing exists to eliminate.
+// Cropping isn't a desktop-only concern either: it's what hides CSS 3D's
+// worst artifacts (far edges, the lid degenerating to a hairline at
+// grazing angles), which are at least as visible at mobile scale.
+// `-mr-2 -mb-3` is a starting value scaled roughly in proportion to the
+// laptop's smaller base size relative to its `sm:` upsize — tuned against
+// a real narrow-viewport render in Task Group 7, not a final number.
 export const heroLaptopSceneClass =
-  "hero-laptop-scene relative [perspective:1200px] [transform-style:preserve-3d] sm:-mr-4 sm:-mb-6";
+  "hero-laptop-scene relative [perspective:1200px] [transform-style:preserve-3d] -mr-2 -mb-3 sm:-mr-4 sm:-mb-6";
 
 // Enlarged from the original sm:h-56 sm:w-96 (224x384px centered thumbnail)
 // so the laptop reads as a cropped, off-axis composition rather than a
