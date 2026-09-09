@@ -2,7 +2,7 @@
 
 ### Who is Jose?
 
-Jose is a Technical Delivery Manager whose career spans hands-on
+Jose is a Director of Delivery & Engineering whose career spans hands-on
 technical support through senior delivery leadership — from diagnosing
 production data issues as an L2/DB2 analyst at IBM, through managing
 distributed engineering portfolios at TCS, to leading AI-enabled
