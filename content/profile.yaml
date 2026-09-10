@@ -1,5 +1,5 @@
 name: Jose Muñoz
-positioning: Technical Delivery Manager specializing in complex software programs, engineering organizations, cloud initiatives, AI-enabled products, and cross-functional delivery.
+positioning: Director of Delivery & Engineering specializing in complex software programs, engineering organizations, cloud initiatives, AI-enabled products, and cross-functional delivery.
 summary: >
   Jose leads complex technical programs end to end, pairing hands-on
   engineering depth with the delivery discipline to ship reliably. He has
@@ -21,7 +21,7 @@ chat:
 hero:
   terminalLines:
     - "$ whoami"
-    - "jose_munoz — technical delivery manager"
+    - "jose_munoz — director of delivery & engineering"
     - "$ cat focus.txt"
     - "cloud migrations · AI-enabled products · cross-functional delivery"
     - "$ echo 'this is not a résumé'"

@@ -1,6 +1,6 @@
 # CareerDNA — Lean PRD
 
-**Product:** Interactive professional profile for Jose Muñoz, Technical Delivery Manager
+**Product:** Interactive professional profile for Jose Muñoz, Director of Delivery & Engineering
 **Version:** 1.1 (Lean) · **Date:** July 2026 · **Owner:** Jose Muñoz
 **Status:** Draft
 
@@ -10,7 +10,7 @@
 
 Create the most memorable professional profile a recruiter, hiring manager, or technical interviewer has ever experienced. Not a résumé — a premium interactive web application that tells the story of a career through motion, storytelling, and AI. The site itself is the portfolio piece: it demonstrates product thinking, architecture, front-end craft, and AI integration by existing.
 
-**Positioning:** Technical Delivery Manager specializing in complex software programs, engineering organizations, cloud initiatives, AI-enabled products, and cross-functional delivery.
+**Positioning:** Director of Delivery & Engineering specializing in complex software programs, engineering organizations, cloud initiatives, AI-enabled products, and cross-functional delivery.
 
 **The five questions every feature must serve:**
 
