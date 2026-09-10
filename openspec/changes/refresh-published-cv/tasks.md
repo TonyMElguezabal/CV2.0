@@ -31,6 +31,7 @@
 - [x] 4.3 `content/faq.md`: "Who is Jose?" answer updated — this is the surface that mattered most, since it is indexed into the chatbot's retrieval corpus and Mar.IA would otherwise keep asserting the superseded title after the CV shipped
 - [x] 4.4 `docs/PRD.md`: product line and Positioning statement updated to match, as documentation rather than runtime content
 - [x] 4.5 Repo-wide search confirms no remaining "Technical Delivery Manager" occurrence in `content/` or `docs/PRD.md`
+- [x] 4.6 **Correction, found by `/verify`**: 4.3's checkbox verified the *source file* was edited, not that the chatbot's live answer changed. It hadn't — see Task Group 9. Left 4.3 checked (the file edit is real and correct) but recording this distinction explicitly rather than letting the checkbox imply more than it verified.
 
 ## 5. Review and Update Existing Unit Tests (MANDATORY)
 
@@ -64,11 +65,34 @@ This repo has no database; `/content` integrity is the equivalent state to verif
 - [x] 8.2 Confirmed no other spec references the résumé's content (only `one-click-resume-download` mentions the PDF at all) — no second delta needed
 - [x] 8.3 Decided against a CLAUDE.md/AGENTS.md addition: this change is a content/asset update governed entirely by the new spec requirement above, not a new architectural pattern or non-obvious code decision of the kind that file otherwise records
 
-## 9. OpenSpec sync (not yet done)
+## 9. Fix: rebuild the stale RAG index (found via `/verify` — FAIL)
 
-- [ ] 9.1 Push branch and open PR
-- [ ] 9.2 Merge PR
-- [ ] 9.3 Sync `specs/one-click-resume-download/spec.md`'s ADDED requirement into `openspec/specs/one-click-resume-download/spec.md`
-- [ ] 9.4 `openspec validate refresh-published-cv --type change --strict` and `--type spec --strict`
-- [ ] 9.5 Archive to `openspec/changes/archive/`
-- [ ] 9.6 Comment on JOS-123 with what shipped; move ticket to Done once merged and confirmed live
+`/verify` ran the app and drove the chat widget live, rather than trusting
+the earlier source-file diff. Clicking the site's own first suggested
+question, "Who is Jose?", returned *"Jose is a **Technical Delivery
+Manager**..."* — the superseded title, tagged `#faq`. Root cause: `next
+dev` never rebuilds `lib/rag/index.json`/`public/rag-index.json`; only
+`npm run build`'s `prebuild` chain does. Both files were dated 2026-09-06,
+before this change's content edits — confirmed directly by grepping the
+index for both strings (0 hits for the new title, 2 for the old, in the
+exact `profile-summary` and `faq-0` chunks). This is a real gap in what
+Task Group 4 claimed done, not a false positive.
+
+- [x] 9.1 Ran `npm run prebuild` to regenerate `lib/rag/index.json` from
+      current `/content` and republish it to `public/rag-index.json`
+- [x] 9.2 Verified the regenerated index directly: 0 chunks contain
+      "Technical Delivery Manager", `profile-summary` and `faq-0` chunks
+      now contain "Director of Delivery & Engineering"
+- [x] 9.3 Re-drove the live chat widget with the same question ("Who is
+      Jose?") against a fresh dev server — confirmed the answer now
+      states the correct title
+- [x] 9.4 Report written: `reports/2026-09-10-step-9-rag-index-rebuild-verification.md`
+
+## 10. OpenSpec sync (not yet done)
+
+- [ ] 10.1 Push branch and open PR
+- [ ] 10.2 Merge PR
+- [ ] 10.3 Sync `specs/one-click-resume-download/spec.md`'s ADDED requirement into `openspec/specs/one-click-resume-download/spec.md`
+- [ ] 10.4 `openspec validate refresh-published-cv --type change --strict` and `--type spec --strict`
+- [ ] 10.5 Archive to `openspec/changes/archive/`
+- [ ] 10.6 Comment on JOS-123 with what shipped; move ticket to Done once merged and confirmed live
