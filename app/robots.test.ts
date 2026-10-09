@@ -14,11 +14,11 @@ describe("robots", () => {
     expect(result.sitemap).toBe("https://fixture.example.com/sitemap.xml");
   });
 
-  it("disallows crawling the admin area", () => {
+  it("disallows crawling the admin area and the /go/ redirect routes", () => {
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://fixture.example.com");
 
     const result = robots();
 
-    expect(result.rules).toMatchObject({ disallow: "/admin" });
+    expect(result.rules).toMatchObject({ disallow: ["/admin", "/go/"] });
   });
 });

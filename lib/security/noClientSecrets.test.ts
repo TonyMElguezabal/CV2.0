@@ -9,6 +9,7 @@ const SECRET_NAMES = [
   "UPSTASH_REDIS_REST_TOKEN",
   "ADMIN_USER",
   "ADMIN_PASSWORD",
+  "WHATSAPP_NUMBER",
 ];
 
 const SOURCE_ROOTS = ["app", "components", "lib"];

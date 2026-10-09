@@ -19,6 +19,11 @@ hero:
   terminalLines:
     - "$ whoami"
     - "test_person"
+footer:
+  headline: Test footer headline.
+  subline: Test footer subline.
+  ctaLabel: Test call to action
+  ctaSubLabel: Test sub-label
 `;
 
 export const VALID_EXPERIENCE = `

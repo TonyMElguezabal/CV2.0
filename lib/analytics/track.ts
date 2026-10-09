@@ -1,4 +1,5 @@
 import { getSessionId } from "../session.ts";
+import type { ContactTarget } from "./schema.ts";
 
 export type AnalyticsEvent =
   | { eventType: "page_view"; pagePath: string }
@@ -14,7 +15,7 @@ export type AnalyticsEvent =
   | {
       eventType: "contact_click";
       pagePath: string;
-      contactTarget: "scheduling" | "email" | "linkedin";
+      contactTarget: ContactTarget;
     };
 
 const EVENTS_ENDPOINT = "/api/events";

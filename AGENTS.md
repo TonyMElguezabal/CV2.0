@@ -563,6 +563,41 @@ integrity matter beyond rendering.
     landed. Do not delete this directory without confirming the assets
     are reproduced elsewhere first.
 
+- **The footer is a second contact surface, not a replacement for `#contact`**
+  (`disruptive-footer`, JOS-191). `components/SiteFooter.tsx` renders on
+  the new `--surface-raised` token (`app/globals.css`), with its own
+  headline/subline/CTA block (content-driven via `content/profile.yaml`'s
+  `footer` block — `FooterSchema` in `lib/content/schemas.ts`), an
+  inline-SVG `FooterIllustration` (a waving, pointing Mar.IA — see
+  `docs/design/jos-191-disruptive-footer/`), and an icon row
+  (`components/SocialIcons.tsx`) for LinkedIn, GitHub, WhatsApp, the
+  scheduling CTA, and email. `CareerTimeline` nav still targets `#contact`
+  (`site-editorial-frame`'s one-scroll-indicator rule is untouched by this
+  change) — the footer exists purely as a second, friendlier conversion
+  surface a scrolling visitor reaches without having to scroll back up.
+  **The existing analytics disclosure must stay inside the footer** — it
+  was already there before this change and nothing here moves it out.
+  The illustration is one SVG document (`viewBox="0 0 469 564"`) layering
+  hand-authored vector hands, limbs, and a "come on" visor face over the
+  chat widget's existing body render — reused via a byte-identical plain
+  copy (`public/maria-footer-body-469x564.png`), not a new render; full
+  provenance (including why this supersedes an earlier raster-art plan)
+  is in `docs/design/jos-191-disruptive-footer/README.md`.
+  `FOOTER_ELBOW_TRANSFORM_ORIGIN` (`components/SiteFooterStyles.ts`) is
+  the forearm group's pivot in the canvas's own pixel space (`"66px
+  420px"`), not a CSS percentage — don't hand-tune the pivot without
+  updating that doc.
+  **`WHATSAPP_NUMBER` must never enter `/content`.** The footer's
+  WhatsApp link always points at `/go/whatsapp`
+  (`app/go/whatsapp/route.ts`), a server-only redirect that reads the
+  number from this one runtime secret and writes it only into the
+  `Location` header — never into rendered HTML, the client bundle, or the
+  chatbot's retrieval index (`whatsapp-contact-redirect` spec). It's rate
+  limited under its own `go-whatsapp:` key namespace in
+  `lib/chat/rateLimit.ts`, deliberately separate from `/api/chat`'s and
+  `/api/events`'s counters, so a burst against one never throttles the
+  others.
+
 **Stack choices worth knowing before changing them:**
 - Framer Motion was selected over GSAP ScrollTrigger via a comparative spike
   documented in `openspec/changes/archive/2026-07-19-motion-library-spike/`.

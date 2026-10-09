@@ -151,3 +151,27 @@ describe("EventPayloadSchema", () => {
     }
   });
 });
+
+describe("EventPayloadSchema contact targets for the site footer", () => {
+  it.each(["github", "whatsapp"])("accepts contactTarget %s", (contactTarget) => {
+    const result = EventPayloadSchema.safeParse({
+      sessionId: "abc-123",
+      eventType: "contact_click",
+      pagePath: "/",
+      contactTarget,
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("still rejects a target outside the five-channel set", () => {
+    const result = EventPayloadSchema.safeParse({
+      sessionId: "abc-123",
+      eventType: "contact_click",
+      pagePath: "/",
+      contactTarget: "phone",
+    });
+
+    expect(result.success).toBe(false);
+  });
+});

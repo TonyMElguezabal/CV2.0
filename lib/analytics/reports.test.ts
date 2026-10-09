@@ -231,6 +231,8 @@ describe("createInMemoryAnalyticsReports — conversions report", () => {
       email: 2,
       linkedin: 1,
       scheduling: 0,
+      github: 0,
+      whatsapp: 0,
     });
   });
 });
@@ -281,6 +283,8 @@ describe("createInMemoryAnalyticsReports — empty store", () => {
       scheduling: 0,
       email: 0,
       linkedin: 0,
+      github: 0,
+      whatsapp: 0,
     });
   });
 });

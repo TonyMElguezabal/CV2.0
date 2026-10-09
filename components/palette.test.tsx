@@ -33,6 +33,36 @@ function extractToken(css: string, name: string): string {
   return hex;
 }
 
+// JOS-191 disruptive-footer design.md Decision 3: the footer's lifted surface.
+const SURFACE_RAISED = "#16140f";
+
+describe("footer raised surface (disruptive-footer design.md Decision 3)", () => {
+  const css = readGlobalsCss();
+
+  it("defines --surface-raised in globals.css with the measured value", () => {
+    expect(extractToken(css, "--surface-raised").toLowerCase()).toBe(SURFACE_RAISED);
+  });
+
+  it.each(["--ink", "--ink-body", "--ink-meta", "--accent"])(
+    "%s meets 4.5:1 on the raised surface",
+    (token) => {
+      const hex = extractToken(css, token);
+      expect(contrastRatio(hex, SURFACE_RAISED)).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it("--hair still meets 3:1 on the raised surface, for borders only", () => {
+    const hex = extractToken(css, "--hair");
+    expect(contrastRatio(hex, SURFACE_RAISED)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("the raised surface lifts only slightly off the page (1.0–1.2:1)", () => {
+    const ratio = contrastRatio(SURFACE_RAISED, PAGE_BACKGROUND);
+    expect(ratio).toBeGreaterThan(1);
+    expect(ratio).toBeLessThanOrEqual(1.2);
+  });
+});
+
 describe("palette tokens (site-typography-and-palette design.md Decision 5)", () => {
   const css = readGlobalsCss();
 

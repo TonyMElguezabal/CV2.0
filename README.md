@@ -136,6 +136,27 @@ automated test:
 **Retention**: events are intended to be kept for 180 days. A retention
 cleanup job is not built yet — this is a future story, not part of JOS-72.
 
+## WhatsApp redirect
+
+`GET /go/whatsapp` (`app/go/whatsapp/route.ts`) redirects to
+`https://wa.me/<number>` without ever putting the number in `/content`,
+rendered HTML, the client bundle, or the chatbot's retrieval index — only
+the server-side `WHATSAPP_NUMBER` secret and the redirect's own `Location`
+header ever see it. Rate limited under its own `go-whatsapp:` key
+namespace (`lib/chat/rateLimit.ts`), independent of the chat and events
+counters, and fails open on limiter errors like the other two. Requires
+one one-time manual setup step that is **not** application code and has
+no automated test:
+
+1. **`WHATSAPP_NUMBER`** — a digits-only phone number (E.164 without the
+   leading `+`, 8–15 digits). Set it in `.env.local` (local) and the
+   Vercel project's environment variables (production), or
+   `wrangler secret put WHATSAPP_NUMBER` for a Cloudflare Workers deploy.
+   Without it, or with anything other than digits, the route responds
+   `503` rather than redirecting. Never commit a real number — there is no
+   `.env.example` for this repo (`.gitignore` ignores `.env*`, so such a
+   file would never be committed anyway).
+
 ## SEO / site URL
 
 The site's metadata (canonical link, OpenGraph, Twitter card, sitemap,
@@ -297,9 +318,10 @@ back that posture; the first four already shipped in earlier stories and
 are asserted by tests, not just prose:
 
 1. **Secrets are server-side only.** `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
-   `DATABASE_URL`, and `UPSTASH_REDIS_*` are read only in server code
-   (route handlers, `lib/analytics/store.ts`, build/eval scripts) — never
-   in a `"use client"` module, never as a `NEXT_PUBLIC_*` variable.
+   `DATABASE_URL`, `UPSTASH_REDIS_*`, and `WHATSAPP_NUMBER` are read only
+   in server code (route handlers, `lib/analytics/store.ts`, build/eval
+   scripts) — never in a `"use client"` module, never as a
+   `NEXT_PUBLIC_*` variable.
    Regression-guarded by `lib/security/noClientSecrets.test.ts`, which
    scans every client-bundled file for these names.
 2. **Endpoint input validation.** `POST /api/chat` and `POST /api/events`

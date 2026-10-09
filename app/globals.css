@@ -20,6 +20,11 @@
      can't compile an arbitrary-value class built from one (JOS-105 hit
      this exact bug) — components/palette.test.tsx guards against drift. */
   --accent: #4d82bd; /* 4.94:1 */
+  /* Footer's lifted surface (JOS-191 disruptive-footer design.md Decision 3).
+     1.08:1 against the page: deliberately subtle. Measured on this surface:
+     ink 14.93, ink-body 8.75, ink-meta 4.86, accent 4.60, hair 3.22 (borders
+     only). Guarded in components/palette.test.tsx. */
+  --surface-raised: #16140f;
 }
 
 @theme inline {
@@ -30,6 +35,7 @@
   --color-ink-meta: var(--ink-meta);
   --color-hair: var(--hair);
   --color-accent: var(--accent);
+  --color-surface-raised: var(--surface-raised);
   --font-sans: var(--font-archivo-body), -apple-system, "Segoe UI", Roboto,
     sans-serif;
   --font-display: var(--font-archivo-display), var(--font-sans);

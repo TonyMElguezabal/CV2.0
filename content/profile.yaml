@@ -25,3 +25,8 @@ hero:
     - "$ cat focus.txt"
     - "cloud migrations · AI-enabled products · cross-functional delivery"
     - "$ echo 'this is not a résumé'"
+footer:
+  headline: Hey, you're at the bottom of my interactive CV page.
+  subline: Just click the contact button if you're interested. There's nothing to lose!
+  ctaLabel: Come on, click on this
+  ctaSubLabel: Don't make me beg

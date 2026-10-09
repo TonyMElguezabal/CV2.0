@@ -93,6 +93,27 @@ paths:
                     type: string
                     example: rate_limited
 
+  /go/whatsapp:
+    get:
+      summary: Redirect to WhatsApp without exposing the number in page source
+      description: >-
+        Server-side-only redirect: the WhatsApp number lives in the
+        WHATSAPP_NUMBER runtime secret, never in /content or the rendered
+        page. Rate limited per-IP under its own `go-whatsapp:` key
+        namespace, independent of /api/chat and /api/events. Disallowed in
+        robots.txt. Never cached, never logs the number.
+      responses:
+        "302":
+          description: >-
+            Redirects to https://wa.me/<number>. Cache-Control: no-store;
+            X-Robots-Tag: noindex, nofollow.
+        "429":
+          description: Rate limit exceeded; no Location header.
+        "503":
+          description: >-
+            WHATSAPP_NUMBER is unset or fails the \d{8,15} digits-only
+            pattern; no Location header.
+
 components:
   schemas:
     ChatErrorResponse:
@@ -142,5 +163,5 @@ components:
           description: Required when eventType is section_reach.
         contactTarget:
           type: string
-          enum: [scheduling, email, linkedin]
+          enum: [scheduling, email, linkedin, github, whatsapp]
           description: Required when eventType is contact_click.
