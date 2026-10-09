@@ -174,4 +174,4 @@ SVG layered on that one existing PNG.
 ## 15. OpenSpec sync
 
 - [x] 15.1 Run `openspec validate disruptive-footer --strict` and fix any findings.
-- [ ] 15.2 Move JOS-191 through In Review once all tasks above are checked. Archive via `/opsx:archive`.
+- [x] 15.2 Move JOS-191 through In Review once all tasks above are checked. Archive via `/opsx:archive`.
