@@ -29,7 +29,7 @@ export default function RootLayout({
   const starterQuestions = getFaq()
     .slice(0, STARTER_QUESTION_COUNT)
     .map((entry) => entry.question);
-  const { name, contact, chat, hero } = getProfile();
+  const { name, links, contact, chat, hero, footer } = getProfile();
 
   return (
     <html
@@ -89,7 +89,11 @@ export default function RootLayout({
                 LazyMotion providers are safe (the same domAnimation feature
                 set loads once, cached) — see MotionProvider.tsx. */}
             <MotionProvider>{children}</MotionProvider>
-            <SiteFooter />
+            <SiteFooter
+              footer={footer}
+              links={links}
+              contact={contact}
+            />
             <ChatWidget
               starterQuestions={starterQuestions}
               contact={contact}

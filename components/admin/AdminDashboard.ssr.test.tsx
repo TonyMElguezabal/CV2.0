@@ -20,7 +20,13 @@ const EMPTY_PROPS: AdminDashboardProps = {
   chat: { chatOpenSessionCount: 0, chatOpenShare: 0, questionAskedCount: 0 },
   conversions: {
     resumeDownloadCount: 0,
-    contactClicksByTarget: { scheduling: 0, email: 0, linkedin: 0 },
+    contactClicksByTarget: {
+      scheduling: 0,
+      email: 0,
+      linkedin: 0,
+      github: 0,
+      whatsapp: 0,
+    },
   },
 };
 
@@ -42,7 +48,13 @@ const POPULATED_PROPS: AdminDashboardProps = {
   chat: { chatOpenSessionCount: 30, chatOpenShare: 0.25, questionAskedCount: 58 },
   conversions: {
     resumeDownloadCount: 12,
-    contactClicksByTarget: { scheduling: 4, email: 7, linkedin: 2 },
+    contactClicksByTarget: {
+      scheduling: 4,
+      email: 7,
+      linkedin: 2,
+      github: 0,
+      whatsapp: 0,
+    },
   },
 };
 

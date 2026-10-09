@@ -1,4 +1,5 @@
 import type { ConversionsReport } from "@/lib/analytics/reports.ts";
+import { CONTACT_TARGETS, type ContactTarget } from "@/lib/analytics/schema.ts";
 import { StatCard } from "./StatCard";
 import {
   adminSectionClass,
@@ -13,10 +14,12 @@ export interface ConversionsSectionProps {
   report: ConversionsReport;
 }
 
-const CONTACT_TARGET_LABELS: Record<string, string> = {
+const CONTACT_TARGET_LABELS: Record<ContactTarget, string> = {
   scheduling: "Scheduling",
   email: "Email",
   linkedin: "LinkedIn",
+  github: "GitHub",
+  whatsapp: "WhatsApp",
 };
 
 export function ConversionsSection({ report }: ConversionsSectionProps) {
@@ -47,16 +50,16 @@ export function ConversionsSection({ report }: ConversionsSectionProps) {
           </tr>
         </thead>
         <tbody>
-          {Object.entries(report.contactClicksByTarget).map(
-            ([target, count]) => (
-              <tr key={target}>
-                <td className={adminTableCellClass}>
-                  {CONTACT_TARGET_LABELS[target] ?? target}
-                </td>
-                <td className={adminTableCellClass}>{count}</td>
-              </tr>
-            ),
-          )}
+          {CONTACT_TARGETS.map((target) => (
+            <tr key={target}>
+              <td className={adminTableCellClass}>
+                {CONTACT_TARGET_LABELS[target]}
+              </td>
+              <td className={adminTableCellClass}>
+                {report.contactClicksByTarget[target]}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </section>

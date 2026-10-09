@@ -11,7 +11,13 @@ export const EVENT_TYPES = [
 
 export type EventType = (typeof EVENT_TYPES)[number];
 
-export const CONTACT_TARGETS = ["scheduling", "email", "linkedin"] as const;
+export const CONTACT_TARGETS = [
+  "scheduling",
+  "email",
+  "linkedin",
+  "github",
+  "whatsapp",
+] as const;
 export type ContactTarget = (typeof CONTACT_TARGETS)[number];
 
 const BaseEventFields = {

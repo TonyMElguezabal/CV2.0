@@ -25,6 +25,12 @@ const FIXTURE_PROFILE: Profile = {
   hero: {
     terminalLines: ["$ whoami", "fixture_person"],
   },
+  footer: {
+    headline: "Fixture footer headline.",
+    subline: "Fixture footer subline.",
+    ctaLabel: "Fixture call to action",
+    ctaSubLabel: "Fixture sub-label",
+  },
 };
 
 const SITE_URL = "https://fixture.example.com";

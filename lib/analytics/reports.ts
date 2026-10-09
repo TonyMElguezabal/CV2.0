@@ -1,4 +1,5 @@
 import { neon } from "@neondatabase/serverless";
+import { CONTACT_TARGETS } from "./schema.ts";
 import type { ContactTarget, StoredEvent } from "./schema.ts";
 
 export interface TrafficReport {
@@ -35,7 +36,6 @@ export interface AnalyticsReports {
   getConversionsReport(): Promise<ConversionsReport>;
 }
 
-const CONTACT_TARGETS: ContactTarget[] = ["scheduling", "email", "linkedin"];
 
 function incrementCount(counts: Record<string, number>, key: string): void {
   counts[key] = (counts[key] ?? 0) + 1;

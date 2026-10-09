@@ -45,6 +45,13 @@ export const HeroSchema = z.object({
   terminalLines: z.array(z.string()).min(1),
 });
 
+export const FooterSchema = z.object({
+  headline: z.string(),
+  subline: z.string(),
+  ctaLabel: z.string(),
+  ctaSubLabel: z.string(),
+});
+
 export const ProfileSchema = z.object({
   name: z.string(),
   positioning: z.string(),
@@ -53,6 +60,7 @@ export const ProfileSchema = z.object({
   contact: ProfileContactSchema,
   chat: ChatSchema,
   hero: HeroSchema,
+  footer: FooterSchema,
 });
 
 export const ExperienceDatesSchema = z.object({

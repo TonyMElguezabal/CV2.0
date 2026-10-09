@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS analytics_event (
   section_id TEXT,
   scroll_depth_percent INTEGER,
   contact_target TEXT CHECK (
-    contact_target IS NULL OR contact_target IN ('scheduling', 'email', 'linkedin')
+    contact_target IS NULL OR contact_target IN ('scheduling', 'email', 'linkedin', 'github', 'whatsapp')
   ),
   country_or_region TEXT,
   referrer_domain TEXT,
